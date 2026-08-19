@@ -1,7 +1,7 @@
 const services = [
-  { id:'publicaciones', category:'Comunicaciones', icon:'✦', tone:'#eaf2ff', color:'#1557c0', title:'Solicitar publicación', desc:'Piezas, copys, publicación en web, redes sociales o canales institucionales.', sla:'1–3 días', skills:['Diseño','Redes','Web'], approval:true,
+  { id:'publicaciones', category:'Comunicaciones', icon:'✦', tone:'#eaf2ff', color:'#1557c0', title:'Solicitar publicación', desc:'Piezas, copys, publicación en web, redes sociales o canales institucionales.', sla:'1–3 días', skills:['Diseño','Redes sociales','Web'], approval:true,
     fields:[['Canal requerido','select',['Redes sociales','Sitio web','Cartelera interna','Prensa / boletín','Varios canales']],['Fecha ideal de publicación','date'],['Objetivo y mensaje principal','textarea'],['¿Cuenta con insumos?','select',['Sí, completos','Parciales','No']],['Enlace o ubicación de archivos','text']] },
-  { id:'cubrimientos', category:'Comunicaciones', icon:'◉', tone:'#f1edff', color:'#7053c6', title:'Solicitar cubrimiento', desc:'Fotografía, video, transmisión, acompañamiento o registro de eventos institucionales.', sla:'Agenda', skills:['Foto/Video','Protocolo','Redes'], approval:false,
+  { id:'cubrimientos', category:'Comunicaciones', icon:'◉', tone:'#f1edff', color:'#7053c6', title:'Solicitar cubrimiento', desc:'Fotografía, video, transmisión, acompañamiento o registro de eventos institucionales.', sla:'Agenda', skills:['Foto/Video','Protocolo','Redes sociales'], approval:false,
     fields:[['Tipo de cubrimiento','select',['Fotografía','Video','Foto + video','Transmisión en vivo','Acompañamiento de comunicaciones']],['Fecha del evento','date'],['Hora de inicio','time'],['Hora estimada de finalización','time'],['Lugar','text'],['Descripción del evento','textarea']] },
   { id:'desarrollo', category:'Desarrollo y datos', icon:'⌘', tone:'#e8f8fb', color:'#087e98', title:'Aplicaciones y automatizaciones', desc:'Crear, mejorar o automatizar aplicaciones, formularios, procesos y herramientas internas.', sla:'Evaluación', skills:['Desarrollo','Procesos','Datos'], approval:true,
     fields:[['Tipo de necesidad','select',['Nueva aplicación','Nueva funcionalidad','Automatización','Formulario digital','Integración','Dashboard / reporte']],['Problema que se quiere resolver','textarea'],['Usuarios o dependencias involucradas','text'],['Fecha objetivo','date'],['Impacto esperado','select',['Bajo','Medio','Alto','Crítico']] ] },
@@ -11,7 +11,7 @@ const services = [
     fields:[['Tipo de problema','select',['No puedo ingresar','Olvidé contraseña','No envía','No recibe','Crear cuenta','Configurar dispositivo','Lista / grupo','Otro']],['Cuenta afectada','email'],['Descripción','textarea']] },
   { id:'equipos', category:'Soporte TIC', icon:'▣', tone:'#eef2f6', color:'#516174', title:'Equipo o periférico', desc:'Computador, impresora, escáner, proyector, periféricos o mantenimiento preventivo.', sla:'4–24 h', skills:['Hardware','Soporte'], approval:false,
     fields:[['Equipo','select',['Computador','Portátil','Impresora','Escáner','Proyector','Teclado / mouse','Otro']],['Activo / placa (si aplica)','text'],['Síntoma o falla','textarea'],['¿Impide trabajar?','select',['Sí','Parcialmente','No']] ] },
-  { id:'internet', category:'Soporte TIC', icon:'⌁', tone:'#e8f8fb', color:'#087e98', title:'Internet y conectividad', desc:'Wi‑Fi, red cableada, VPN, acceso a servicios, puntos de red e intermitencias.', sla:'1–6 h', skills:['Redes','Infraestructura'], approval:false,
+  { id:'internet', category:'Soporte TIC', icon:'⌁', tone:'#e8f8fb', color:'#087e98', title:'Internet y conectividad', desc:'Wi‑Fi, red cableada, VPN, acceso a servicios, puntos de red e intermitencias.', sla:'1–6 h', skills:['Redes de datos','Infraestructura'], approval:false,
     fields:[['Tipo de conexión','select',['Wi‑Fi','Cableada','VPN','Acceso a sistema','Punto de red']],['Ubicación','text'],['Descripción de la falla','textarea'],['¿A cuántas personas afecta?','number']] },
   { id:'accesos', category:'Identidad y acceso', icon:'◇', tone:'#fff0f0', color:'#c03c3c', title:'Usuarios, accesos y permisos', desc:'Altas, bajas, permisos, bloqueos y accesos a sistemas o recursos institucionales.', sla:'2–24 h', skills:['Identidad','Seguridad','Soporte'], approval:true,
     fields:[['Solicitud','select',['Crear usuario','Modificar permisos','Retirar acceso','Desbloquear','Acceso a carpeta','Acceso a aplicación']],['Usuario involucrado','text'],['Sistema / recurso','text'],['Justificación','textarea']] },
@@ -26,12 +26,51 @@ const services = [
 ];
 
 const team = [
-  {id:'ana',name:'Ana López',initials:'AL',role:'Comunicaciones',skills:['Diseño','Redes','Foto/Video','Contenido'],load:58,status:'Disponible',slots:['Hoy 2:30 p. m.','Mañana 9:00 a. m.']},
+  {id:'ana',name:'Ana López',initials:'AL',role:'Comunicaciones',skills:['Diseño','Redes sociales','Foto/Video','Contenido'],load:58,status:'Disponible',slots:['Hoy 2:30 p. m.','Mañana 9:00 a. m.']},
   {id:'carlos',name:'Carlos Rojas',initials:'CR',role:'TIC · Soporte',skills:['Soporte','Correo','Microsoft 365','Hardware'],load:72,status:'Ocupado',slots:['Hoy 4:00 p. m.','Mañana 8:00 a. m.']},
   {id:'juan',name:'Juan Pérez',initials:'JP',role:'TIC · Desarrollo',skills:['Desarrollo','Web','Datos','Procesos','QA'],load:64,status:'Disponible',slots:['Hoy 3:30 p. m.','Mañana 10:30 a. m.']},
-  {id:'diana',name:'Diana Gómez',initials:'DG',role:'TIC · Infraestructura',skills:['Redes','Infraestructura','Seguridad','Identidad'],load:41,status:'Disponible',slots:['Hoy 11:30 a. m.','Hoy 2:00 p. m.']},
-  {id:'sofia',name:'Sofía Martínez',initials:'SM',role:'Comunicaciones',skills:['Foto/Video','Protocolo','Redes'],load:86,status:'Alta carga',slots:['Mañana 11:00 a. m.','Viernes 8:30 a. m.']},
+  {id:'diana',name:'Diana Gómez',initials:'DG',role:'TIC · Infraestructura',skills:['Redes de datos','Infraestructura','Seguridad','Identidad'],load:41,status:'Disponible',slots:['Hoy 11:30 a. m.','Hoy 2:00 p. m.']},
+  {id:'sofia',name:'Sofía Martínez',initials:'SM',role:'Comunicaciones',skills:['Foto/Video','Protocolo','Redes sociales'],load:86,status:'Alta carga',slots:['Mañana 11:00 a. m.','Viernes 8:30 a. m.']},
   {id:'mateo',name:'Mateo Valencia',initials:'MV',role:'Datos y calidad',skills:['Datos','BI','QA','Accesibilidad'],load:33,status:'Disponible',slots:['Hoy 1:45 p. m.','Hoy 4:30 p. m.']}
+];
+
+// Agenda operativa simulada. En la fase Supabase se reemplaza por tablas de disponibilidad, bloqueos y reservas.
+const workWindows = [['08:00','12:00'],['13:00','17:00']];
+const scheduleEvents = [
+  {id:'ev01',person:'ana',date:'2026-08-19',start:'08:30',end:'10:00',title:'Diseño campaña de salud',type:'internal',service:'publicaciones',ticket:'MA-2026-0148'},
+  {id:'ev02',person:'ana',date:'2026-08-19',start:'14:00',end:'15:00',title:'Comité de comunicaciones',type:'meeting'},
+  {id:'ev03',person:'carlos',date:'2026-08-19',start:'08:00',end:'09:30',title:'Soporte correo · Planeación',type:'support',ticket:'MA-2026-0147'},
+  {id:'ev04',person:'carlos',date:'2026-08-19',start:'10:30',end:'12:00',title:'Mantenimiento equipos',type:'support'},
+  {id:'ev05',person:'juan',date:'2026-08-19',start:'09:00',end:'11:30',title:'Formulario emergencias',type:'development',ticket:'MA-2026-0145'},
+  {id:'ev06',person:'juan',date:'2026-08-19',start:'13:30',end:'14:30',title:'Revisión con Gestión del Riesgo',type:'meeting'},
+  {id:'ev07',person:'diana',date:'2026-08-19',start:'08:00',end:'09:00',title:'Revisión red segundo piso',type:'support',ticket:'MA-2026-0144'},
+  {id:'ev08',person:'diana',date:'2026-08-19',start:'15:00',end:'16:00',title:'Inventario de red',type:'internal'},
+  {id:'ev09',person:'sofia',date:'2026-08-19',start:'08:00',end:'11:00',title:'Cubrimiento institucional',type:'coverage'},
+  {id:'ev10',person:'sofia',date:'2026-08-19',start:'14:00',end:'16:30',title:'Edición y publicación',type:'coverage'},
+  {id:'ev11',person:'mateo',date:'2026-08-19',start:'10:00',end:'11:00',title:'Validación formulario',type:'review'},
+  {id:'ev12',person:'mateo',date:'2026-08-19',start:'14:30',end:'15:30',title:'Tablero de indicadores',type:'development'},
+
+  {id:'ev13',person:'ana',date:'2026-08-20',start:'09:00',end:'10:30',title:'Pieza rendición de cuentas',type:'internal'},
+  {id:'ev14',person:'ana',date:'2026-08-20',start:'15:00',end:'16:00',title:'Revisión de contenidos',type:'review'},
+  {id:'ev15',person:'carlos',date:'2026-08-20',start:'08:30',end:'10:00',title:'Configuración de correos',type:'support'},
+  {id:'ev16',person:'juan',date:'2026-08-20',start:'10:00',end:'12:00',title:'Desarrollo módulo interno',type:'development'},
+  {id:'ev17',person:'diana',date:'2026-08-20',start:'13:00',end:'14:30',title:'Punto de red · Hacienda',type:'support'},
+  {id:'ev18',person:'sofia',date:'2026-08-20',start:'09:00',end:'11:30',title:'Consejo de Gobierno',type:'coverage',ticket:'MA-2026-0146'},
+  {id:'ev19',person:'mateo',date:'2026-08-20',start:'08:00',end:'09:30',title:'Depuración base',type:'development'},
+
+  {id:'ev20',person:'ana',date:'2026-08-21',start:'10:00',end:'11:00',title:'Planeación parrilla',type:'meeting'},
+  {id:'ev21',person:'carlos',date:'2026-08-21',start:'13:00',end:'14:00',title:'Soporte impresoras',type:'support'},
+  {id:'ev22',person:'juan',date:'2026-08-21',start:'08:00',end:'10:00',title:'QA portal institucional',type:'review'},
+  {id:'ev23',person:'diana',date:'2026-08-21',start:'09:30',end:'11:00',title:'Seguridad perimetral',type:'support'},
+  {id:'ev24',person:'sofia',date:'2026-08-21',start:'08:30',end:'10:00',title:'Registro fotográfico',type:'coverage'},
+  {id:'ev25',person:'mateo',date:'2026-08-21',start:'14:00',end:'16:00',title:'Informe de calidad',type:'development'},
+
+  {id:'ev26',person:'ana',date:'2026-08-17',start:'09:00',end:'11:00',title:'Contenido institucional',type:'internal'},
+  {id:'ev27',person:'carlos',date:'2026-08-17',start:'14:00',end:'15:30',title:'Soporte general',type:'support'},
+  {id:'ev28',person:'sofia',date:'2026-08-17',start:'08:00',end:'12:00',title:'Cubrimiento externo',type:'coverage'},
+  {id:'ev29',person:'juan',date:'2026-08-18',start:'08:30',end:'11:00',title:'Automatización interna',type:'development'},
+  {id:'ev30',person:'diana',date:'2026-08-18',start:'13:00',end:'15:00',title:'Revisión infraestructura',type:'support'},
+  {id:'ev31',person:'mateo',date:'2026-08-18',start:'09:00',end:'10:30',title:'Control de calidad',type:'review'}
 ];
 
 const sampleTickets = [
@@ -46,6 +85,7 @@ const sampleTickets = [
 let tickets = JSON.parse(localStorage.getItem('mesa360_tickets') || 'null') || sampleTickets;
 let currentRole = 'requester';
 let wizard = {step:1, service:null, details:{}, assignee:'auto'};
+let calendarState = { date:'2026-08-19', view:'day', team:'all', service:'all', duration:60, availableOnly:false };
 
 const $ = (sel, root=document) => root.querySelector(sel);
 const $$ = (sel, root=document) => [...root.querySelectorAll(sel)];
@@ -112,12 +152,125 @@ function renderMyTickets(){
   $('#view-my-tickets').innerHTML=`<div class="page-head"><div><span class="eyebrow">TRAZABILIDAD</span><h1>Mis solicitudes</h1><p>Consulta el estado, responsable, tiempos de servicio y conversación de cada caso.</p></div><button class="btn btn-primary" data-action="open-new-request">＋ Nueva solicitud</button></div><div class="card ticket-table-card">${ticketTable(tickets)}</div>`;
 }
 function renderCalendar(){
-  const days=['Lun 17','Mar 18','Mié 19','Jue 20','Vie 21']; const hours=['8:00','9:00','10:00','11:00','12:00','2:00','3:00','4:00'];
-  const events={ '2-0':['Soporte correo','support'], '2-2':['Publicación Salud',''], '3-1':['Consejo de Gobierno','coverage'], '3-3':['Revisión portal','support'], '4-0':['Capacitación SIG','support'] };
-  $('#view-calendar').innerHTML=`<div class="page-head"><div><span class="eyebrow">PLANEACIÓN DE CAPACIDAD</span><h1>Agenda y disponibilidad</h1><p>Visualiza los espacios ocupados y libres antes de asignar cubrimientos, capacitaciones o trabajos que requieren reserva de tiempo.</p></div><div><button class="btn btn-secondary">Semana anterior</button> <button class="btn btn-soft">19–21 agosto</button> <button class="btn btn-secondary">Siguiente</button></div></div>
-  <div class="calendar-shell"><div class="card calendar-side"><h3 style="font-size:12px;margin:0 0 12px">Equipo visible</h3>${team.map(p=>`<label style="display:flex;align-items:center;gap:8px;padding:7px 0;font-size:9px"><input type="checkbox" checked> <span class="avatar" style="width:26px;height:26px;border-radius:8px;font-size:7px">${p.initials}</span><span>${p.name}<small style="display:block;color:var(--muted)">${p.load}% ocupado</small></span></label>`).join('')}<hr style="border:0;border-top:1px solid var(--line);margin:12px 0"><span class="eyebrow">LEYENDA</span><div style="margin-top:8px;display:flex;flex-direction:column;gap:6px"><span class="pill blue">Trabajo interno</span><span class="pill purple">Cubrimiento</span><span class="pill green">Soporte / cita</span></div></div>
-  <div class="card calendar-main"><div class="calendar-head"><div></div>${days.map(d=>`<div>${d.split(' ')[0]}<strong>${d.split(' ')[1]}</strong></div>`).join('')}</div><div class="calendar-grid">${hours.map((h,hi)=>`<div class="time-cell">${h}</div>${days.map((_,di)=>{const e=events[`${di}-${hi}`];return `<div class="day-cell">${e?`<div class="event-block ${e[1]}">${e[0]}<br><small>${h}</small></div>`:''}</div>`}).join('')}`).join('')}</div></div></div>`;
+  const date = parseLocalDate(calendarState.date);
+  const qualified = calendarQualifiedTeam();
+  const visible = qualified.filter(p=>calendarState.team==='all' || calendarTeamGroup(p)===calendarState.team);
+  const dayEvents = scheduleEvents.filter(e=>e.date===calendarState.date && visible.some(p=>p.id===e.person));
+  const suggestions = findBestSlots(calendarState.date, calendarState.duration, calendarState.service, visible).slice(0,6);
+  const freeHours = visible.reduce((sum,p)=>sum + freeMinutesForDay(p.id,calendarState.date)/60,0);
+  const occupiedNow = dayEvents.filter(e=>timeToMin(e.start)<=10*60+19 && timeToMin(e.end)>10*60+19).length;
+  const todayFree = visible.length-occupiedNow;
+
+  $('#view-calendar').innerHTML=`
+    <div class="calendar-page-head">
+      <div>
+        <span class="eyebrow">PLANIFICADOR DE SERVICIOS</span>
+        <h1>Agenda y disponibilidad</h1>
+        <p>Encuentra un espacio antes de crear la solicitud. La agenda cruza competencia, ocupación, reservas y jornada laboral para mostrar quién realmente puede atender.</p>
+      </div>
+      <div class="calendar-head-actions">
+        <button class="btn btn-secondary compact" data-calendar-nav="today">Hoy</button>
+        <div class="calendar-nav-group"><button class="icon-btn calendar-arrow" data-calendar-nav="prev" aria-label="Anterior">‹</button><button class="date-display" data-calendar-open-date>${formatLongDate(date)}</button><button class="icon-btn calendar-arrow" data-calendar-nav="next" aria-label="Siguiente">›</button></div>
+        <input class="calendar-native-date" id="calendarNativeDate" type="date" value="${calendarState.date}" aria-label="Seleccionar fecha">
+      </div>
+    </div>
+
+    <div class="calendar-kpis">
+      <div class="calendar-kpi"><span class="kpi-icon available">✓</span><div><small>Disponibles ahora</small><strong>${Math.max(0,todayFree)} de ${visible.length}</strong><span>${occupiedNow} con actividad en curso</span></div></div>
+      <div class="calendar-kpi"><span class="kpi-icon hours">◷</span><div><small>Capacidad libre del día</small><strong>${freeHours.toFixed(1)} h</strong><span>Entre el equipo visible</span></div></div>
+      <div class="calendar-kpi"><span class="kpi-icon next">↗</span><div><small>Próximo espacio</small><strong>${suggestions[0]?`${formatTime(suggestions[0].start)} · ${suggestions[0].person.name.split(' ')[0]}`:'Sin espacio'}</strong><span>${suggestions[0]?suggestions[0].person.role:'Prueba otra fecha'}</span></div></div>
+      <div class="calendar-kpi"><span class="kpi-icon warning">!</span><div><small>Alta carga</small><strong>${visible.filter(p=>p.load>=85).length}</strong><span>Evitar sobreasignación</span></div></div>
+    </div>
+
+    <div class="scheduler-layout">
+      <aside class="card scheduler-finder">
+        <div class="finder-title"><span class="finder-mark">⌕</span><div><h3>Buscar un espacio</h3><p>La forma más rápida de programar.</p></div></div>
+        <label>¿Qué necesitas?</label>
+        <select class="finder-control" id="calendarServiceFilter">
+          <option value="all">Cualquier servicio</option>
+          ${services.map(s=>`<option value="${s.id}" ${calendarState.service===s.id?'selected':''}>${s.title}</option>`).join('')}
+        </select>
+        <div class="finder-row"><div><label>Duración</label><select class="finder-control" id="calendarDuration"><option value="30" ${calendarState.duration===30?'selected':''}>30 min</option><option value="60" ${calendarState.duration===60?'selected':''}>1 hora</option><option value="90" ${calendarState.duration===90?'selected':''}>1 h 30</option><option value="120" ${calendarState.duration===120?'selected':''}>2 horas</option><option value="180" ${calendarState.duration===180?'selected':''}>3 horas</option></select></div><div><label>Equipo</label><select class="finder-control" id="calendarTeamFilter"><option value="all">Todos</option><option value="Comunicaciones" ${calendarState.team==='Comunicaciones'?'selected':''}>Comunicaciones</option><option value="TIC" ${calendarState.team==='TIC'?'selected':''}>TIC</option><option value="Datos" ${calendarState.team==='Datos'?'selected':''}>Datos / calidad</option></select></div></div>
+        <label class="finder-check"><input type="checkbox" id="calendarAvailableOnly" ${calendarState.availableOnly?'checked':''}> Mostrar únicamente personas con espacio disponible</label>
+        <div class="finder-divider"></div>
+        <div class="finder-subhead"><div><strong>Mejores opciones</strong><span>${formatShortDate(date)}</span></div><span class="pill green">${suggestions.length} opciones</span></div>
+        <div class="slot-suggestions">
+          ${suggestions.length?suggestions.map((x,i)=>slotSuggestion(x,i)).join(''):`<div class="finder-empty"><span>◌</span><strong>No hay bloques con esa duración</strong><p>Prueba otra fecha, reduce la duración o amplía el equipo.</p></div>`}
+        </div>
+        <button class="btn btn-primary finder-create" data-action="open-new-request">＋ Crear solicitud sin reservar</button>
+      </aside>
+
+      <section class="card scheduler-main">
+        <div class="scheduler-toolbar">
+          <div class="view-segment"><button class="${calendarState.view==='day'?'active':''}" data-calendar-view="day">Día</button><button class="${calendarState.view==='week'?'active':''}" data-calendar-view="week">Semana</button></div>
+          <div class="scheduler-context"><span class="status-dot-live"></span><strong>${formatLongDate(date)}</strong><span>Jornada 8:00–12:00 · 1:00–5:00</span></div>
+          <div class="calendar-legend"><span><i class="legend-swatch free"></i>Libre</span><span><i class="legend-swatch busy"></i>Ocupado</span><span><i class="legend-swatch coverage"></i>Cubrimiento</span><span><i class="legend-swatch meeting"></i>Reunión</span></div>
+        </div>
+        ${calendarState.view==='day'?renderDayScheduler(visible,calendarState.date):renderWeekScheduler(visible,date)}
+      </section>
+    </div>`;
 }
+
+function renderDayScheduler(people,date){
+  const timelineStart=8*60, timelineEnd=17*60, total=timelineEnd-timelineStart;
+  const ticks=[]; for(let h=8;h<=17;h++)ticks.push(h);
+  const rows=people.filter(p=>!calendarState.availableOnly || freeMinutesForDay(p.id,date)>=calendarState.duration).map(p=>{
+    const evs=scheduleEvents.filter(e=>e.person===p.id&&e.date===date);
+    const free=getFreeWindows(p.id,date,calendarState.duration);
+    return `<div class="resource-row">
+      <div class="resource-person"><div class="avatar resource-avatar">${p.initials}</div><div class="resource-copy"><strong>${p.name}</strong><span>${p.role}</span><div class="resource-meta"><span class="resource-load ${p.load>=85?'danger':p.load>=70?'warn':'ok'}">${p.load}% ocupado</span><span>${free.length?`${free.length} espacios`:'Sin espacio'}</span></div></div></div>
+      <div class="resource-timeline">
+        <div class="lunch-band" style="left:${((12*60-timelineStart)/total)*100}%;width:${(60/total)*100}%"><span>Almuerzo</span></div>
+        ${ticks.map(h=>`<div class="hour-line" style="left:${((h*60-timelineStart)/total)*100}%"></div>`).join('')}
+        ${free.map(f=>`<button class="free-window" data-quick-slot="${p.id}|${date}|${f.start}|${f.end}" style="left:${((timeToMin(f.start)-timelineStart)/total)*100}%;width:${((timeToMin(f.end)-timeToMin(f.start))/total)*100}%" title="Libre ${formatTime(f.start)} – ${formatTime(f.end)}"><span>Libre</span></button>`).join('')}
+        ${evs.map(e=>{const left=((timeToMin(e.start)-timelineStart)/total)*100,width=((timeToMin(e.end)-timeToMin(e.start))/total)*100;return `<button class="schedule-event ${e.type}" data-schedule-event="${e.id}" style="left:${Math.max(0,left)}%;width:${Math.max(3,width)}%" title="${safe(e.title)} · ${formatTime(e.start)}–${formatTime(e.end)}"><strong>${safe(e.title)}</strong><span>${formatTime(e.start)}–${formatTime(e.end)}</span></button>`}).join('')}
+      </div>
+      <div class="resource-next"><span>Próximo libre</span><strong>${free[0]?`${formatTime(free[0].start)}–${formatTime(free[0].end)}`:'—'}</strong><button ${free[0]?'':'disabled'} data-quick-slot="${free[0]?`${p.id}|${date}|${free[0].start}|${free[0].end}`:''}">Reservar</button></div>
+    </div>`;
+  }).join('');
+  return `<div class="resource-header"><div>Funcionario</div><div class="timeline-labels">${ticks.slice(0,-1).map(h=>`<span>${formatTime(`${String(h).padStart(2,'0')}:00`)}</span>`).join('')}</div><div>Disponibilidad</div></div><div class="resource-board">${rows||'<div class="scheduler-empty">No hay funcionarios disponibles con los filtros actuales.</div>'}</div>`;
+}
+
+function renderWeekScheduler(people,anchor){
+  const monday=startOfWeek(anchor); const days=Array.from({length:5},(_,i)=>addDays(monday,i));
+  return `<div class="week-board"><div class="week-head"><div>Funcionario</div>${days.map(d=>`<button class="week-day-head ${toISO(d)===calendarState.date?'active':''}" data-calendar-date="${toISO(d)}"><span>${['LUN','MAR','MIÉ','JUE','VIE'][days.indexOf(d)]}</span><strong>${d.getDate()}</strong><small>${monthShort(d)}</small></button>`).join('')}</div>${people.map(p=>`<div class="week-row"><div class="week-person"><div class="avatar resource-avatar">${p.initials}</div><div><strong>${p.name}</strong><span>${p.role}</span></div></div>${days.map(d=>{const iso=toISO(d),free=freeMinutesForDay(p.id,iso),pct=Math.max(0,Math.round((1-free/(8*60))*100)),wins=getFreeWindows(p.id,iso,calendarState.duration);return `<button class="week-cell ${pct>=85?'heavy':pct>=65?'medium':'light'}" data-calendar-date="${iso}"><div class="week-cell-top"><strong>${pct}%</strong><span>${wins.length} espacios</span></div><div class="week-capacity"><i style="width:${pct}%"></i></div><small>${wins[0]?`Libre ${formatTime(wins[0].start)}`:'Agenda completa'}</small></button>`}).join('')}</div>`).join('')}</div>`;
+}
+
+function slotSuggestion(x,index){ return `<button class="slot-suggestion ${index===0?'best':''}" data-quick-slot="${x.person.id}|${x.date}|${x.start}|${x.end}"><div class="slot-timebox"><strong>${formatTime(x.start)}</strong><span>${minutesLabel(calendarState.duration)}</span></div><div class="slot-person"><div class="avatar">${x.person.initials}</div><div><strong>${x.person.name}</strong><span>${x.person.role} · ${x.person.load}% ocupado</span></div></div><span class="slot-arrow">›</span>${index===0?'<em>MEJOR OPCIÓN</em>':''}</button>`; }
+function calendarQualifiedTeam(){ const s=serviceById(calendarState.service); if(!s)return team; const matched=team.filter(p=>serviceCompatible(p,s)); return matched.length?matched:team; }
+function calendarTeamGroup(p){ if(p.role.startsWith('Comunicaciones'))return 'Comunicaciones'; if(p.role.startsWith('Datos'))return 'Datos'; return 'TIC'; }
+function timeToMin(v){ const [h,m]=v.split(':').map(Number); return h*60+m; }
+function minToTime(v){ const h=Math.floor(v/60),m=v%60; return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`; }
+function formatTime(v){ const [h,m]=v.split(':').map(Number); const ap=h>=12?'p. m.':'a. m.'; const hh=h%12||12; return `${hh}:${String(m).padStart(2,'0')} ${ap}`; }
+function minutesLabel(m){ return m<60?`${m} min`:m===60?'1 h':m%60?`${Math.floor(m/60)} h ${m%60} min`:`${m/60} h`; }
+function parseLocalDate(iso){ const [y,m,d]=iso.split('-').map(Number); return new Date(y,m-1,d); }
+function toISO(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+function addDays(d,n){ const x=new Date(d);x.setDate(x.getDate()+n);return x; }
+function startOfWeek(d){ const x=new Date(d),day=x.getDay(),delta=day===0?-6:1-day;x.setDate(x.getDate()+delta);return x; }
+function monthShort(d){ return ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][d.getMonth()]; }
+function formatShortDate(d){ return `${d.getDate()} ${monthShort(d)} ${d.getFullYear()}`; }
+function formatLongDate(d){ return `${['domingo','lunes','martes','miércoles','jueves','viernes','sábado'][d.getDay()]}, ${d.getDate()} de ${['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'][d.getMonth()]}`; }
+function getFreeWindows(personId,date,minDuration=30){
+  const evs=scheduleEvents.filter(e=>e.person===personId&&e.date===date).map(e=>[timeToMin(e.start),timeToMin(e.end)]).sort((a,b)=>a[0]-b[0]);
+  const windows=[];
+  workWindows.forEach(([ws,we])=>{ let cursor=timeToMin(ws),end=timeToMin(we); evs.forEach(([s,e])=>{ if(e<=cursor||s>=end)return; if(s>cursor&&s-cursor>=minDuration)windows.push({start:minToTime(cursor),end:minToTime(Math.min(s,end))}); cursor=Math.max(cursor,e); }); if(end-cursor>=minDuration)windows.push({start:minToTime(cursor),end:minToTime(end)}); });
+  return windows;
+}
+function freeMinutesForDay(personId,date){ return getFreeWindows(personId,date,1).reduce((s,w)=>s+timeToMin(w.end)-timeToMin(w.start),0); }
+function findBestSlots(date,duration,serviceId,people){
+  const s=serviceById(serviceId); const base=(people?.length?people:team).filter(p=>!s||serviceCompatible(p,s));
+  const byPerson=base.map(p=>{ const slots=[]; getFreeWindows(p.id,date,duration).forEach(w=>{ for(let cursor=timeToMin(w.start);cursor+duration<=timeToMin(w.end)&&slots.length<3;cursor+=30){ slots.push({person:p,date,start:minToTime(cursor),end:minToTime(cursor+duration),score:(s?matchCount(p,s)*35:20)+(100-p.load)*.7-(cursor-8*60)*.015}); }}); return slots.sort((a,b)=>b.score-a.score||timeToMin(a.start)-timeToMin(b.start)); });
+  const first=byPerson.map(x=>x[0]).filter(Boolean).sort((a,b)=>b.score-a.score||timeToMin(a.start)-timeToMin(b.start));
+  const rest=byPerson.flatMap(x=>x.slice(1)).sort((a,b)=>b.score-a.score||timeToMin(a.start)-timeToMin(b.start));
+  return [...first,...rest];
+}
+function reserveQuickSlot(payload){
+  if(!payload)return; const [personId,date,start,end]=payload.split('|'),p=personById(personId),s=serviceById(calendarState.service);
+  wizard={step:s?2:1,service:s?.id||null,details:{requester:'Secretaría General',priority:'Media',scheduledDate:date,scheduledStart:start,scheduledEnd:end},assignee:personId};
+  $('#requestModalBackdrop').hidden=false;document.body.style.overflow='hidden';renderWizard();showToast('Espacio seleccionado',`${p.name} · ${formatTime(start)} a ${formatTime(end)}. Completa los detalles para crear la solicitud.`);
+}
+function calendarNavigate(dir){ const d=parseLocalDate(calendarState.date); if(dir==='today')calendarState.date='2026-08-19'; else calendarState.date=toISO(addDays(d,dir==='prev'?(calendarState.view==='week'?-7:-1):(calendarState.view==='week'?7:1))); renderCalendar(); }
+
 function renderOps(){
   const columns=[['Nuevo',['Nuevo']],['En gestión',['En gestión']],['En espera / Programado',['En espera','Programado']],['Resuelto',['Resuelto']]];
   $('#view-ops').innerHTML=`<div class="page-head"><div><span class="eyebrow">OPERACIÓN</span><h1>Centro de operaciones</h1><p>Bandeja unificada para triage, asignación, seguimiento de SLA y balanceo de carga entre TIC y Comunicaciones.</p></div><div><button class="btn btn-secondary">Filtros</button> <button class="btn btn-primary">Asignación inteligente</button></div></div><div class="ops-layout"><div class="queue-board">${columns.map(([name,statuses])=>{const list=tickets.filter(t=>statuses.includes(t.status));return `<div class="queue-col"><div class="queue-col-head"><strong>${name}</strong><span class="queue-count">${list.length}</span></div>${list.map(kanbanTicket).join('')||'<div class="empty-state"><p>Sin casos</p></div>'}</div>`}).join('')}</div><div class="card right-rail"><h3>Próximos espacios disponibles</h3>${team.slice().sort((a,b)=>a.load-b.load).slice(0,5).map(p=>`<div class="slot"><div class="capacity-person"><div class="avatar">${p.initials}</div><div><strong>${p.name}</strong><small>${p.role}</small></div></div><div style="text-align:right"><div class="slot-time">${p.slots[0].split(' ').slice(1).join(' ')}</div><small>${p.load}% ocupado</small></div></div>`).join('')}<button class="btn btn-soft" style="width:100%;margin-top:12px" data-view-link="calendar">Abrir agenda</button></div></div>`;
@@ -149,13 +302,20 @@ function renderWizard(){
   $$('.step').forEach(s=>{const n=Number(s.dataset.step);s.classList.toggle('active',n===wizard.step);s.classList.toggle('done',n<wizard.step)});
   const body=$('#requestWizard'),foot=$('#requestWizardFooter');
   if(wizard.step===1){ body.innerHTML=`<div style="margin-bottom:12px"><h3 style="font-size:13px;margin:0 0 4px">Selecciona el servicio</h3><p style="font-size:9px;color:var(--muted);margin:0">Esto determina el formulario, el SLA y el equipo responsable.</p></div><div class="wizard-service-grid">${services.map(s=>`<button class="wizard-service ${wizard.service===s.id?'selected':''}" data-wizard-service="${s.id}">${toneIcon(s)}<h4>${s.title}</h4><p>${s.desc}</p></button>`).join('')}</div>`; foot.innerHTML=`<button class="btn btn-secondary" data-action="close-request-modal">Cancelar</button><button class="btn btn-primary" data-wizard-next ${wizard.service?'':'disabled'}>Continuar →</button>`; }
-  if(wizard.step===2){ const s=serviceById(wizard.service); body.innerHTML=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">${toneIcon(s)}<div><h3 style="font-size:13px;margin:0 0 3px">${s.title}</h3><p style="font-size:9px;color:var(--muted);margin:0">Completa la información mínima para evitar devoluciones o reprocesos.</p></div></div><div class="form-grid"><div class="form-group full"><label>Asunto de la solicitud *</label><input class="form-control" name="title" value="${safe(wizard.details.title||'')}" placeholder="Describe en una frase lo que necesitas"></div><div class="form-group"><label>Dependencia solicitante *</label><select class="form-control" name="requester"><option>Secretaría General</option><option>Despacho del Alcalde</option><option>Planeación</option><option>Hacienda</option><option>Gestión del Riesgo</option><option>Control Interno</option><option>Desarrollo Social</option></select></div><div class="form-group"><label>Prioridad</label><select class="form-control" name="priority"><option>Media</option><option>Alta</option><option>Baja</option>${s.critical?'<option selected>Crítica</option>':''}</select></div>${s.fields.map(([label,type,opts],i)=>fieldHtml(label,type,opts,`f${i}`)).join('')}</div>`; foot.innerHTML=`<button class="btn btn-secondary" data-wizard-back>← Atrás</button><button class="btn btn-primary" data-wizard-next>Revisar asignación →</button>`; }
-  if(wizard.step===3){ captureDetails(); const s=serviceById(wizard.service), candidates=rankCandidates(s); const recommended=candidates[0]; if(wizard.assignee==='auto') wizard.assignee=recommended?.id||''; body.innerHTML=`<div class="assignment-summary"><div class="routing-card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div><h3>Responsable sugerido</h3><span style="font-size:8px;color:var(--muted)">Basado en habilidades + capacidad disponible.</span></div><span class="pill green">Asignación inteligente</span></div>${candidates.slice(0,4).map((p,i)=>`<label class="routing-person ${i===0?'recommended':''}"><input type="radio" name="assignee" value="${p.id}" ${wizard.assignee===p.id?'checked':''}><div class="avatar">${p.initials}</div><div class="routing-copy"><strong>${p.name} ${i===0?'<span class="pill blue" style="margin-left:4px">Recomendado</span>':''}</strong><small>${p.role} · coincide en ${matchCount(p,s)} competencias · próximo: ${p.slots[0]}</small></div><div class="routing-load"><small>${p.load}% ocupado</small><div class="progress"><span style="width:${p.load}%;background:${loadColor(p.load)}"></span></div></div></label>`).join('')}</div><div class="summary-box"><span class="eyebrow">RESUMEN</span><div class="summary-row"><span>Servicio</span><strong>${s.title}</strong></div><div class="summary-row"><span>Asunto</span><strong>${safe(wizard.details.title||'Sin asunto')}</strong></div><div class="summary-row"><span>Prioridad</span><strong>${safe(wizard.details.priority||'Media')}</strong></div><div class="summary-row"><span>SLA objetivo</span><strong>${s.sla}</strong></div><div class="summary-row"><span>Aprobación</span><strong>${s.approval?'Requerida según regla':'No requerida'}</strong></div><div class="summary-row"><span>Responsable</span><strong id="summaryAssignee">${personById(wizard.assignee)?.name||'Por definir'}</strong></div></div></div>`; foot.innerHTML=`<button class="btn btn-secondary" data-wizard-back>← Editar detalles</button><button class="btn btn-primary" data-wizard-submit>✓ Crear solicitud</button>`; }
+  if(wizard.step===2){ const s=serviceById(wizard.service); body.innerHTML=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">${toneIcon(s)}<div><h3 style="font-size:13px;margin:0 0 3px">${s.title}</h3><p style="font-size:9px;color:var(--muted);margin:0">Completa la información mínima para evitar devoluciones o reprocesos.</p></div></div>${wizard.details.scheduledDate?`<div class="wizard-slot-banner"><div><span>ESPACIO PRESELECCIONADO</span><strong>${personById(wizard.assignee)?.name||'Responsable'} · ${formatTime(wizard.details.scheduledStart)}–${formatTime(wizard.details.scheduledEnd)}</strong><small>${wizard.details.scheduledDate}</small></div><button type="button" data-view-link="calendar">Cambiar horario</button></div>`:''}<div class="form-grid"><div class="form-group full"><label>Asunto de la solicitud *</label><input class="form-control" name="title" value="${safe(wizard.details.title||'')}" placeholder="Describe en una frase lo que necesitas"></div><div class="form-group"><label>Dependencia solicitante *</label><select class="form-control" name="requester"><option>Secretaría General</option><option>Despacho del Alcalde</option><option>Planeación</option><option>Hacienda</option><option>Gestión del Riesgo</option><option>Control Interno</option><option>Desarrollo Social</option></select></div><div class="form-group"><label>Prioridad</label><select class="form-control" name="priority"><option>Media</option><option>Alta</option><option>Baja</option>${s.critical?'<option selected>Crítica</option>':''}</select></div>${s.fields.map(([label,type,opts],i)=>fieldHtml(label,type,opts,`f${i}`)).join('')}</div>`; foot.innerHTML=`<button class="btn btn-secondary" data-wizard-back>← Atrás</button><button class="btn btn-primary" data-wizard-next>Revisar asignación →</button>`; }
+  if(wizard.step===3){ captureDetails(); const s=serviceById(wizard.service), candidates=rankCandidates(s); const recommended=candidates[0]; if(wizard.assignee==='auto') wizard.assignee=recommended?.id||''; body.innerHTML=`<div class="assignment-summary"><div class="routing-card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div><h3>Responsable sugerido</h3><span style="font-size:8px;color:var(--muted)">Basado en habilidades + capacidad disponible.</span></div><span class="pill green">Asignación inteligente</span></div>${candidates.slice(0,4).map((p,i)=>`<label class="routing-person ${i===0?'recommended':''}"><input type="radio" name="assignee" value="${p.id}" ${wizard.assignee===p.id?'checked':''}><div class="avatar">${p.initials}</div><div class="routing-copy"><strong>${p.name} ${i===0?'<span class="pill blue" style="margin-left:4px">Recomendado</span>':''}</strong><small>${p.role} · coincide en ${matchCount(p,s)} competencias · próximo: ${p.slots[0]}</small></div><div class="routing-load"><small>${p.load}% ocupado</small><div class="progress"><span style="width:${p.load}%;background:${loadColor(p.load)}"></span></div></div></label>`).join('')}</div><div class="summary-box"><span class="eyebrow">RESUMEN</span><div class="summary-row"><span>Servicio</span><strong>${s.title}</strong></div><div class="summary-row"><span>Asunto</span><strong>${safe(wizard.details.title||'Sin asunto')}</strong></div><div class="summary-row"><span>Prioridad</span><strong>${safe(wizard.details.priority||'Media')}</strong></div><div class="summary-row"><span>SLA objetivo</span><strong>${s.sla}</strong></div><div class="summary-row"><span>Aprobación</span><strong>${s.approval?'Requerida según regla':'No requerida'}</strong></div><div class="summary-row"><span>Responsable</span><strong id="summaryAssignee">${personById(wizard.assignee)?.name||'Por definir'}</strong></div>${wizard.details.scheduledDate?`<div class="summary-row scheduled-summary"><span>Espacio reservado</span><strong>${wizard.details.scheduledDate} · ${formatTime(wizard.details.scheduledStart)}–${formatTime(wizard.details.scheduledEnd)}</strong></div>`:''}</div></div>`; foot.innerHTML=`<button class="btn btn-secondary" data-wizard-back>← Editar detalles</button><button class="btn btn-primary" data-wizard-submit>✓ Crear solicitud</button>`; }
 }
 function fieldHtml(label,type,opts,name){ const required=label.includes('Descripción')||label.includes('Problema')?'*':''; if(type==='textarea')return `<div class="form-group full"><label>${label} ${required}</label><textarea class="form-control" name="${name}" placeholder="Escribe la información necesaria"></textarea></div>`; if(type==='select')return `<div class="form-group"><label>${label}</label><select class="form-control" name="${name}">${opts.map(o=>`<option>${o}</option>`).join('')}</select></div>`; return `<div class="form-group"><label>${label}</label><input class="form-control" type="${type}" name="${name}"></div>`; }
 function captureDetails(){ $$('#requestWizard .form-control').forEach(el=>wizard.details[el.name]=el.value); }
+const serviceTeamRules={
+  publicaciones:['Comunicaciones'],cubrimientos:['Comunicaciones'],
+  desarrollo:['TIC','Datos'],revision:['Comunicaciones','TIC','Datos'],
+  correo:['TIC'],equipos:['TIC'],internet:['TIC'],accesos:['TIC'],
+  web:['Comunicaciones','TIC'],datos:['Datos','TIC'],seguridad:['TIC'],capacitacion:['TIC']
+};
 function matchCount(p,s){ return s.skills.filter(k=>p.skills.includes(k)).length; }
-function rankCandidates(s){ return team.map(p=>({...p,score:matchCount(p,s)*30+(100-p.load)*.7})).sort((a,b)=>b.score-a.score); }
+function serviceCompatible(p,s){ if(!s)return true; const groups=serviceTeamRules[s.id]||[]; return (!groups.length||groups.includes(calendarTeamGroup(p))) && matchCount(p,s)>0; }
+function rankCandidates(s){ const valid=team.filter(p=>serviceCompatible(p,s)); const pool=valid.length?valid:team; return pool.map(p=>({...p,score:matchCount(p,s)*30+(100-p.load)*.7})).sort((a,b)=>b.score-a.score); }
 function submitRequest(){ const s=serviceById(wizard.service), p=personById(wizard.assignee); const nextNum = Math.max(148, ...tickets.map(t => Number(String(t.id).match(/(\d+)$/)?.[1] || 0))) + 1; const id=`MA-2026-${String(nextNum).padStart(4,'0')}`; const newT={id,service:s.id,title:wizard.details.title||s.title,requester:wizard.details.requester||'Secretaría General',assignee:p?.id||'',priority:wizard.details.priority||'Media',status:s.id==='cubrimientos'?'Programado':'Nuevo',created:'19 Ago · ahora',due:s.sla==='Inmediato'?'Inmediato':s.sla==='Agenda'?'Según agenda':'Según SLA',sla:s.sla,description:wizard.details.f2||wizard.details.f1||wizard.details.f0||'Solicitud registrada desde el portal.',timeline:[['Solicitud creada','19 Ago · ahora'],[p?`Asignada a ${p.name}`:'Pendiente de asignación','19 Ago · ahora']]}; tickets.unshift(newT);saveTickets();closeRequestModal();showToast('Solicitud creada',`${id} fue registrada y asignada a ${p?.name||'la cola correspondiente'}.`);setView('my-tickets'); }
 
 function openTicket(id){ const t=tickets.find(x=>x.id===id); if(!t)return; const s=serviceById(t.service),p=personById(t.assignee); $('#ticketDrawer').innerHTML=`<div class="drawer-head"><div class="drawer-head-top"><div><span class="eyebrow">${t.id}</span><h2>${safe(t.title)}</h2><p>${safe(s?.title||'Servicio')} · Solicitado por ${safe(t.requester)}</p></div><button class="close-btn" data-action="close-ticket-drawer">×</button></div><div style="display:flex;gap:7px;margin-top:12px">${statusPill(t.status)}${priorityPill(t.priority)}<span class="pill gray">SLA: ${safe(t.sla)}</span></div></div><div class="drawer-body"><div class="detail-grid"><div class="detail-box"><span>Responsable</span><strong>${p?.name||'Sin asignar'}</strong></div><div class="detail-box"><span>Vencimiento</span><strong>${safe(t.due)}</strong></div><div class="detail-box"><span>Creada</span><strong>${safe(t.created)}</strong></div><div class="detail-box"><span>Dependencia</span><strong>${safe(t.requester)}</strong></div></div><h3 style="font-size:11px">Descripción</h3><p style="font-size:9px;line-height:1.6;color:#617085">${safe(t.description)}</p><h3 style="font-size:11px;margin-top:20px">Actividad</h3><div class="timeline">${(t.timeline||[]).map(([a,d])=>`<div class="timeline-item"><strong>${safe(a)}</strong><p>${safe(d)}</p></div>`).join('')}</div><div class="comment-box"><textarea placeholder="Escribe un comentario o actualización..."></textarea><div class="comment-actions"><button class="btn btn-secondary compact">Adjuntar</button><button class="btn btn-primary compact">Comentar</button></div></div>${currentRole!=='requester'?`<div style="display:flex;gap:8px;margin-top:14px"><button class="btn btn-soft" data-ticket-status="En gestión" data-ticket-id="${t.id}">Tomar caso</button><button class="btn btn-secondary" data-ticket-status="En espera" data-ticket-id="${t.id}">Poner en espera</button><button class="btn btn-primary" data-ticket-status="Resuelto" data-ticket-id="${t.id}">Resolver</button></div>`:''}</div>`; $('#ticketDrawerBackdrop').hidden=false; document.body.style.overflow='hidden'; }
@@ -179,8 +339,22 @@ document.addEventListener('click',e=>{
   const ticket=e.target.closest('[data-ticket]'); if(ticket) openTicket(ticket.dataset.ticket);
   const status=e.target.closest('[data-ticket-status]'); if(status) changeTicketStatus(status.dataset.ticketId,status.dataset.ticketStatus);
   const cat=e.target.closest('[data-category]'); if(cat) renderCatalog(cat.dataset.category);
+  const calNav=e.target.closest('[data-calendar-nav]'); if(calNav) calendarNavigate(calNav.dataset.calendarNav);
+  const calView=e.target.closest('[data-calendar-view]'); if(calView){calendarState.view=calView.dataset.calendarView;renderCalendar();}
+  const calDate=e.target.closest('[data-calendar-date]'); if(calDate){calendarState.date=calDate.dataset.calendarDate;calendarState.view='day';renderCalendar();}
+  const openDate=e.target.closest('[data-calendar-open-date]'); if(openDate){const input=$('#calendarNativeDate'); if(input?.showPicker)input.showPicker(); else input?.click();}
+  const quickSlot=e.target.closest('[data-quick-slot]'); if(quickSlot) reserveQuickSlot(quickSlot.dataset.quickSlot);
+  const scheduleEvent=e.target.closest('[data-schedule-event]'); if(scheduleEvent){const ev=scheduleEvents.find(x=>x.id===scheduleEvent.dataset.scheduleEvent);if(ev?.ticket)openTicket(ev.ticket);else if(ev)showToast(ev.title,`${personById(ev.person)?.name||''} · ${formatTime(ev.start)} a ${formatTime(ev.end)}.`);}
 });
-document.addEventListener('change',e=>{ if(e.target.name==='assignee'){wizard.assignee=e.target.value;$('#summaryAssignee').textContent=personById(wizard.assignee)?.name||'Por definir';} if(e.target.id==='roleSelect')setRole(e.target.value); });
+document.addEventListener('change',e=>{
+  if(e.target.name==='assignee'){wizard.assignee=e.target.value;$('#summaryAssignee').textContent=personById(wizard.assignee)?.name||'Por definir';}
+  if(e.target.id==='roleSelect')setRole(e.target.value);
+  if(e.target.id==='calendarServiceFilter'){calendarState.service=e.target.value;renderCalendar();}
+  if(e.target.id==='calendarDuration'){calendarState.duration=Number(e.target.value);renderCalendar();}
+  if(e.target.id==='calendarTeamFilter'){calendarState.team=e.target.value;renderCalendar();}
+  if(e.target.id==='calendarAvailableOnly'){calendarState.availableOnly=e.target.checked;renderCalendar();}
+  if(e.target.id==='calendarNativeDate'){calendarState.date=e.target.value;renderCalendar();}
+});
 $('#menuToggle').addEventListener('click',()=>$('#sidebar').classList.toggle('open'));
 $('#requestModalBackdrop').addEventListener('click',e=>{if(e.target.id==='requestModalBackdrop')closeRequestModal()});
 $('#ticketDrawerBackdrop').addEventListener('click',e=>{if(e.target.id==='ticketDrawerBackdrop')closeTicketDrawer()});

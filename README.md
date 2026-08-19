@@ -1,47 +1,25 @@
-# MESA 360 · Prototipo de Mesa de Ayuda para Alcaldía
+# MESA 360 · Alcaldía de San Pedro
 
-Prototipo frontend sin backend y sin Supabase. Está diseñado para abrirse directamente en navegador y servir como base funcional/visual para una futura integración con autenticación, base de datos, archivos, notificaciones y tiempo real.
+Prototipo funcional de una Mesa de Servicios Institucional para TIC, Comunicaciones, Desarrollo, Datos y servicios internos.
 
-## Cómo abrir
+## Versión 0.2 · Planificador visual
 
-Opción rápida: abrir `index.html` en Chrome/Edge.
+Esta iteración incorpora patrones de productos ITSM reconocidos: catálogo de servicios y formularios por tipo de solicitud; colas y SLA; enrutamiento por habilidad, capacidad y disponibilidad; balanceo de carga; autoservicio y agenda de recursos.
 
-Opción recomendada para desarrollo local:
+### Novedades principales
+- Planificador visual por funcionario con línea de tiempo del día.
+- Bloques libres y ocupados visibles en la misma fila.
+- Vista Día / Semana.
+- Buscador de espacios por servicio, duración y equipo.
+- Recomendaciones de los mejores horarios según competencia y carga.
+- Reserva rápida desde un bloque libre hacia el formulario de solicitud.
+- Indicadores de capacidad libre, disponibilidad actual y alta carga.
+- Filtros por Comunicaciones, TIC y Datos / Calidad.
+- Eventos de cubrimiento, soporte, desarrollo, revisión, reunión y trabajo interno.
+- Sin Supabase: datos simulados y `localStorage` para esta fase.
 
-```bash
-python -m http.server 8080
-```
+## Uso
+Abre `index.html` en un navegador moderno. No requiere instalación ni compilación.
 
-Luego visitar `http://localhost:8080`.
-
-## Incluye
-
-- Portal del funcionario.
-- Catálogo modular de servicios.
-- Solicitudes de publicaciones, cubrimientos, desarrollo, revisión, correo, equipos, conectividad, accesos, web, datos, seguridad y capacitación.
-- Formularios dinámicos según el servicio.
-- Asignación sugerida por habilidades + carga.
-- Selección manual de responsable.
-- Agenda y disponibilidad.
-- Centro de operaciones tipo tablero.
-- Seguimiento de tickets y SLA.
-- Vista de equipo y capacidad.
-- Indicadores y reportes.
-- Vista administrativa.
-- Persistencia local de solicitudes creadas mediante `localStorage`.
-- Tres perfiles de demostración: Funcionario, Gestor y Administrador.
-
-## Arquitectura futura con Supabase
-
-La siguiente fase puede incorporar:
-
-- Supabase Auth para funcionarios y roles.
-- Tablas `profiles`, `departments`, `services`, `service_fields`, `tickets`, `ticket_events`, `skills`, `staff_skills`, `availability`, `assignments`, `sla_rules`, `approvals` y `attachments`.
-- RLS por rol, dependencia y nivel de acceso.
-- Storage para evidencias y adjuntos.
-- Realtime para bandejas y cambios de estado.
-- Edge Functions para enrutamiento, notificaciones y escalamiento.
-
-## Nota
-
-Los datos actuales son ficticios y se utilizan únicamente para demostrar el flujo y el diseño.
+## Próxima fase recomendada
+Supabase Auth + tablas de perfiles, servicios, habilidades, tickets, agenda, bloqueos, SLA, aprobaciones y archivos, con RLS y Realtime.
