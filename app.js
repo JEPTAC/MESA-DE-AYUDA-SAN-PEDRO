@@ -85,7 +85,7 @@ const sampleTickets = [
 let tickets = JSON.parse(localStorage.getItem('mesa360_tickets') || 'null') || sampleTickets;
 let currentRole = 'requester';
 let wizard = {step:1, service:null, details:{}, assignee:'auto'};
-let calendarState = { date:'2026-08-19', view:'day', team:'all', service:'all', duration:60, availableOnly:false };
+let calendarState = { date:'2026-08-19', view:'day', team:'all', service:'all', duration:60, availableOnly:false, zoom:160, snap:30, focusMode:false, density:'spacious', showFree:true, scrollLeft:null };
 
 const $ = (sel, root=document) => root.querySelector(sel);
 const $$ = (sel, root=document) => [...root.querySelectorAll(sel)];
@@ -158,15 +158,18 @@ function renderCalendar(){
   const dayEvents = scheduleEvents.filter(e=>e.date===calendarState.date && visible.some(p=>p.id===e.person));
   const suggestions = findBestSlots(calendarState.date, calendarState.duration, calendarState.service, visible).slice(0,6);
   const freeHours = visible.reduce((sum,p)=>sum + freeMinutesForDay(p.id,calendarState.date)/60,0);
-  const occupiedNow = dayEvents.filter(e=>timeToMin(e.start)<=10*60+19 && timeToMin(e.end)>10*60+19).length;
-  const todayFree = visible.length-occupiedNow;
+  const now = new Date();
+  const nowMinutes = now.getHours()*60 + now.getMinutes();
+  const selectedIsToday = toISO(now)===calendarState.date;
+  const occupiedNow = selectedIsToday ? dayEvents.filter(e=>timeToMin(e.start)<=nowMinutes && timeToMin(e.end)>nowMinutes).length : 0;
+  const todayFree = selectedIsToday ? visible.length-occupiedNow : visible.filter(p=>freeMinutesForDay(p.id,calendarState.date)>0).length;
 
   $('#view-calendar').innerHTML=`
     <div class="calendar-page-head">
       <div>
-        <span class="eyebrow">PLANIFICADOR DE SERVICIOS</span>
+        <span class="eyebrow">PLANIFICADOR VISUAL DE RECURSOS</span>
         <h1>Agenda y disponibilidad</h1>
-        <p>Encuentra un espacio antes de crear la solicitud. La agenda cruza competencia, ocupación, reservas y jornada laboral para mostrar quién realmente puede atender.</p>
+        <p>Explora la agenda como una línea de tiempo: amplía el zoom, arrastra horizontalmente para moverte, filtra por servicio y reserva directamente sobre los espacios libres.</p>
       </div>
       <div class="calendar-head-actions">
         <button class="btn btn-secondary compact" data-calendar-nav="today">Hoy</button>
@@ -176,15 +179,15 @@ function renderCalendar(){
     </div>
 
     <div class="calendar-kpis">
-      <div class="calendar-kpi"><span class="kpi-icon available">✓</span><div><small>Disponibles ahora</small><strong>${Math.max(0,todayFree)} de ${visible.length}</strong><span>${occupiedNow} con actividad en curso</span></div></div>
+      <div class="calendar-kpi"><span class="kpi-icon available">✓</span><div><small>${selectedIsToday?'Disponibles ahora':'Con disponibilidad'}</small><strong>${Math.max(0,todayFree)} de ${visible.length}</strong><span>${selectedIsToday?`${occupiedNow} con actividad en curso`:'Según la agenda del día'}</span></div></div>
       <div class="calendar-kpi"><span class="kpi-icon hours">◷</span><div><small>Capacidad libre del día</small><strong>${freeHours.toFixed(1)} h</strong><span>Entre el equipo visible</span></div></div>
       <div class="calendar-kpi"><span class="kpi-icon next">↗</span><div><small>Próximo espacio</small><strong>${suggestions[0]?`${formatTime(suggestions[0].start)} · ${suggestions[0].person.name.split(' ')[0]}`:'Sin espacio'}</strong><span>${suggestions[0]?suggestions[0].person.role:'Prueba otra fecha'}</span></div></div>
       <div class="calendar-kpi"><span class="kpi-icon warning">!</span><div><small>Alta carga</small><strong>${visible.filter(p=>p.load>=85).length}</strong><span>Evitar sobreasignación</span></div></div>
     </div>
 
-    <div class="scheduler-layout">
+    <div class="scheduler-layout ${calendarState.focusMode?'focus-mode':''}">
       <aside class="card scheduler-finder">
-        <div class="finder-title"><span class="finder-mark">⌕</span><div><h3>Buscar un espacio</h3><p>La forma más rápida de programar.</p></div></div>
+        <div class="finder-title"><span class="finder-mark">⌕</span><div><h3>Buscar un espacio</h3><p>Filtra y encuentra la mejor combinación.</p></div></div>
         <label>¿Qué necesitas?</label>
         <select class="finder-control" id="calendarServiceFilter">
           <option value="all">Cualquier servicio</option>
@@ -200,35 +203,121 @@ function renderCalendar(){
         <button class="btn btn-primary finder-create" data-action="open-new-request">＋ Crear solicitud sin reservar</button>
       </aside>
 
-      <section class="card scheduler-main">
-        <div class="scheduler-toolbar">
+      <section class="card scheduler-main density-${calendarState.density}">
+        <div class="scheduler-toolbar scheduler-toolbar-primary">
           <div class="view-segment"><button class="${calendarState.view==='day'?'active':''}" data-calendar-view="day">Día</button><button class="${calendarState.view==='week'?'active':''}" data-calendar-view="week">Semana</button></div>
           <div class="scheduler-context"><span class="status-dot-live"></span><strong>${formatLongDate(date)}</strong><span>Jornada 8:00–12:00 · 1:00–5:00</span></div>
-          <div class="calendar-legend"><span><i class="legend-swatch free"></i>Libre</span><span><i class="legend-swatch busy"></i>Ocupado</span><span><i class="legend-swatch coverage"></i>Cubrimiento</span><span><i class="legend-swatch meeting"></i>Reunión</span></div>
+          <button class="scheduler-tool ${calendarState.focusMode?'active':''}" data-calendar-focus title="Oculta el buscador y amplía el cronograma">${calendarState.focusMode?'⊞':'⊟'} ${calendarState.focusMode?'Mostrar buscador':'Vista amplia'}</button>
+        </div>
+        <div class="scheduler-commandbar">
+          ${calendarState.view==='day'?`
+            <div class="zoom-cluster" aria-label="Controles de zoom">
+              <button class="zoom-btn" data-calendar-zoom="-15" title="Alejar">−</button>
+              <div class="zoom-readout"><span>ZOOM</span><strong>${Math.round(calendarState.zoom/1.6)}%</strong></div>
+              <input id="calendarZoom" class="zoom-range" type="range" min="70" max="230" step="5" value="${calendarState.zoom}" aria-label="Zoom del cronograma">
+              <button class="zoom-btn" data-calendar-zoom="15" title="Acercar">＋</button>
+            </div>
+            <button class="scheduler-tool" data-calendar-fit title="Encajar toda la jornada">↔ Encajar día</button>
+            <button class="scheduler-tool" data-calendar-now title="Centrar la hora actual">◎ Ahora</button>
+            <label class="scheduler-inline-select"><span>Cuadrícula</span><select id="calendarSnap"><option value="15" ${calendarState.snap===15?'selected':''}>15 min</option><option value="30" ${calendarState.snap===30?'selected':''}>30 min</option><option value="60" ${calendarState.snap===60?'selected':''}>60 min</option></select></label>
+            <label class="scheduler-inline-select"><span>Filas</span><select id="calendarDensity"><option value="spacious" ${calendarState.density==='spacious'?'selected':''}>Amplias</option><option value="compact" ${calendarState.density==='compact'?'selected':''}>Compactas</option></select></label>
+            <button class="scheduler-tool ${calendarState.showFree?'active':''}" data-calendar-free-toggle>${calendarState.showFree?'✓':'○'} Espacios libres</button>
+          `:''}
+          <div class="calendar-legend"><span><i class="legend-swatch free"></i>Libre</span><span><i class="legend-swatch busy"></i>Soporte / trabajo</span><span><i class="legend-swatch coverage"></i>Cubrimiento</span><span><i class="legend-swatch meeting"></i>Reunión</span></div>
         </div>
         ${calendarState.view==='day'?renderDayScheduler(visible,calendarState.date):renderWeekScheduler(visible,date)}
+        ${calendarState.view==='day'?`<div class="scheduler-help"><span>✋ Arrastra el fondo para moverte</span><span>⇧ + rueda: desplazamiento horizontal</span><span>Ctrl + rueda: zoom</span><span>+ / −: zoom · 0: encajar · N: ahora · F: ampliar</span><span>Haz clic en un bloque verde para reservar</span></div>`:''}
       </section>
     </div>`;
+  requestAnimationFrame(restoreCalendarViewport);
 }
 
 function renderDayScheduler(people,date){
-  const timelineStart=8*60, timelineEnd=17*60, total=timelineEnd-timelineStart;
+  const timelineStart=8*60, timelineEnd=17*60, totalMinutes=timelineEnd-timelineStart;
+  const hourWidth=calendarState.zoom, timelineWidth=(totalMinutes/60)*hourWidth;
   const ticks=[]; for(let h=8;h<=17;h++)ticks.push(h);
-  const rows=people.filter(p=>!calendarState.availableOnly || freeMinutesForDay(p.id,date)>=calendarState.duration).map(p=>{
+  const minor=[];
+  for(let m=timelineStart;m<=timelineEnd;m+=calendarState.snap){
+    if(m%60!==0) minor.push(m);
+  }
+  const now=new Date();
+  const showNow=toISO(now)===date && now.getHours()*60+now.getMinutes()>=timelineStart && now.getHours()*60+now.getMinutes()<=timelineEnd;
+  const nowMinute=now.getHours()*60+now.getMinutes();
+  const px = minute => ((minute-timelineStart)/60)*hourWidth;
+  const visiblePeople=people.filter(p=>!calendarState.availableOnly || freeMinutesForDay(p.id,date)>=calendarState.duration);
+  const rows=visiblePeople.map(p=>{
     const evs=scheduleEvents.filter(e=>e.person===p.id&&e.date===date);
     const free=getFreeWindows(p.id,date,calendarState.duration);
-    return `<div class="resource-row">
-      <div class="resource-person"><div class="avatar resource-avatar">${p.initials}</div><div class="resource-copy"><strong>${p.name}</strong><span>${p.role}</span><div class="resource-meta"><span class="resource-load ${p.load>=85?'danger':p.load>=70?'warn':'ok'}">${p.load}% ocupado</span><span>${free.length?`${free.length} espacios`:'Sin espacio'}</span></div></div></div>
-      <div class="resource-timeline">
-        <div class="lunch-band" style="left:${((12*60-timelineStart)/total)*100}%;width:${(60/total)*100}%"><span>Almuerzo</span></div>
-        ${ticks.map(h=>`<div class="hour-line" style="left:${((h*60-timelineStart)/total)*100}%"></div>`).join('')}
-        ${free.map(f=>`<button class="free-window" data-quick-slot="${p.id}|${date}|${f.start}|${f.end}" style="left:${((timeToMin(f.start)-timelineStart)/total)*100}%;width:${((timeToMin(f.end)-timeToMin(f.start))/total)*100}%" title="Libre ${formatTime(f.start)} – ${formatTime(f.end)}"><span>Libre</span></button>`).join('')}
-        ${evs.map(e=>{const left=((timeToMin(e.start)-timelineStart)/total)*100,width=((timeToMin(e.end)-timeToMin(e.start))/total)*100;return `<button class="schedule-event ${e.type}" data-schedule-event="${e.id}" style="left:${Math.max(0,left)}%;width:${Math.max(3,width)}%" title="${safe(e.title)} · ${formatTime(e.start)}–${formatTime(e.end)}"><strong>${safe(e.title)}</strong><span>${formatTime(e.start)}–${formatTime(e.end)}</span></button>`}).join('')}
+    return `<div class="resource-row" style="--timeline-width:${timelineWidth}px">
+      <div class="resource-person sticky-resource"><div class="avatar resource-avatar">${p.initials}</div><div class="resource-copy"><strong>${p.name}</strong><span>${p.role}</span><div class="resource-meta"><span class="resource-load ${p.load>=85?'danger':p.load>=70?'warn':'ok'}">${p.load}% ocupado</span><span>${free.length?`${free.length} espacios`:'Sin espacio'}</span></div></div></div>
+      <div class="resource-timeline" style="width:${timelineWidth}px">
+        <div class="lunch-band" style="left:${px(12*60)}px;width:${hourWidth}px"><span>12:00–1:00 · Almuerzo</span></div>
+        ${minor.map(m=>`<div class="minor-time-line" style="left:${px(m)}px"></div>`).join('')}
+        ${ticks.map(h=>`<div class="hour-line" style="left:${px(h*60)}px"></div>`).join('')}
+        ${showNow?`<div class="now-line" style="left:${px(nowMinute)}px"><span>Ahora</span></div>`:''}
+        ${calendarState.showFree?free.map(f=>{const left=px(timeToMin(f.start)),width=((timeToMin(f.end)-timeToMin(f.start))/60)*hourWidth;return `<button class="free-window" data-quick-slot="${p.id}|${date}|${f.start}|${f.end}" style="left:${left}px;width:${width}px" title="Libre ${formatTime(f.start)} – ${formatTime(f.end)}"><strong>LIBRE</strong><span>${width>120?`${formatTime(f.start)}–${formatTime(f.end)}`:'Reservar'}</span></button>`}).join(''):''}
+        ${evs.map(e=>{const left=px(timeToMin(e.start)),width=((timeToMin(e.end)-timeToMin(e.start))/60)*hourWidth;return `<button class="schedule-event ${e.type}" data-schedule-event="${e.id}" style="left:${Math.max(0,left)}px;width:${Math.max(48,width)}px" title="${safe(e.title)} · ${formatTime(e.start)}–${formatTime(e.end)}"><strong>${safe(e.title)}</strong><span>${formatTime(e.start)}–${formatTime(e.end)}</span></button>`}).join('')}
       </div>
-      <div class="resource-next"><span>Próximo libre</span><strong>${free[0]?`${formatTime(free[0].start)}–${formatTime(free[0].end)}`:'—'}</strong><button ${free[0]?'':'disabled'} data-quick-slot="${free[0]?`${p.id}|${date}|${free[0].start}|${free[0].end}`:''}">Reservar</button></div>
+      <div class="resource-next sticky-availability"><span>Próximo libre</span><strong>${free[0]?`${formatTime(free[0].start)}–${formatTime(free[0].end)}`:'—'}</strong><button ${free[0]?'':'disabled'} data-quick-slot="${free[0]?`${p.id}|${date}|${free[0].start}|${free[0].end}`:''}">Reservar</button></div>
     </div>`;
   }).join('');
-  return `<div class="resource-header"><div>Funcionario</div><div class="timeline-labels">${ticks.slice(0,-1).map(h=>`<span>${formatTime(`${String(h).padStart(2,'0')}:00`)}</span>`).join('')}</div><div>Disponibilidad</div></div><div class="resource-board">${rows||'<div class="scheduler-empty">No hay funcionarios disponibles con los filtros actuales.</div>'}</div>`;
+  const ruler=`<div class="timeline-ruler" style="width:${timelineWidth}px">${minor.map(m=>`<div class="ruler-minor" style="left:${px(m)}px"></div>`).join('')}${ticks.map(h=>`<div class="ruler-hour" style="left:${px(h*60)}px"><strong>${formatTime(`${String(h).padStart(2,'0')}:00`)}</strong>${h<17?'<span>hora</span>':''}</div>`).join('')}${showNow?`<div class="ruler-now" style="left:${px(nowMinute)}px"></div>`:''}</div>`;
+  return `<div class="scheduler-scroll" id="resourceScroll" data-calendar-pan>
+    <div class="resource-header" style="--timeline-width:${timelineWidth}px"><div class="resource-header-person sticky-resource">Funcionario / carga</div>${ruler}<div class="resource-header-next sticky-availability">Disponibilidad</div></div>
+    <div class="resource-board">${rows||'<div class="scheduler-empty">No hay funcionarios disponibles con los filtros actuales.</div>'}</div>
+  </div>`;
+}
+
+
+function captureCalendarScroll(){ const el=$('#resourceScroll'); if(el) calendarState.scrollLeft=el.scrollLeft; }
+function setCalendarZoom(value){
+  const old=calendarState.zoom; captureCalendarScroll();
+  calendarState.zoom=Math.max(70,Math.min(230,Number(value)));
+  if(calendarState.scrollLeft!=null) calendarState.scrollLeft=calendarState.scrollLeft*(calendarState.zoom/old);
+  renderCalendar();
+}
+function fitCalendarDay(){
+  const el=$('#resourceScroll');
+  const available=(el?.clientWidth||1100)-280-185-8;
+  calendarState.scrollLeft=0;
+  calendarState.zoom=Math.max(70,Math.min(230,Math.floor(available/9)));
+  renderCalendar();
+}
+function centerCalendarMinute(minute){
+  const el=$('#resourceScroll'); if(!el)return;
+  const x=((minute-8*60)/60)*calendarState.zoom;
+  const stickyLeft=280, stickyRight=185;
+  const viewport=Math.max(300,el.clientWidth-stickyLeft-stickyRight);
+  el.scrollTo({left:Math.max(0,x-viewport/2),behavior:'smooth'});
+  calendarState.scrollLeft=Math.max(0,x-viewport/2);
+}
+function centerCalendarNow(){
+  const now=new Date();
+  const target=toISO(now)===calendarState.date ? now.getHours()*60+now.getMinutes() : 10*60;
+  centerCalendarMinute(Math.max(8*60,Math.min(17*60,target)));
+}
+function restoreCalendarViewport(){
+  const el=$('#resourceScroll'); if(!el)return;
+  initCalendarPan();
+  if(calendarState.scrollLeft!=null){ el.scrollLeft=calendarState.scrollLeft; return; }
+  const now=new Date();
+  if(toISO(now)===calendarState.date) centerCalendarNow();
+}
+function initCalendarPan(){
+  const el=$('#resourceScroll'); if(!el||el.dataset.panReady)return; el.dataset.panReady='1';
+  let dragging=false,startX=0,startScroll=0;
+  el.addEventListener('pointerdown',e=>{
+    if(e.button!==0 || e.target.closest('button,input,select,label')) return;
+    dragging=true; startX=e.clientX; startScroll=el.scrollLeft; el.classList.add('is-panning'); el.setPointerCapture?.(e.pointerId);
+  });
+  el.addEventListener('pointermove',e=>{ if(!dragging)return; el.scrollLeft=startScroll-(e.clientX-startX); calendarState.scrollLeft=el.scrollLeft; });
+  const end=e=>{ if(!dragging)return; dragging=false; el.classList.remove('is-panning'); el.releasePointerCapture?.(e.pointerId); };
+  el.addEventListener('pointerup',end); el.addEventListener('pointercancel',end);
+  el.addEventListener('scroll',()=>{calendarState.scrollLeft=el.scrollLeft},{passive:true});
+  el.addEventListener('wheel',e=>{
+    if(e.ctrlKey||e.metaKey){e.preventDefault(); setCalendarZoom(calendarState.zoom+(e.deltaY<0?10:-10));}
+    else if(e.shiftKey){e.preventDefault(); el.scrollLeft+=e.deltaY; calendarState.scrollLeft=el.scrollLeft;}
+  },{passive:false});
 }
 
 function renderWeekScheduler(people,anchor){
@@ -269,7 +358,7 @@ function reserveQuickSlot(payload){
   wizard={step:s?2:1,service:s?.id||null,details:{requester:'Secretaría General',priority:'Media',scheduledDate:date,scheduledStart:start,scheduledEnd:end},assignee:personId};
   $('#requestModalBackdrop').hidden=false;document.body.style.overflow='hidden';renderWizard();showToast('Espacio seleccionado',`${p.name} · ${formatTime(start)} a ${formatTime(end)}. Completa los detalles para crear la solicitud.`);
 }
-function calendarNavigate(dir){ const d=parseLocalDate(calendarState.date); if(dir==='today')calendarState.date='2026-08-19'; else calendarState.date=toISO(addDays(d,dir==='prev'?(calendarState.view==='week'?-7:-1):(calendarState.view==='week'?7:1))); renderCalendar(); }
+function calendarNavigate(dir){ const d=parseLocalDate(calendarState.date); if(dir==='today')calendarState.date='2026-08-19'; else calendarState.date=toISO(addDays(d,dir==='prev'?(calendarState.view==='week'?-7:-1):(calendarState.view==='week'?7:1))); calendarState.scrollLeft=null; renderCalendar(); }
 
 function renderOps(){
   const columns=[['Nuevo',['Nuevo']],['En gestión',['En gestión']],['En espera / Programado',['En espera','Programado']],['Resuelto',['Resuelto']]];
@@ -340,11 +429,16 @@ document.addEventListener('click',e=>{
   const status=e.target.closest('[data-ticket-status]'); if(status) changeTicketStatus(status.dataset.ticketId,status.dataset.ticketStatus);
   const cat=e.target.closest('[data-category]'); if(cat) renderCatalog(cat.dataset.category);
   const calNav=e.target.closest('[data-calendar-nav]'); if(calNav) calendarNavigate(calNav.dataset.calendarNav);
-  const calView=e.target.closest('[data-calendar-view]'); if(calView){calendarState.view=calView.dataset.calendarView;renderCalendar();}
-  const calDate=e.target.closest('[data-calendar-date]'); if(calDate){calendarState.date=calDate.dataset.calendarDate;calendarState.view='day';renderCalendar();}
+  const calView=e.target.closest('[data-calendar-view]'); if(calView){calendarState.view=calView.dataset.calendarView;calendarState.scrollLeft=null;renderCalendar();}
+  const calDate=e.target.closest('[data-calendar-date]'); if(calDate){calendarState.date=calDate.dataset.calendarDate;calendarState.view='day';calendarState.scrollLeft=null;renderCalendar();}
   const openDate=e.target.closest('[data-calendar-open-date]'); if(openDate){const input=$('#calendarNativeDate'); if(input?.showPicker)input.showPicker(); else input?.click();}
   const quickSlot=e.target.closest('[data-quick-slot]'); if(quickSlot) reserveQuickSlot(quickSlot.dataset.quickSlot);
   const scheduleEvent=e.target.closest('[data-schedule-event]'); if(scheduleEvent){const ev=scheduleEvents.find(x=>x.id===scheduleEvent.dataset.scheduleEvent);if(ev?.ticket)openTicket(ev.ticket);else if(ev)showToast(ev.title,`${personById(ev.person)?.name||''} · ${formatTime(ev.start)} a ${formatTime(ev.end)}.`);}
+  const zoom=e.target.closest('[data-calendar-zoom]'); if(zoom) setCalendarZoom(calendarState.zoom+Number(zoom.dataset.calendarZoom));
+  if(e.target.closest('[data-calendar-fit]')) fitCalendarDay();
+  if(e.target.closest('[data-calendar-now]')) centerCalendarNow();
+  if(e.target.closest('[data-calendar-focus]')){captureCalendarScroll();calendarState.focusMode=!calendarState.focusMode;renderCalendar();}
+  if(e.target.closest('[data-calendar-free-toggle]')){captureCalendarScroll();calendarState.showFree=!calendarState.showFree;renderCalendar();}
 });
 document.addEventListener('change',e=>{
   if(e.target.name==='assignee'){wizard.assignee=e.target.value;$('#summaryAssignee').textContent=personById(wizard.assignee)?.name||'Por definir';}
@@ -353,13 +447,27 @@ document.addEventListener('change',e=>{
   if(e.target.id==='calendarDuration'){calendarState.duration=Number(e.target.value);renderCalendar();}
   if(e.target.id==='calendarTeamFilter'){calendarState.team=e.target.value;renderCalendar();}
   if(e.target.id==='calendarAvailableOnly'){calendarState.availableOnly=e.target.checked;renderCalendar();}
-  if(e.target.id==='calendarNativeDate'){calendarState.date=e.target.value;renderCalendar();}
+  if(e.target.id==='calendarNativeDate'){calendarState.date=e.target.value;calendarState.scrollLeft=null;renderCalendar();}
+  if(e.target.id==='calendarZoom')setCalendarZoom(e.target.value);
+  if(e.target.id==='calendarSnap'){captureCalendarScroll();calendarState.snap=Number(e.target.value);renderCalendar();}
+  if(e.target.id==='calendarDensity'){captureCalendarScroll();calendarState.density=e.target.value;renderCalendar();}
 });
 $('#menuToggle').addEventListener('click',()=>$('#sidebar').classList.toggle('open'));
 $('#requestModalBackdrop').addEventListener('click',e=>{if(e.target.id==='requestModalBackdrop')closeRequestModal()});
 $('#ticketDrawerBackdrop').addEventListener('click',e=>{if(e.target.id==='ticketDrawerBackdrop')closeTicketDrawer()});
 $('#globalSearch').addEventListener('keydown',e=>{if(e.key==='Enter')globalSearch(e.target.value)});
-document.addEventListener('keydown',e=>{ if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();$('#globalSearch').focus()} if(e.key==='Escape'){closeRequestModal();closeTicketDrawer();} });
+document.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();$('#globalSearch').focus();return;}
+  if(e.key==='Escape'){closeRequestModal();closeTicketDrawer();}
+  const field=e.target?.matches?.('input,textarea,select,[contenteditable=\"true\"]');
+  const calendarActive=$('#view-calendar')?.classList.contains('active');
+  if(field||!calendarActive||calendarState.view!=='day')return;
+  if(e.key==='+'||e.key==='='){e.preventDefault();setCalendarZoom(calendarState.zoom+15);}
+  if(e.key==='-'){e.preventDefault();setCalendarZoom(calendarState.zoom-15);}
+  if(e.key==='0'){e.preventDefault();fitCalendarDay();}
+  if(e.key.toLowerCase()==='n'){e.preventDefault();centerCalendarNow();}
+  if(e.key.toLowerCase()==='f'){e.preventDefault();captureCalendarScroll();calendarState.focusMode=!calendarState.focusMode;renderCalendar();}
+});
 
 setRole('requester');
 renderHome();
