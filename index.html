@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mesa 360 · Alcaldía</title>
+  <meta name="description" content="Prototipo de mesa de ayuda modular para una alcaldía" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-mark">SP</div>
+        <div class="brand-copy">
+          <strong>MESA 360</strong>
+          <span>Alcaldía de San Pedro</span>
+        </div>
+      </div>
+
+      <div class="role-switcher">
+        <span class="role-label">Vista de demostración</span>
+        <select id="roleSelect" aria-label="Cambiar vista">
+          <option value="requester">Funcionario</option>
+          <option value="agent">Gestor</option>
+          <option value="admin">Administrador</option>
+        </select>
+      </div>
+
+      <nav class="nav-list" id="navList">
+        <button class="nav-item active" data-view="home"><span class="nav-icon">⌂</span><span>Inicio</span></button>
+        <button class="nav-item" data-view="new-request"><span class="nav-icon">＋</span><span>Nueva solicitud</span></button>
+        <button class="nav-item" data-view="my-tickets"><span class="nav-icon">▤</span><span>Mis solicitudes</span><span class="nav-badge" id="myTicketsBadge">4</span></button>
+        <button class="nav-item" data-view="calendar"><span class="nav-icon">▦</span><span>Agenda y disponibilidad</span></button>
+
+        <div class="nav-section admin-nav">OPERACIÓN</div>
+        <button class="nav-item admin-nav" data-view="ops"><span class="nav-icon">◫</span><span>Centro de operaciones</span></button>
+        <button class="nav-item admin-nav" data-view="team"><span class="nav-icon">◉</span><span>Equipo y capacidad</span></button>
+        <button class="nav-item admin-nav" data-view="catalog"><span class="nav-icon">◇</span><span>Catálogo de servicios</span></button>
+        <button class="nav-item admin-nav" data-view="reports"><span class="nav-icon">⌁</span><span>Indicadores</span></button>
+        <button class="nav-item admin-only" data-view="admin"><span class="nav-icon">⚙</span><span>Configuración</span></button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="profile-mini">
+          <div class="avatar">JP</div>
+          <div>
+            <strong>Juan Pérez</strong>
+            <span id="profileRole">Funcionario</span>
+          </div>
+          <button class="icon-btn">⋯</button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <button class="menu-toggle" id="menuToggle" aria-label="Abrir menú">☰</button>
+        <div class="breadcrumb" id="breadcrumb">Mesa 360 / Inicio</div>
+        <div class="top-actions">
+          <div class="search-box">
+            <span>⌕</span>
+            <input id="globalSearch" type="search" placeholder="Buscar solicitud, servicio o funcionario..." />
+            <kbd>Ctrl K</kbd>
+          </div>
+          <button class="icon-btn notification-btn" title="Notificaciones">♢<span class="notification-dot"></span></button>
+          <button class="btn btn-primary compact" data-action="open-new-request">＋ Crear solicitud</button>
+        </div>
+      </header>
+
+      <section class="view active" id="view-home"></section>
+      <section class="view" id="view-new-request"></section>
+      <section class="view" id="view-my-tickets"></section>
+      <section class="view" id="view-calendar"></section>
+      <section class="view" id="view-ops"></section>
+      <section class="view" id="view-team"></section>
+      <section class="view" id="view-catalog"></section>
+      <section class="view" id="view-reports"></section>
+      <section class="view" id="view-admin"></section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="requestModalBackdrop" hidden>
+    <div class="modal request-modal" role="dialog" aria-modal="true" aria-labelledby="requestModalTitle">
+      <div class="modal-header">
+        <div>
+          <span class="eyebrow">NUEVA SOLICITUD</span>
+          <h2 id="requestModalTitle">Crear solicitud</h2>
+        </div>
+        <button class="close-btn" data-action="close-request-modal">×</button>
+      </div>
+      <div class="stepper">
+        <div class="step active" data-step="1"><span>1</span><div><strong>Servicio</strong><small>Qué necesitas</small></div></div>
+        <div class="step" data-step="2"><span>2</span><div><strong>Detalles</strong><small>Información clave</small></div></div>
+        <div class="step" data-step="3"><span>3</span><div><strong>Asignación</strong><small>Responsable y fecha</small></div></div>
+      </div>
+      <div class="modal-body" id="requestWizard"></div>
+      <div class="modal-footer" id="requestWizardFooter"></div>
+    </div>
+  </div>
+
+  <div class="drawer-backdrop" id="ticketDrawerBackdrop" hidden>
+    <aside class="drawer" id="ticketDrawer"></aside>
+  </div>
+
+  <div class="toast-stack" id="toastStack"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
