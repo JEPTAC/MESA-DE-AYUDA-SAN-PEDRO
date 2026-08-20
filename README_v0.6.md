@@ -1,6 +1,6 @@
-# MESA 360 v0.6 · Administration Studio / ESM Control Plane
+# Mesa de Ayuda TIC v0.6 · Administration Studio / ESM Control Plane
 
-Versión de madurez funcional **pre-Supabase**. El propósito de esta iteración es cerrar la administración, el catálogo y el gobierno de MESA 360 antes de conectar autenticación, base de datos, RLS, Storage y Realtime.
+Versión de madurez funcional **pre-Supabase**. El propósito de esta iteración es cerrar la administración, el catálogo y el gobierno de Mesa de Ayuda TIC antes de conectar autenticación, base de datos, RLS, Storage y Realtime.
 
 ## Principio de arquitectura
 
@@ -47,7 +47,7 @@ Esta persistencia es únicamente de prototipo y no constituye seguridad.
 
 ## Uso sugerido
 
-1. Cambiar la vista de demostración a **Administrador MESA 360**.
+1. Cambiar la vista de demostración a **Administrador Mesa de Ayuda TIC**.
 2. Abrir **Administración 360**.
 3. Probar Servicios y pop-ups, Roles, Notificaciones, Plantillas, Auditoría y Matriz.
 4. Abrir **Diseñador de workflows** para configurar el ciclo de vida de un servicio.

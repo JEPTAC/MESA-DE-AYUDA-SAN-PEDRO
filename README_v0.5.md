@@ -1,4 +1,4 @@
-# MESA 360 v0.5
+# Mesa de Ayuda TIC v0.5
 
 Prototipo frontend avanzado de gestión de servicios institucionales para Alcaldía.
 

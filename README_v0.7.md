@@ -1,4 +1,4 @@
-# MESA 360 · v0.7 UX / NAV / DESIGN SYSTEM
+# Mesa de Ayuda TIC · v0.7 UX / NAV / DESIGN SYSTEM
 
 Esta versión eleva la experiencia de navegación y la capa visual del producto:
 - mayor claridad visual;

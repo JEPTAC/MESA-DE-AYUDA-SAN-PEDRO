@@ -1,7 +1,7 @@
-# MESA 360 · Alcaldía de San Pedro
+# Mesa de Ayuda TIC · Alcaldía de San Pedro
 ## Prototipo v0.4 · Service Desk Institucional
 
-MESA 360 es un prototipo frontend de mesa de servicios para la Alcaldía. Esta versión sigue trabajando **sin Supabase**: utiliza datos simulados y `localStorage` para probar la experiencia, flujos, asignación y visualización antes de conectar autenticación, PostgreSQL, Storage, RLS y Realtime.
+Mesa de Ayuda TIC es un prototipo frontend de mesa de servicios para la Alcaldía. Esta versión sigue trabajando **sin Supabase**: utiliza datos simulados y `localStorage` para probar la experiencia, flujos, asignación y visualización antes de conectar autenticación, PostgreSQL, Storage, RLS y Realtime.
 
 ### Novedades v0.4
 

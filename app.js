@@ -104,7 +104,7 @@ function setView(view){
   $$('.view').forEach(v=>v.classList.remove('active')); const target=$(`#view-${view}`); if(target) target.classList.add('active');
   $$('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.view===view));
   const names={home:'Inicio','new-request':'Nueva solicitud','my-tickets':'Mis solicitudes',calendar:'Agenda y disponibilidad',ops:'Centro de operaciones',team:'Equipo y capacidad',catalog:'Catálogo de servicios',reports:'Indicadores',admin:'Configuración'};
-  $('#breadcrumb').textContent=`Mesa 360 / ${names[view]||'Inicio'}`;
+  $('#breadcrumb').textContent=`Mesa de Ayuda TIC / ${names[view]||'Inicio'}`;
   renderView(view);
   if(innerWidth<860) $('#sidebar').classList.remove('open');
 }
@@ -470,7 +470,7 @@ document.addEventListener('keydown',e=>{
 });
 
 /* =========================================================
-   MESA 360 v0.4 · SERVICE DESK INSTITUCIONAL
+   Mesa de Ayuda TIC v0.4 · SERVICE DESK INSTITUCIONAL
    Radicación guiada, Command Center, SLA, Operación PRO y ficha 360
    ========================================================= */
 
@@ -485,7 +485,7 @@ const selfHelpGuides = {
   correo:[
     ['Verifica tu conexión','Confirma que otras páginas o aplicaciones tengan acceso a internet.'],
     ['Prueba en el navegador','Ingresa desde la versión web del correo para descartar un problema del dispositivo.'],
-    ['No compartas tu contraseña','La Mesa 360 nunca te pedirá escribir la contraseña dentro de la solicitud.']
+    ['No compartas tu contraseña','La Mesa de Ayuda TIC nunca te pedirá escribir la contraseña dentro de la solicitud.']
   ],
   internet:[
     ['Identifica el alcance','Confirma si falla solo tu equipo o también otros funcionarios de la misma zona.'],
@@ -596,7 +596,7 @@ function questionControl(q,s){
   return `<input class="guided-control" data-guide-field="${q.key}" type="${q.type}" value="${safe(value)}" placeholder="${safe(q.placeholder||'')}">`;
 }
 function renderWizardFamily(body,foot){
-  body.innerHTML=`<div class="guided-intro"><span class="guided-kicker">RADICACIÓN ASISTIDA</span><h3>¿Qué necesitas gestionar?</h3><p>No necesitas conocer el nombre técnico del servicio. Elige la opción que más se parezca a tu necesidad y MESA 360 te llevará por el camino correcto.</p></div><div class="guided-family-grid">${guidedFamilies.map(f=>`<button type="button" class="guided-family-card" data-guide-family="${f.id}"><span class="guided-family-icon">${f.icon}</span><div><h4>${f.title}</h4><p>${f.desc}</p><small>${f.services.length} servicios disponibles</small></div><span class="guided-arrow">›</span></button>`).join('')}</div><div class="guided-help-strip"><span>?</span><div><strong>¿No sabes cuál elegir?</strong><small>Usa el buscador superior o selecciona la categoría más cercana. Podrás volver atrás sin perder información.</small></div></div>`;
+  body.innerHTML=`<div class="guided-intro"><span class="guided-kicker">RADICACIÓN ASISTIDA</span><h3>¿Qué necesitas gestionar?</h3><p>No necesitas conocer el nombre técnico del servicio. Elige la opción que más se parezca a tu necesidad y Mesa de Ayuda TIC te llevará por el camino correcto.</p></div><div class="guided-family-grid">${guidedFamilies.map(f=>`<button type="button" class="guided-family-card" data-guide-family="${f.id}"><span class="guided-family-icon">${f.icon}</span><div><h4>${f.title}</h4><p>${f.desc}</p><small>${f.services.length} servicios disponibles</small></div><span class="guided-arrow">›</span></button>`).join('')}</div><div class="guided-help-strip"><span>?</span><div><strong>¿No sabes cuál elegir?</strong><small>Usa el buscador superior o selecciona la categoría más cercana. Podrás volver atrás sin perder información.</small></div></div>`;
   foot.innerHTML=`<button class="btn btn-secondary" data-action="close-request-modal">Cancelar</button><span class="guided-footer-note">La radicación aún no se ha creado</span>`;
 }
 function renderWizardService(body,foot){
@@ -636,7 +636,7 @@ function renderWizardSchedule(body,foot,s){
   const qualified=rankCandidates(s);
   const suggestions=findBestSlots(date,duration,s.id,qualified).slice(0,6);
   const selected=wizard.details.scheduledDate;
-  body.innerHTML=`<div class="guided-intro compact"><span class="guided-kicker">PROGRAMACIÓN INTELIGENTE</span><h3>${selected?'Espacio seleccionado':'Escoge un espacio disponible'}</h3><p>MESA 360 cruza la competencia requerida con agenda y carga. ${s.id==='cubrimientos'?'Para cubrimientos, la fecha del evento tiene prioridad.':'Puedes reservar ahora o dejar que el equipo gestione el horario según el SLA.'}</p></div>${selected?`<div class="selected-slot-hero"><div class="avatar">${personById(wizard.assignee)?.initials||'✓'}</div><div><span>ESPACIO RESERVADO</span><strong>${personById(wizard.assignee)?.name||'Responsable'} · ${formatTime(wizard.details.scheduledStart)}–${formatTime(wizard.details.scheduledEnd)}</strong><small>${wizard.details.scheduledDate} · ${minutesLabel(timeToMin(wizard.details.scheduledEnd)-timeToMin(wizard.details.scheduledStart))}</small></div><button data-guide-clear-slot type="button">Cambiar</button></div>`:''}<div class="guided-slot-grid">${suggestions.map((x,i)=>`<button type="button" class="guided-slot-card ${i===0?'recommended':''}" data-guide-slot="${x.person.id}|${x.date}|${x.start}|${x.end}">${i===0?'<em>MEJOR OPCIÓN</em>':''}<div class="guided-slot-time"><strong>${formatTime(x.start)}</strong><span>${formatTime(x.end)}</span></div><div class="guided-slot-person"><div class="avatar">${x.person.initials}</div><div><strong>${x.person.name}</strong><small>${x.person.role} · ${x.person.load}% ocupado</small></div></div></button>`).join('')||'<div class="guided-no-slots">No encontramos un bloque continuo con esa duración en la fecha indicada. Puedes continuar sin reservar y el equipo propondrá un horario.</div>'}</div>`;
+  body.innerHTML=`<div class="guided-intro compact"><span class="guided-kicker">PROGRAMACIÓN INTELIGENTE</span><h3>${selected?'Espacio seleccionado':'Escoge un espacio disponible'}</h3><p>Mesa de Ayuda TIC cruza la competencia requerida con agenda y carga. ${s.id==='cubrimientos'?'Para cubrimientos, la fecha del evento tiene prioridad.':'Puedes reservar ahora o dejar que el equipo gestione el horario según el SLA.'}</p></div>${selected?`<div class="selected-slot-hero"><div class="avatar">${personById(wizard.assignee)?.initials||'✓'}</div><div><span>ESPACIO RESERVADO</span><strong>${personById(wizard.assignee)?.name||'Responsable'} · ${formatTime(wizard.details.scheduledStart)}–${formatTime(wizard.details.scheduledEnd)}</strong><small>${wizard.details.scheduledDate} · ${minutesLabel(timeToMin(wizard.details.scheduledEnd)-timeToMin(wizard.details.scheduledStart))}</small></div><button data-guide-clear-slot type="button">Cambiar</button></div>`:''}<div class="guided-slot-grid">${suggestions.map((x,i)=>`<button type="button" class="guided-slot-card ${i===0?'recommended':''}" data-guide-slot="${x.person.id}|${x.date}|${x.start}|${x.end}">${i===0?'<em>MEJOR OPCIÓN</em>':''}<div class="guided-slot-time"><strong>${formatTime(x.start)}</strong><span>${formatTime(x.end)}</span></div><div class="guided-slot-person"><div class="avatar">${x.person.initials}</div><div><strong>${x.person.name}</strong><small>${x.person.role} · ${x.person.load}% ocupado</small></div></div></button>`).join('')||'<div class="guided-no-slots">No encontramos un bloque continuo con esa duración en la fecha indicada. Puedes continuar sin reservar y el equipo propondrá un horario.</div>'}</div>`;
   foot.innerHTML=`<button class="btn btn-secondary" data-guide-back>← Editar información</button><div class="footer-actions"><button class="btn btn-soft" data-guide-skip-schedule>Gestionar horario después</button>${selected?'<button class="btn btn-primary" data-guide-to-assignment>Continuar →</button>':''}</div>`;
 }
 function routingReason(p,s,index){
@@ -648,7 +648,7 @@ function renderWizardAssignment(body,foot,s){
   const candidates=rankCandidates(s).slice(0,4),recommended=candidates[0];
   if(!wizard.assignee||wizard.assignee==='auto')wizard.assignee=recommended?.id||'';
   const choose=canChooseAssignee(s);
-  body.innerHTML=`<div class="guided-intro compact"><span class="guided-kicker">ENRUTAMIENTO POR COMPETENCIA + CAPACIDAD</span><h3>${choose?'Responsable recomendado':'MESA 360 asignará el responsable'}</h3><p>${choose?'Puedes conservar la recomendación o escoger otro funcionario compatible.':'Por seguridad y consistencia operativa, este servicio se enruta automáticamente al perfil competente.'}</p></div><div class="routing-explain"><span>AI</span><div><strong>¿Por qué esta recomendación?</strong><p>Se ponderan competencias del servicio, carga estimada y disponibilidad próxima. En la versión con Supabase se agregarán turnos, ausencias y reglas de escalamiento.</p></div></div><div class="guided-routing-list">${candidates.map((p,i)=>`<button type="button" class="guided-routing-card ${wizard.assignee===p.id?'selected':''} ${i===0?'recommended':''}" ${choose?`data-guide-assignee="${p.id}"`:i===0?'data-guide-assignee-auto="1"':'disabled'}><div class="avatar">${p.initials}</div><div class="guided-routing-main"><div><strong>${p.name}</strong>${i===0?'<em>RECOMENDADO</em>':''}</div><span>${p.role}</span><small>${routingReason(p,s,i)}</small></div><div class="guided-routing-cap"><b>${p.load}%</b><span>ocupado</span><i><u style="width:${p.load}%;background:${loadColor(p.load)}"></u></i></div></button>`).join('')}</div>`;
+  body.innerHTML=`<div class="guided-intro compact"><span class="guided-kicker">ENRUTAMIENTO POR COMPETENCIA + CAPACIDAD</span><h3>${choose?'Responsable recomendado':'Mesa de Ayuda TIC asignará el responsable'}</h3><p>${choose?'Puedes conservar la recomendación o escoger otro funcionario compatible.':'Por seguridad y consistencia operativa, este servicio se enruta automáticamente al perfil competente.'}</p></div><div class="routing-explain"><span>AI</span><div><strong>¿Por qué esta recomendación?</strong><p>Se ponderan competencias del servicio, carga estimada y disponibilidad próxima. En la versión con Supabase se agregarán turnos, ausencias y reglas de escalamiento.</p></div></div><div class="guided-routing-list">${candidates.map((p,i)=>`<button type="button" class="guided-routing-card ${wizard.assignee===p.id?'selected':''} ${i===0?'recommended':''}" ${choose?`data-guide-assignee="${p.id}"`:i===0?'data-guide-assignee-auto="1"':'disabled'}><div class="avatar">${p.initials}</div><div class="guided-routing-main"><div><strong>${p.name}</strong>${i===0?'<em>RECOMENDADO</em>':''}</div><span>${p.role}</span><small>${routingReason(p,s,i)}</small></div><div class="guided-routing-cap"><b>${p.load}%</b><span>ocupado</span><i><u style="width:${p.load}%;background:${loadColor(p.load)}"></u></i></div></button>`).join('')}</div>`;
   foot.innerHTML=`<button class="btn btn-secondary" data-guide-back>← Atrás</button><button class="btn btn-primary" data-guide-review>Revisar solicitud →</button>`;
 }
 function detailLabel(s,key){
@@ -703,7 +703,7 @@ function reserveQuickSlot(payload){
   wizard.assignee=personId;
   if(s){wizard.stage=selfHelpGuides[s.id]?'selfhelp':'questions';} else wizard.stage='family';
   $('#requestModalBackdrop').hidden=false;document.body.style.overflow='hidden';renderWizard();
-  showToast('Espacio preseleccionado',`${p.name} · ${formatTime(start)} a ${formatTime(end)}. MESA 360 conservará esta reserva mientras completas la solicitud.`);
+  showToast('Espacio preseleccionado',`${p.name} · ${formatTime(start)} a ${formatTime(end)}. Mesa de Ayuda TIC conservará esta reserva mientras completas la solicitud.`);
 }
 function scheduleTypeForService(id){return id==='cubrimientos'?'coverage':['correo','equipos','internet','accesos','seguridad'].includes(id)?'support':id==='desarrollo'||id==='datos'?'development':id==='revision'?'review':'internal';}
 function submitRequest(){
@@ -841,7 +841,7 @@ document.addEventListener('click',e=>{
   const answer=e.target.closest('[data-guide-answer]');if(answer){wizard.details[answer.dataset.guideKey]=answer.dataset.guideAnswer;wizard.error='';renderWizard();return;}
   if(e.target.closest('[data-guide-back]')){guidedBack();return;}
   if(e.target.closest('[data-guide-selfhelp-continue]')){wizard.selfHelpDone=true;wizard.stage='questions';wizard.questionIndex=0;renderWizard();return;}
-  if(e.target.closest('[data-guide-solved]')){closeRequestModal();showToast('Listo','No fue necesario radicar una solicitud. Si vuelve a ocurrir, MESA 360 conserva el servicio para una nueva radicación.');return;}
+  if(e.target.closest('[data-guide-solved]')){closeRequestModal();showToast('Listo','No fue necesario radicar una solicitud. Si vuelve a ocurrir, Mesa de Ayuda TIC conserva el servicio para una nueva radicación.');return;}
   if(e.target.closest('[data-guide-question-next]')){guidedQuestionNext();return;}
   const slot=e.target.closest('[data-guide-slot]');if(slot){const [person,date,start,end]=slot.dataset.guideSlot.split('|');wizard.assignee=person;Object.assign(wizard.details,{scheduledDate:date,scheduledStart:start,scheduledEnd:end});wizard.stage='assignment';renderWizard();return;}
   if(e.target.closest('[data-guide-clear-slot]')){delete wizard.details.scheduledDate;delete wizard.details.scheduledStart;delete wizard.details.scheduledEnd;wizard.assignee='auto';renderWizard();return;}
