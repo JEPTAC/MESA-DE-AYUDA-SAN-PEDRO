@@ -2,62 +2,57 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mesa de Ayuda TIC · Alcaldía</title>
-  <meta name="description" content="Prototipo de mesa de ayuda modular para una alcaldía" />
-  <link rel="stylesheet" href="styles.css" />
-  <link rel="stylesheet" href="v05.css" />
-  <link rel="stylesheet" href="v06.css" />
-  <link rel="stylesheet" href="v08.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b2863" />
+  <title>Mesa de Ayuda TIC · Alcaldía de San Pedro</title>
+  <meta name="description" content="Mesa de Ayuda TIC institucional: soporte, comunicaciones, agenda, autoservicio, activos y operación ITSM." />
+  <link rel="stylesheet" href="app.css" />
 </head>
 <body>
   <div class="app-shell">
     <aside class="sidebar" id="sidebar">
-      <div class="brand brand-san-pedro">
-        <div class="brand-logo-wrap"><img src="assets/logo-san-pedro-crop.png" alt="San Pedro · Donde nacen los sueños" /></div>
-        <div class="brand-copy">
-          <strong>Mesa de Ayuda TIC</strong>
-          <span>Alcaldía de San Pedro</span>
+      <div class="brand" aria-label="Mesa de Ayuda TIC · Alcaldía de San Pedro">
+        <div class="brand-visual"><img src="assets/logo-san-pedro.png" alt="San Pedro · Donde nacen los sueños" /></div>
+        <div class="brand-title">
+          <div class="brand-appmark">TIC</div>
+          <div><strong>Mesa de Ayuda TIC</strong><span>Alcaldía de San Pedro</span></div>
         </div>
       </div>
 
       <div class="role-switcher">
-        <span class="role-label">Vista de demostración</span>
-        <select id="roleSelect" aria-label="Cambiar vista">
-          <option value="requester">Funcionario</option>
-          <option value="agent">Gestor</option>
+        <span class="role-label">Experiencia de demostración</span>
+        <select id="roleSelect" aria-label="Cambiar perfil de demostración">
+          <option value="requester">Funcionario solicitante</option>
+          <option value="agent">Gestor de servicio</option>
           <option value="admin">Administrador</option>
         </select>
       </div>
 
-      <nav class="nav-list" id="navList">
-        <button class="nav-item active" data-view="home"><span class="nav-icon">⌂</span><span>Inicio</span></button>
-        <button class="nav-item" data-view="new-request"><span class="nav-icon">＋</span><span>Nueva solicitud</span></button>
-        <button class="nav-item" data-view="my-tickets"><span class="nav-icon">▤</span><span>Mis solicitudes</span><span class="nav-badge" id="myTicketsBadge">4</span></button>
-        <button class="nav-item" data-view="notifications"><span class="nav-icon">◌</span><span>Actualizaciones</span><span class="nav-badge" id="notificationBadge">3</span></button>
-        <button class="nav-item" data-view="knowledge"><span class="nav-icon">◈</span><span>Centro de conocimiento</span></button>
-        <button class="nav-item" data-view="status"><span class="nav-icon">◍</span><span>Estado de servicios</span></button>
-        <button class="nav-item" data-view="calendar"><span class="nav-icon">▦</span><span>Agenda y disponibilidad</span></button>
+      <nav class="nav-list" id="navList" aria-label="Navegación principal">
+        <button class="nav-item active" data-view="home"><span class="nav-icon"></span><span>Inicio</span></button>
+        <button class="nav-item" data-view="new-request"><span class="nav-icon"></span><span>Nueva solicitud</span></button>
+        <button class="nav-item" data-view="my-tickets"><span class="nav-icon"></span><span>Mis solicitudes</span><span class="nav-badge" id="myTicketsBadge">4</span></button>
+        <button class="nav-item" data-view="notifications"><span class="nav-icon"></span><span>Actualizaciones</span><span class="nav-badge" id="notificationBadge">3</span></button>
+        <button class="nav-item" data-view="knowledge"><span class="nav-icon"></span><span>Centro de conocimiento</span></button>
+        <button class="nav-item" data-view="status"><span class="nav-icon"></span><span>Estado de servicios</span></button>
+        <button class="nav-item" data-view="calendar"><span class="nav-icon"></span><span>Agenda y disponibilidad</span></button>
 
-        <div class="nav-section admin-nav">OPERACIÓN</div>
-        <button class="nav-item admin-nav" data-view="ops"><span class="nav-icon">◫</span><span>Centro de operaciones</span></button>
-        <button class="nav-item admin-nav" data-view="continuity"><span class="nav-icon">△</span><span>Incidentes, problemas y cambios</span></button>
-        <button class="nav-item admin-nav" data-view="team"><span class="nav-icon">◉</span><span>Equipo y capacidad</span></button>
-        <button class="nav-item admin-nav" data-view="assets"><span class="nav-icon">▧</span><span>Activos y CMDB</span></button>
-        <button class="nav-item admin-nav" data-view="catalog"><span class="nav-icon">◇</span><span>Catálogo de servicios</span></button>
-        <button class="nav-item admin-nav" data-view="reports"><span class="nav-icon">⌁</span><span>Indicadores</span></button>
-        <button class="nav-item admin-only" data-view="workflows"><span class="nav-icon">⌘</span><span>Diseñador de workflows</span></button>
-        <button class="nav-item admin-only" data-view="admin"><span class="nav-icon">⚙</span><span>Administración 360</span></button>
+        <div class="nav-section admin-nav">Operación</div>
+        <button class="nav-item admin-nav" data-view="ops"><span class="nav-icon"></span><span>Centro de operaciones</span></button>
+        <button class="nav-item admin-nav" data-view="continuity"><span class="nav-icon"></span><span>Incidentes, problemas y cambios</span></button>
+        <button class="nav-item admin-nav" data-view="team"><span class="nav-icon"></span><span>Equipo y capacidad</span></button>
+        <button class="nav-item admin-nav" data-view="assets"><span class="nav-icon"></span><span>Activos y CMDB</span></button>
+        <button class="nav-item admin-nav" data-view="catalog"><span class="nav-icon"></span><span>Catálogo de servicios</span></button>
+        <button class="nav-item admin-nav" data-view="reports"><span class="nav-icon"></span><span>Indicadores</span></button>
+        <button class="nav-item admin-only" data-view="workflows"><span class="nav-icon"></span><span>Diseñador de workflows</span></button>
+        <button class="nav-item admin-only" data-view="admin"><span class="nav-icon"></span><span>Administración</span></button>
       </nav>
 
       <div class="sidebar-footer">
         <div class="profile-mini">
           <div class="avatar">JP</div>
-          <div>
-            <strong>Juan Pérez</strong>
-            <span id="profileRole">Funcionario</span>
-          </div>
-          <button class="icon-btn">⋯</button>
+          <div><strong>Juan Pérez</strong><span id="profileRole">Funcionario solicitante</span></div>
+          <button class="icon-btn" aria-label="Opciones del perfil">•••</button>
         </div>
       </div>
     </aside>
@@ -67,13 +62,17 @@
         <button class="menu-toggle" id="menuToggle" aria-label="Abrir menú">☰</button>
         <div class="breadcrumb" id="breadcrumb">Mesa de Ayuda TIC / Inicio</div>
         <div class="top-actions">
-          <div class="search-box">
-            <span>⌕</span>
-            <input id="globalSearch" type="search" placeholder="Buscar solicitud, servicio o funcionario..." />
+          <div class="search-box" data-command-open title="Buscar en toda la Mesa de Ayuda TIC">
+            <span aria-hidden="true">⌕</span>
+            <input id="globalSearch" type="search" placeholder="Buscar solicitudes, servicios, respuestas o activos…" />
             <kbd>Ctrl K</kbd>
           </div>
-          <div class="a11y-tools" aria-label="Herramientas de accesibilidad"><button class="icon-btn" data-a11y="down" title="Disminuir tamaño de texto">A−</button><button class="icon-btn" data-a11y="up" title="Aumentar tamaño de texto">A+</button><button class="icon-btn" data-a11y="contrast" title="Alto contraste">◐</button></div>
-          <button class="icon-btn notification-btn" title="Actualizaciones" data-view="notifications">♢<span class="notification-dot"></span></button>
+          <div class="a11y-tools" aria-label="Accesibilidad">
+            <button class="icon-btn" data-a11y="down" title="Disminuir texto">A−</button>
+            <button class="icon-btn" data-a11y="up" title="Aumentar texto">A+</button>
+            <button class="icon-btn" data-a11y="contrast" title="Alto contraste">◐</button>
+          </div>
+          <button class="icon-btn notification-btn" title="Actualizaciones" data-view="notifications">◌<span class="notification-dot"></span></button>
           <button class="btn btn-primary compact" data-action="open-new-request">＋ Crear solicitud</button>
         </div>
       </header>
@@ -99,11 +98,8 @@
   <div class="modal-backdrop" id="requestModalBackdrop" hidden>
     <div class="modal request-modal" role="dialog" aria-modal="true" aria-labelledby="requestModalTitle">
       <div class="modal-header">
-        <div>
-          <span class="eyebrow">NUEVA SOLICITUD</span>
-          <h2 id="requestModalTitle">Crear solicitud</h2>
-        </div>
-        <button class="close-btn" data-action="close-request-modal">×</button>
+        <div><span class="eyebrow">Nueva solicitud guiada</span><h2 id="requestModalTitle">Cuéntanos qué necesitas</h2></div>
+        <button class="close-btn" data-action="close-request-modal" aria-label="Cerrar">×</button>
       </div>
       <div class="stepper guided-stepper">
         <div class="step active" data-step="1"><span>1</span><div><strong>Necesidad</strong><small>Te orientamos</small></div></div>
@@ -116,26 +112,17 @@
     </div>
   </div>
 
-  <div class="drawer-backdrop" id="ticketDrawerBackdrop" hidden>
-    <aside class="drawer" id="ticketDrawer"></aside>
-  </div>
-
+  <div class="drawer-backdrop" id="ticketDrawerBackdrop" hidden><aside class="drawer" id="ticketDrawer"></aside></div>
   <div class="toast-stack" id="toastStack"></div>
+
   <div class="modal-backdrop command-backdrop" id="commandBackdrop" hidden>
     <div class="command-palette" role="dialog" aria-modal="true" aria-labelledby="commandTitle">
-      <div class="command-search-row">
-        <span class="command-symbol">⌕</span>
-        <input id="commandInput" type="search" placeholder="Busca o escribe una acción: crear cubrimiento, abrir agenda, MA-2026..." autocomplete="off" />
-        <kbd>ESC</kbd>
-      </div>
-      <div class="command-hint" id="commandTitle">CENTRO DE COMANDOS · Mesa de Ayuda TIC</div>
+      <div class="command-search-row"><span class="command-symbol">⌕</span><input id="commandInput" type="search" placeholder="Busca o escribe una acción…" autocomplete="off" /><kbd>ESC</kbd></div>
+      <div class="command-hint" id="commandTitle">Centro de comandos · Mesa de Ayuda TIC</div>
       <div class="command-results" id="commandResults"></div>
     </div>
   </div>
 
-  <script src="app.js"></script>
-  <script src="v05.js"></script>
-  <script src="v06.js"></script>
-  <script src="v08.js"></script>
+  <script src="app.bundle.js"></script>
 </body>
 </html>

@@ -1,44 +1,39 @@
-# Mesa de Ayuda TIC · Alcaldía de San Pedro
-## Prototipo v0.4 · Service Desk Institucional
+# Mesa de Ayuda TIC · Visual Rebuild 2026
 
-Mesa de Ayuda TIC es un prototipo frontend de mesa de servicios para la Alcaldía. Esta versión sigue trabajando **sin Supabase**: utiliza datos simulados y `localStorage` para probar la experiencia, flujos, asignación y visualización antes de conectar autenticación, PostgreSQL, Storage, RLS y Realtime.
+Versión reconstruida de la experiencia visual de la Mesa de Ayuda TIC de la Alcaldía de San Pedro.
 
-### Novedades v0.4
+## Qué conserva
+- Portal del funcionario.
+- Radicación guiada por pasos y preguntas condicionales.
+- Mis solicitudes y conversación por ticket.
+- Centro de conocimiento.
+- Estado de servicios.
+- Agenda y disponibilidad con zoom, paneo, vista día/semana y reservas.
+- Centro de operaciones.
+- Incidentes, problemas y cambios.
+- Equipo y capacidad.
+- Activos / CMDB.
+- Catálogo de servicios.
+- Indicadores.
+- Workflow Studio y Administración pre-Supabase.
 
-- **Radicación asistida por pop-ups**: categoría → servicio → comprobación rápida → preguntas una por una → agenda → responsable → revisión → radicación.
-- Formularios realmente distintos por servicio: publicaciones, cubrimientos, desarrollo, revisión, correo, equipos, internet, accesos, web, datos, seguridad y capacitación.
-- Explicación de por qué se solicita cada dato y validación de campos obligatorios.
-- Comprobaciones de autoservicio para correo, internet, equipos y accesos antes de generar un ticket.
-- Programación inteligente con búsqueda de espacios según competencia, carga y disponibilidad.
-- Asignación automática o seleccionable según la naturaleza del servicio.
-- Servicios con aprobación generan el estado **En aprobación** y muestran el aprobador correspondiente.
-- **Centro de Comandos** con `Ctrl + K` para buscar solicitudes, abrir vistas o iniciar un servicio.
-- **Centro de Operaciones PRO** con bandejas: Ahora, En riesgo, Aprobaciones, Programados, Sin asignar y Todos.
-- Semáforo SLA: En tiempo, En riesgo, Crítico, Pausado, En aprobación y Cumplido.
-- **Ficha 360° de solicitud** con Resumen, Actividad, SLA y Aprobación.
-- Comentarios visibles al funcionario y notas internas para gestores.
-- Aprobación operativa simulada desde la ficha de la solicitud.
-- **Calendario PRO 2.0**: zoom, paneo, escala temporal amplia y drag & drop de actividades entre funcionarios/horarios para perfiles gestores.
-- Detección de cruces al reprogramar y bloqueo de movimientos fuera de la jornada laboral.
+## Qué se reconstruyó
+- Estructura visual completa de la aplicación.
+- Identidad "Mesa de Ayuda TIC".
+- Uso del logo institucional suministrado.
+- Navegación lateral, topbar y navegación móvil.
+- Tipografía con tamaño mínimo legible.
+- Sistema SVG coherente y reconocible para navegación y servicios.
+- Botones, cards, filtros, tablas, modales, command palette y drawers.
+- Centro de conocimiento y portal de solicitudes.
+- Calendario / resource scheduler con mayor escala visual.
+- Responsive para portátil, tablet, 780/640 px y móvil.
 
-### Uso
+## Arquitectura del prototipo
+La entrega utiliza únicamente:
+- `index.html`
+- `app.css`
+- `app.bundle.js`
+- `assets/logo-san-pedro.png`
 
-1. Abre `index.html` en un navegador moderno.
-2. Cambia la vista entre **Funcionario**, **Gestor** y **Administrador** desde el selector del menú lateral.
-3. Como Funcionario, pulsa **Crear solicitud** y recorre el asistente guiado.
-4. Como Gestor, abre **Centro de Operaciones** y **Agenda y disponibilidad**.
-5. Usa `Ctrl + K` para abrir el Centro de Comandos.
-
-### Persistencia del prototipo
-
-Las solicitudes creadas se guardan en `localStorage` del navegador. Las actividades preconfiguradas del calendario son datos simulados en memoria. Esta versión no realiza llamadas externas ni requiere backend.
-
-### Próxima fase recomendada
-
-Conectar Supabase para: perfiles/roles, catálogo configurable, tickets, estados, eventos de auditoría, archivos, comentarios, aprobaciones, disponibilidad, ausencias, reglas SLA, notificaciones y seguridad RLS.
-
----
-
-## v0.6 · Administration Studio
-
-La versión v0.6 agrega el Control Plane pre-Supabase: constructor no-code de servicios/pop-ups, diseñador avanzado de workflows, RBAC simulado, notificaciones configurables, plantillas, auditoría y catálogo ESM multidependencia. Ver `README_v0.6.md` y `ADMIN_STUDIO_v0.6.md`.
+La lógica sigue siendo local/simulada. Supabase continúa deliberadamente fuera de esta fase.
