@@ -13,6 +13,22 @@ const service = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABA
   auth: { persistSession: false, autoRefreshToken: false },
 });
 
+const PRODUCTION_ROLES = ["requester","communications_agent","tic_agent","coordinator","approver","auditor","admin","super_admin"];
+
+function institutionalEmail(email: string) {
+  return /^[^@]+@sanpedro-valle\.gov\.co$/i.test(email.trim());
+}
+
+function validateRoleTeams(role: string, teams: string[]) {
+  const teamSet = new Set(teams.map((x) => x.toUpperCase()));
+  if (!PRODUCTION_ROLES.includes(role)) throw new Error(`role_not_available_for_launch:${role}`);
+  if (role === "communications_agent" && (teamSet.size !== 1 || !teamSet.has("COM"))) throw new Error("communications_agent_requires_only_COM_team");
+  if (role === "tic_agent" && (teamSet.size !== 1 || !teamSet.has("TIC"))) throw new Error("tic_agent_requires_only_TIC_team");
+  if (role === "coordinator" && teamSet.size === 0) throw new Error("coordinator_requires_team");
+  if (role === "requester" && teams.length) throw new Error("requester_must_not_have_operational_team");
+}
+
+
 type CsvRow = Record<string, string>;
 
 function parseCsv(text: string): { headers: string[]; rows: CsvRow[] } {
@@ -57,14 +73,14 @@ function scrub(row: CsvRow) {
   return copy;
 }
 
-async function authenticatedAdmin(req: Request) {
+async function authenticatedSuperAdmin(req: Request) {
   const jwt = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "").trim();
   if (!jwt) throw new Error("missing_token");
   const { data, error } = await service.auth.getUser(jwt);
   if (error || !data.user) throw new Error("invalid_token");
-  const { data: roles, error: roleError } = await service.from("user_roles").select("roles!inner(code)").eq("profile_id", data.user.id).eq("roles.code", "admin").limit(1);
+  const { data: roles, error: roleError } = await service.from("user_roles").select("roles!inner(code)").eq("profile_id", data.user.id).eq("roles.code", "super_admin").limit(1);
   if (roleError) throw roleError;
-  if (!roles?.length) throw new Error("admin_required");
+  if (!roles?.length) throw new Error("super_admin_required");
   return data.user;
 }
 
@@ -157,12 +173,24 @@ async function applyAsset(row: CsvRow, dryRun: boolean) {
 
 async function applyUser(row: CsvRow, actorId: string, dryRun: boolean) {
   if (!row.email || !row.full_name) throw new Error("email_and_full_name_required");
+  if (!institutionalEmail(row.email)) throw new Error("institutional_email_required");
   if ("password" in row || "clave" in row) throw new Error("password_columns_not_allowed_use_admin_users_function");
   const dept = row.department_code ? await departmentId(row.department_code) : null;
   const pos = row.position_code ? await positionId(row.position_code) : null;
   const roleCode = row.role_code || "requester";
   const { data: role } = await service.from("roles").select("id").eq("code", roleCode).maybeSingle();
   if (!role) throw new Error(`unknown_role:${roleCode}`);
+  const teamCodes = row.team_codes ? row.team_codes.split(/[;,]/).map((v) => v.trim().toUpperCase()).filter(Boolean) : [];
+  validateRoleTeams(roleCode, teamCodes);
+  let teams: Array<{id:string;code:string}> = [];
+  if (teamCodes.length) {
+    const { data, error } = await service.from("teams").select("id,code").in("code", teamCodes);
+    if (error) throw error;
+    teams = (data || []) as Array<{id:string;code:string}>;
+    const found = new Set(teams.map((t) => t.code));
+    const missing = teamCodes.filter((code) => !found.has(code));
+    if (missing.length) throw new Error(`unknown_teams:${missing.join(",")}`);
+  }
   if (dryRun) return;
 
   const { data: profile } = await service.from("profiles").select("id").ilike("institutional_email", row.email).maybeSingle();
@@ -182,6 +210,11 @@ async function applyUser(row: CsvRow, actorId: string, dryRun: boolean) {
   await service.from("user_roles").delete().eq("profile_id", uid);
   const { error: roleError } = await service.from("user_roles").insert({ profile_id: uid, role_id: role.id, scope_type: "global", scope_id: null, granted_by: actorId });
   if (roleError) throw roleError;
+  await service.from("team_members").delete().eq("profile_id", uid);
+  if (teams.length) {
+    const { error: teamError } = await service.from("team_members").insert(teams.map((t) => ({ team_id: t.id, profile_id: uid, member_role: "member", is_active: true })));
+    if (teamError) throw teamError;
+  }
 }
 
 Deno.serve(async (req) => {
@@ -189,7 +222,7 @@ Deno.serve(async (req) => {
   if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
   let jobId: string | null = null;
   try {
-    const caller = await authenticatedAdmin(req);
+    const caller = await authenticatedSuperAdmin(req);
     const form = await req.formData();
     const file = form.get("file");
     const entity = String(form.get("entity") || "");
@@ -242,7 +275,7 @@ Deno.serve(async (req) => {
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     if (jobId) await service.from("data_import_jobs").update({ status: "failed", summary: { error: message }, completed_at: new Date().toISOString() }).eq("id", jobId);
-    const status = ["missing_token", "invalid_token", "admin_required"].includes(message) ? 401 : 400;
+    const status = ["missing_token", "invalid_token", "super_admin_required"].includes(message) ? 401 : 400;
     return json({ error: message, job_id: jobId }, status);
   }
 });

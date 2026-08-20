@@ -1,86 +1,70 @@
-# Supabase · Mesa de Ayuda TIC v1
+# Mesa de Ayuda TIC · Supabase Native · Backend de lanzamiento
 
-Backend preparado para el proyecto objetivo de la Mesa de Ayuda TIC.
+Este paquete corresponde al backend de producción para la Mesa de Ayuda TIC de la Alcaldía de San Pedro.
 
-## Estado de aplicación
+## Principios de lanzamiento
 
-El paquete está listo para migración, pero **todavía no fue aplicado al proyecto objetivo** porque el conector Supabase disponible en esta conversación no tiene permiso sobre ese proyecto. No se incluyeron claves ni contraseñas dentro de estos archivos.
+- Sin información operativa simulada.
+- Sin usuarios, tickets, activos, correos, reservas ni métricas ficticias.
+- Supabase Auth es obligatorio antes de cargar la aplicación.
+- El menú se genera con `get_my_app_context()` según rol, equipo y permisos.
+- RLS sigue siendo la barrera de autorización aunque el frontend oculte módulos.
+- Únicamente cuentas `@sanpedro-valle.gov.co` pueden ser aprovisionadas.
+- El superadministrador inicial autorizado es el correo institucional definido en `claim_initial_admin()`.
+- La contraseña del administrador NO forma parte de este paquete.
 
-## Orden de migraciones
+## Roles de lanzamiento
 
-Ejecutar en orden los archivos de `migrations/`:
+| Rol | Experiencia principal | Equipo |
+|---|---|---|
+| `requester` | Nueva solicitud, mis solicitudes, ayuda, estado y agenda propia | Ninguno |
+| `communications_agent` | Publicaciones/cubrimientos, conocimiento y agenda del equipo | Solo `COM` |
+| `tic_agent` | Operación TIC, activos, continuidad, conocimiento y agenda del equipo | Solo `TIC` |
+| `coordinator` | Coordinación, agenda e indicadores del/los equipos asignados | 1 o más |
+| `admin` | Catálogo, workflows/SLA, configuración y auditoría | Opcional |
+| `super_admin` | Control total, usuarios, roles, importaciones y operación | Opcional |
+| `approver` | Aprobaciones autorizadas | Según configuración |
+| `auditor` | Indicadores y auditoría | Ninguno |
 
-1. `01_extensions_and_types.sql`
-2. `02_organization.sql`
-3. `03_auth_profiles_rbac.sql`
-4. `04_catalog_forms.sql`
-5. `05_tickets_core.sql`
-6. `06_messages_attachments_audit.sql`
-7. `07_skills_routing.sql`
-8. `08_calendar_capacity.sql`
-9. `09_sla.sql`
-10. `10_workflows.sql`
-11. `11_approvals.sql`
-12. `12_knowledge.sql`
-13. `13_assets_cmdb.sql`
-14. `14_itsm_continuity.sql`
-15. `15_notifications_surveys.sql`
-16. `16_functions_triggers.sql`
-17. `17_security_helpers_rls.sql`
-18. `18_storage_realtime.sql`
-19. `19_seed_core.sql`
-20. `20_validation.sql`
+## Orden de aplicación
 
-## Qué queda creado
+Aplicar `migrations/01_...sql` hasta `migrations/25_production_launch_final.sql` en orden.
 
-- organización: dependencias, cargos, equipos y miembros;
-- Auth/Profile y RBAC granular;
-- catálogo, formularios dinámicos, opciones y condiciones;
-- tickets, datos del formulario, estados, relaciones, etiquetas y watchers;
-- conversación pública vs. notas internas;
-- adjuntos privados con Supabase Storage;
-- skills y asignación por competencia/carga;
-- agenda, horarios, ausencias, reservas y festivos;
-- SLA por horas laborales, pausas y eventos;
-- workflows versionados;
-- aprobaciones y delegación;
-- conocimiento y artículos versionados;
-- activos y CMDB;
-- incidentes, problemas, cambios y estado de servicios;
-- notificaciones y encuestas CSAT;
-- auditoría;
-- RLS;
-- Realtime para tickets, mensajes, notificaciones y reservas;
-- RPCs para radicar, responder, asignar, cambiar estado, aprobar y reservar.
+Después desplegar con JWT habilitado:
 
-## Seguridad
+1. `edge-functions/admin-users`
+2. `edge-functions/bulk-import`
 
-La frontera principal es RLS. El solicitante no puede leer notas internas ni solicitudes de otros funcionarios. Los gestores acceden por asignación/equipo/permisos. Los cambios administrativos requieren permisos explícitos.
+Las migraciones crean Storage privado y agregan a Realtime las tablas operativas requeridas.
 
-## Integración frontend
+## Bootstrap inicial
 
-La carpeta `integration/` incluye una base de conexión para reemplazar gradualmente `localStorage` y los arrays simulados de la v1.0.
+1. Crear en Supabase Auth el usuario institucional superadministrador.
+2. Iniciar sesión con ese usuario.
+3. Ejecutar `rpc('claim_initial_admin')` una sola vez.
+4. Cerrar/reabrir sesión para cargar el contexto `super_admin`.
+5. Desde **Usuarios e importaciones** crear el resto de funcionarios.
 
-## Recomendación al conectar el proyecto
+## Importaciones
 
-Después de aplicar las migraciones:
+Se incluyen CSV vacíos con encabezados para:
 
-1. ejecutar `20_validation.sql`;
-2. revisar Supabase Security Advisors;
-3. crear los primeros usuarios;
-4. asignar el rol `admin` al administrador inicial mediante SQL seguro;
-5. configurar dependencias y miembros reales;
-6. conectar el frontend por módulos: Auth → Catálogo → Tickets → Mensajes → Agenda → SLA → demás módulos.
+- dependencias;
+- usuarios;
+- activos;
+- correos institucionales.
 
+La importación dispone de `dry_run`: primero valida y luego escribe.
+Las contraseñas nunca se admiten en CSV.
 
-## Actualización: administración de usuarios e importación CSV
+## Validaciones obligatorias antes de publicación
 
-Se agregaron las migraciones `21_import_center_and_email_inventory.sql` y `22_bootstrap_admin_helpers.sql`.
-
-También se prepararon dos Edge Functions:
-- `admin-users`: alta/invitación de usuarios, cambio de contraseña, roles, perfil y activación.
-- `bulk-import`: validación y carga CSV de activos, correos institucionales, usuarios y dependencias.
-
-El administrador inicial permitido por bootstrap es `adminterritorial@sanpedro-valle.gov.co`. La contraseña **no** se almacena en SQL ni en archivos; el usuario debe registrarse/autenticarse con Supabase Auth y ejecutar `claim_initial_admin()` una sola vez para reclamar el rol administrativo.
-
-Los datos operativos de activos, correos y usuarios permanecen vacíos. Se incluyen plantillas CSV solo con encabezados en `templates/`.
+- Security Advisor sin hallazgos críticos.
+- Performance Advisor revisado.
+- RLS: requester A no puede leer requester B.
+- RLS: Comunicaciones no puede leer/gestionar TIC.
+- RLS: TIC no puede leer/gestionar COM.
+- Nota interna invisible para requester.
+- `admin-users` y `bulk-import` responden 403 a no-superadmin.
+- Storage impide acceso a adjuntos de tickets no autorizados.
+- Realtime respeta el alcance RLS.

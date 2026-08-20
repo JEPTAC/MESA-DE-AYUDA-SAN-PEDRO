@@ -1,8 +1,10 @@
+-- Mesa de Ayuda TIC · Supabase Native Production
+-- Generated from ordered migrations. Apply individual migrations in production when possible.
 
--- ============================================================
+
+-- ============================================================================
 -- 01_extensions_and_types.sql
--- ============================================================
-
+-- ============================================================================
 -- Mesa de Ayuda TIC · 01_extensions_and_types.sql
 -- Base extensions and reusable domain enums.
 
@@ -33,10 +35,9 @@ end;
 $$;
 
 
--- ============================================================
+-- ============================================================================
 -- 02_organization.sql
--- ============================================================
-
+-- ============================================================================
 -- Mesa de Ayuda TIC · 02_organization.sql
 
 create table if not exists public.departments (
@@ -94,10 +95,9 @@ create trigger positions_set_updated_at before update on public.positions for ea
 create trigger teams_set_updated_at before update on public.teams for each row execute function public.set_updated_at();
 
 
--- ============================================================
+-- ============================================================================
 -- 03_auth_profiles_rbac.sql
--- ============================================================
-
+-- ============================================================================
 -- Mesa de Ayuda TIC · 03_auth_profiles_rbac.sql
 
 create table if not exists public.profiles (
@@ -204,10 +204,9 @@ after insert on auth.users
 for each row execute function public.handle_new_user();
 
 
--- ============================================================
+-- ============================================================================
 -- 04_catalog_forms.sql
--- ============================================================
-
+-- ============================================================================
 -- Mesa de Ayuda TIC · 04_catalog_forms.sql
 
 create table if not exists public.service_categories (
@@ -316,10 +315,9 @@ create trigger service_forms_set_updated_at before update on public.service_form
 create trigger service_fields_set_updated_at before update on public.service_fields for each row execute function public.set_updated_at();
 
 
--- ============================================================
+-- ============================================================================
 -- 05_tickets_core.sql
--- ============================================================
-
+-- ============================================================================
 -- Mesa de Ayuda TIC · 05_tickets_core.sql
 
 create table if not exists public.ticket_counters (
@@ -431,10 +429,9 @@ create trigger tickets_set_updated_at before update on public.tickets for each r
 create trigger ticket_field_values_set_updated_at before update on public.ticket_field_values for each row execute function public.set_updated_at();
 
 
--- ============================================================
+-- ============================================================================
 -- 06_messages_attachments_audit.sql
--- ============================================================
-
+-- ============================================================================
 -- Mesa de Ayuda TIC · 06_messages_attachments_audit.sql
 
 create table if not exists public.ticket_messages (
@@ -489,10 +486,9 @@ create index if not exists audit_events_actor_idx on public.audit_events(actor_i
 create trigger ticket_messages_set_updated_at before update on public.ticket_messages for each row execute function public.set_updated_at();
 
 
--- ============================================================
+-- ============================================================================
 -- 07_skills_routing.sql
--- ============================================================
-
+-- ============================================================================
 -- Mesa de Ayuda TIC · 07_skills_routing.sql
 
 create table if not exists public.skills (
@@ -544,10 +540,9 @@ create index if not exists ticket_assignments_ticket_idx on public.ticket_assign
 create index if not exists ticket_assignments_assignee_active_idx on public.ticket_assignments(assignee_id) where ended_at is null;
 
 
--- ============================================================
+-- ============================================================================
 -- 08_calendar_capacity.sql
--- ============================================================
-
+-- ============================================================================
 -- Mesa de Ayuda TIC · 08_calendar_capacity.sql
 
 create table if not exists public.work_schedules (
@@ -646,10 +641,9 @@ create trigger availability_blocks_set_updated_at before update on public.availa
 create trigger reservations_set_updated_at before update on public.reservations for each row execute function public.set_updated_at();
 
 
--- ============================================================
+-- ============================================================================
 -- 09_sla.sql
--- ============================================================
-
+-- ============================================================================
 -- Mesa de Ayuda TIC · 09_sla.sql
 
 create table if not exists public.sla_policies (
@@ -710,10 +704,9 @@ create index if not exists sla_events_instance_idx on public.sla_events(ticket_s
 create trigger sla_policies_set_updated_at before update on public.sla_policies for each row execute function public.set_updated_at();
 
 
--- ============================================================
+-- ============================================================================
 -- 10_workflows.sql
--- ============================================================
-
+-- ============================================================================
 -- Mesa de Ayuda TIC · 10_workflows.sql
 
 create table if not exists public.workflows (
@@ -806,10 +799,9 @@ create trigger workflows_set_updated_at before update on public.workflows for ea
 create trigger ticket_workflow_instances_set_updated_at before update on public.ticket_workflow_instances for each row execute function public.set_updated_at();
 
 
--- ============================================================
+-- ============================================================================
 -- 11_approvals.sql
--- ============================================================
-
+-- ============================================================================
 -- Mesa de Ayuda TIC · 11_approvals.sql
 
 create table if not exists public.approval_rules (
@@ -860,10 +852,9 @@ create index if not exists approval_requests_assignee_idx on public.approval_req
 create trigger approval_requests_set_updated_at before update on public.approval_requests for each row execute function public.set_updated_at();
 
 
--- ============================================================
+-- ============================================================================
 -- 12_knowledge.sql
--- ============================================================
-
+-- ============================================================================
 -- Mesa de Ayuda TIC · 12_knowledge.sql
 
 create table if not exists public.knowledge_categories (
@@ -935,10 +926,9 @@ create trigger knowledge_categories_set_updated_at before update on public.knowl
 create trigger knowledge_articles_set_updated_at before update on public.knowledge_articles for each row execute function public.set_updated_at();
 
 
--- ============================================================
+-- ============================================================================
 -- 13_assets_cmdb.sql
--- ============================================================
-
+-- ============================================================================
 -- Mesa de Ayuda TIC · 13_assets_cmdb.sql
 
 create table if not exists public.asset_types (
@@ -1033,10 +1023,9 @@ create trigger assets_set_updated_at before update on public.assets for each row
 create trigger configuration_items_set_updated_at before update on public.configuration_items for each row execute function public.set_updated_at();
 
 
--- ============================================================
+-- ============================================================================
 -- 14_itsm_continuity.sql
--- ============================================================
-
+-- ============================================================================
 -- Mesa de Ayuda TIC · 14_itsm_continuity.sql
 
 create table if not exists public.service_statuses (
@@ -1148,10 +1137,9 @@ create trigger problems_set_updated_at before update on public.problems for each
 create trigger changes_set_updated_at before update on public.changes for each row execute function public.set_updated_at();
 
 
--- ============================================================
+-- ============================================================================
 -- 15_notifications_surveys.sql
--- ============================================================
-
+-- ============================================================================
 -- Mesa de Ayuda TIC · 15_notifications_surveys.sql
 
 create table if not exists public.notification_rules (
@@ -1227,10 +1215,9 @@ create trigger notification_rules_set_updated_at before update on public.notific
 create trigger notification_preferences_set_updated_at before update on public.notification_preferences for each row execute function public.set_updated_at();
 
 
--- ============================================================
+-- ============================================================================
 -- 16_functions_triggers.sql
--- ============================================================
-
+-- ============================================================================
 -- Mesa de Ayuda TIC · 16_functions_triggers.sql
 
 create or replace function public.next_ticket_number(prefix text default 'MA')
@@ -2130,10 +2117,9 @@ $$;
 grant execute on function public.get_assignee_suggestions(uuid,timestamptz,timestamptz,integer) to authenticated;
 
 
--- ============================================================
+-- ============================================================================
 -- 17_security_helpers_rls.sql
--- ============================================================
-
+-- ============================================================================
 -- Mesa de Ayuda TIC · 17_security_helpers_rls.sql
 -- Central authorization helpers + RLS policies.
 
@@ -2424,10 +2410,10 @@ grant select, insert, update, delete on all tables in schema public to authentic
 grant usage, select on all sequences in schema public to authenticated;
 
 
--- ============================================================
--- 18_storage_realtime.sql
--- ============================================================
 
+-- ============================================================================
+-- 18_storage_realtime.sql
+-- ============================================================================
 -- Mesa de Ayuda TIC · 18_storage_realtime.sql
 
 insert into storage.buckets(id, name, public, file_size_limit, allowed_mime_types)
@@ -2496,10 +2482,9 @@ begin
 end $$;
 
 
--- ============================================================
+-- ============================================================================
 -- 19_seed_core.sql
--- ============================================================
-
+-- ============================================================================
 -- Mesa de Ayuda TIC · 19_seed_core.sql
 -- Safe seed: no auth users and no generated IDs referenced directly.
 
@@ -2893,10 +2878,9 @@ update public.services set default_effort_minutes=case code
 update public.services set allows_requester_assignee_choice=true where code='cubrimientos';
 
 
--- ============================================================
+-- ============================================================================
 -- 20_validation.sql
--- ============================================================
-
+-- ============================================================================
 -- Mesa de Ayuda TIC · 20_validation.sql
 -- Structural validation. Raises an exception if a required baseline object is missing.
 
@@ -2937,10 +2921,9 @@ begin
 end $$;
 
 
--- ============================================================
+-- ============================================================================
 -- 21_import_center_and_email_inventory.sql
--- ============================================================
-
+-- ============================================================================
 -- Mesa de Ayuda TIC · 21_import_center_and_email_inventory.sql
 -- Adds CSV import governance and an institutional e-mail inventory.
 
@@ -3125,10 +3108,9 @@ comment on table public.data_import_jobs is 'Auditable CSV import jobs initiated
 comment on table public.institutional_email_accounts is 'Inventory of municipal institutional email accounts; authentication secrets are never stored here.';
 
 
--- ============================================================
+-- ============================================================================
 -- 22_bootstrap_admin_helpers.sql
--- ============================================================
-
+-- ============================================================================
 -- Mesa de Ayuda TIC · 22_bootstrap_admin_helpers.sql
 -- Safe bootstrap: does NOT store or embed any password.
 
@@ -3196,3 +3178,714 @@ $$;
 
 revoke all on function public.is_admin_user(uuid) from public;
 grant execute on function public.is_admin_user(uuid) to authenticated;
+
+
+-- ============================================================================
+-- 23_launch_access_model.sql
+-- ============================================================================
+-- Mesa de Ayuda TIC · 23_launch_access_model.sql
+-- Production access model: session bootstrap, module visibility and team-scoped operations.
+
+insert into public.roles(code,name,description,is_system) values
+('super_admin','Superadministrador','Control total de la Mesa de Ayuda TIC, usuarios, seguridad y configuración.',true),
+('tic_agent','Gestor TIC','Opera únicamente servicios y tickets de los equipos TIC a los que pertenece.',true),
+('communications_agent','Gestor de Comunicaciones','Opera únicamente publicaciones, cubrimientos y servicios del equipo de Comunicaciones.',true),
+('coordinator','Coordinador de servicio','Coordina colas, asignaciones y capacidad dentro de sus equipos.',true)
+on conflict (code) do update set name=excluded.name,description=excluded.description,is_system=true;
+
+-- The generic agent role must never have global ticket visibility.
+delete from public.role_permissions rp
+using public.roles r, public.permissions p
+where rp.role_id=r.id and rp.permission_id=p.id
+  and r.code in ('agent','tic_agent','communications_agent','coordinator')
+  and p.code in ('tickets.read.all','tickets.manage.all');
+
+-- Rebuild administrator grants as configuration administration, not root access.
+delete from public.role_permissions rp
+using public.roles r
+where rp.role_id=r.id and r.code='admin';
+
+insert into public.role_permissions(role_id,permission_id)
+select r.id,p.id from public.roles r cross join public.permissions p
+where r.code='super_admin'
+on conflict do nothing;
+
+insert into public.role_permissions(role_id,permission_id)
+select r.id,p.id from public.roles r join public.permissions p on p.code in (
+  'catalog.manage','sla.manage','workflow.read','workflow.manage','knowledge.manage',
+  'notifications.manage','reports.read','audit.read','admin.settings'
+) where r.code='admin'
+on conflict do nothing;
+
+insert into public.role_permissions(role_id,permission_id)
+select r.id,p.id from public.roles r join public.permissions p on p.code in (
+  'directory.read','tickets.assign','tickets.internal_notes'
+) where r.code in ('agent','communications_agent')
+on conflict do nothing;
+
+insert into public.role_permissions(role_id,permission_id)
+select r.id,p.id from public.roles r join public.permissions p on p.code in (
+  'directory.read','tickets.assign','tickets.internal_notes','assets.read','itsm.read'
+) where r.code='tic_agent'
+on conflict do nothing;
+
+insert into public.role_permissions(role_id,permission_id)
+select r.id,p.id from public.roles r join public.permissions p on p.code in (
+  'directory.read','tickets.assign','tickets.internal_notes','reports.read'
+) where r.code='coordinator'
+on conflict do nothing;
+
+create table if not exists public.app_modules (
+  code text primary key,
+  label text not null,
+  description text,
+  icon text,
+  section text not null default 'general',
+  sort_order integer not null default 0,
+  is_active boolean not null default true,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.role_modules (
+  role_id uuid not null references public.roles(id) on delete cascade,
+  module_code text not null references public.app_modules(code) on delete cascade,
+  primary key(role_id,module_code)
+);
+
+create table if not exists public.team_modules (
+  team_id uuid not null references public.teams(id) on delete cascade,
+  module_code text not null references public.app_modules(code) on delete cascade,
+  primary key(team_id,module_code)
+);
+
+drop trigger if exists app_modules_set_updated_at on public.app_modules;
+create trigger app_modules_set_updated_at before update on public.app_modules
+for each row execute function public.set_updated_at();
+
+insert into public.app_modules(code,label,description,icon,section,sort_order) values
+('home','Inicio','Resumen personal y accesos principales.','home','general',10),
+('new_request','Nueva solicitud','Radicación guiada desde el catálogo institucional.','plus-circle','general',20),
+('my_requests','Mis solicitudes','Seguimiento de las solicitudes propias.','inbox','general',30),
+('notifications','Notificaciones','Actualizaciones de solicitudes y acciones pendientes.','bell','general',40),
+('knowledge','Centro de ayuda','Artículos y soluciones institucionales.','book-open','general',50),
+('service_status','Estado de servicios','Disponibilidad y afectaciones de servicios.','activity','general',60),
+('my_calendar','Mi agenda','Reservas y actividades asociadas al usuario.','calendar','general',70),
+('communications','Comunicaciones','Publicaciones, cubrimientos y servicios del equipo de Comunicaciones.','megaphone','operation',100),
+('operations','Operación TIC','Colas y tickets operativos de los equipos TIC.','headphones','operation',110),
+('team_calendar','Agenda del equipo','Planificador real de reservas y capacidad del equipo.','calendar-days','operation',120),
+('continuity','Incidentes y continuidad','Incidentes, problemas y cambios autorizados.','shield-alert','operation',130),
+('assets','Activos y CMDB','Inventario y elementos de configuración autorizados.','monitor','operation',140),
+('reports','Indicadores','Indicadores calculados con información real.','chart','management',200),
+('catalog','Catálogo y formularios','Administración de servicios y formularios.','layers','admin',300),
+('workflows','Workflows y SLA','Configuración de procesos, aprobaciones y niveles de servicio.','workflow','admin',310),
+('admin_settings','Configuración','Parámetros institucionales de la Mesa.','settings','admin',320),
+('admin_users','Usuarios e importaciones','Usuarios, roles, equipos e importaciones CSV.','users','admin',330),
+('audit','Auditoría','Trazabilidad administrativa y de seguridad.','file-search','admin',340)
+on conflict (code) do update set label=excluded.label,description=excluded.description,icon=excluded.icon,section=excluded.section,sort_order=excluded.sort_order,is_active=true;
+
+-- Everyone authenticated starts as requester and receives only the self-service experience.
+insert into public.role_modules(role_id,module_code)
+select r.id,m.code from public.roles r join public.app_modules m on m.code in (
+  'home','new_request','my_requests','notifications','knowledge','service_status','my_calendar'
+) where r.code='requester'
+on conflict do nothing;
+
+insert into public.role_modules(role_id,module_code)
+select r.id,m.code from public.roles r join public.app_modules m on m.code in (
+  'home','new_request','my_requests','notifications','knowledge','service_status','my_calendar','team_calendar'
+) where r.code in ('agent','tic_agent','communications_agent','coordinator')
+on conflict do nothing;
+
+insert into public.role_modules(role_id,module_code)
+select r.id,m.code from public.roles r join public.app_modules m on m.code in (
+  'home','new_request','my_requests','notifications','knowledge','service_status','my_calendar','reports','catalog','workflows','admin_settings','audit'
+) where r.code='admin'
+on conflict do nothing;
+
+insert into public.role_modules(role_id,module_code)
+select r.id,m.code from public.roles r cross join public.app_modules m
+where r.code='super_admin'
+on conflict do nothing;
+
+insert into public.role_modules(role_id,module_code)
+select r.id,m.code from public.roles r join public.app_modules m on m.code in ('home','reports','audit')
+where r.code='auditor'
+on conflict do nothing;
+
+-- Team membership is the second authorization dimension.
+insert into public.team_modules(team_id,module_code)
+select t.id,m.code from public.teams t join public.app_modules m on
+  (t.code='TIC' and m.code in ('operations','team_calendar','continuity','assets'))
+  or (t.code='COM' and m.code in ('communications','team_calendar'))
+  or (t.code='DATOS' and m.code in ('operations','team_calendar','reports'))
+on conflict do nothing;
+
+alter table public.app_modules enable row level security;
+alter table public.role_modules enable row level security;
+alter table public.team_modules enable row level security;
+
+drop policy if exists app_modules_read on public.app_modules;
+create policy app_modules_read on public.app_modules for select to authenticated using (is_active);
+drop policy if exists app_modules_manage on public.app_modules;
+create policy app_modules_manage on public.app_modules for all to authenticated
+using (public.has_permission('admin.settings')) with check (public.has_permission('admin.settings'));
+
+-- Mapping tables are intentionally not readable directly by normal clients. Context is delivered by RPC.
+drop policy if exists role_modules_manage on public.role_modules;
+create policy role_modules_manage on public.role_modules for all to authenticated
+using (public.has_permission('roles.manage')) with check (public.has_permission('roles.manage'));
+drop policy if exists team_modules_manage on public.team_modules;
+create policy team_modules_manage on public.team_modules for all to authenticated
+using (public.has_permission('teams.manage') or public.has_permission('admin.settings'))
+with check (public.has_permission('teams.manage') or public.has_permission('admin.settings'));
+
+grant select on public.app_modules to authenticated;
+grant select,insert,update,delete on public.role_modules,public.team_modules to authenticated;
+
+create or replace function public.has_role(role_code text)
+returns boolean
+language sql
+stable
+security definer
+set search_path=public
+as $$
+  select exists(
+    select 1 from public.user_roles ur join public.roles r on r.id=ur.role_id
+    where ur.profile_id=auth.uid() and r.code=role_code
+      and (ur.valid_until is null or ur.valid_until>now())
+  );
+$$;
+
+create or replace function public.get_my_app_context()
+returns jsonb
+language plpgsql
+stable
+security definer
+set search_path=public
+as $$
+declare
+  uid uuid:=auth.uid();
+  result jsonb;
+begin
+  if uid is null then raise exception 'authentication_required' using errcode='42501'; end if;
+
+  select jsonb_build_object(
+    'profile', jsonb_build_object(
+      'id',p.id,'full_name',p.full_name,'display_name',coalesce(p.display_name,p.full_name),
+      'email',p.institutional_email,'phone',p.phone,'avatar_url',p.avatar_url,'is_active',p.is_active,
+      'department',case when d.id is null then null else jsonb_build_object('id',d.id,'code',d.code,'name',d.name) end,
+      'position',case when pos.id is null then null else jsonb_build_object('id',pos.id,'code',pos.code,'name',pos.name) end
+    ),
+    'roles',coalesce((select jsonb_agg(distinct r.code order by r.code) from public.user_roles ur join public.roles r on r.id=ur.role_id where ur.profile_id=uid and (ur.valid_until is null or ur.valid_until>now())),'[]'::jsonb),
+    'permissions',coalesce((select jsonb_agg(distinct per.code order by per.code) from public.user_roles ur join public.role_permissions rp on rp.role_id=ur.role_id join public.permissions per on per.id=rp.permission_id where ur.profile_id=uid and (ur.valid_until is null or ur.valid_until>now())),'[]'::jsonb),
+    'teams',coalesce((select jsonb_agg(jsonb_build_object('id',t.id,'code',t.code,'name',t.name) order by t.name) from public.team_members tm join public.teams t on t.id=tm.team_id where tm.profile_id=uid and tm.is_active and (tm.valid_from is null or tm.valid_from<=current_date) and (tm.valid_to is null or tm.valid_to>=current_date)),'[]'::jsonb),
+    'modules',coalesce((
+      select jsonb_agg(module_row.code order by module_row.sort_order)
+      from (
+        select distinct m.code,m.sort_order
+        from public.app_modules m
+        where m.is_active and (
+          exists(select 1 from public.user_roles ur join public.role_modules rm on rm.role_id=ur.role_id where ur.profile_id=uid and rm.module_code=m.code and (ur.valid_until is null or ur.valid_until>now()))
+          or exists(select 1 from public.team_members tm join public.team_modules tmm on tmm.team_id=tm.team_id where tm.profile_id=uid and tm.is_active and tmm.module_code=m.code and (tm.valid_from is null or tm.valid_from<=current_date) and (tm.valid_to is null or tm.valid_to>=current_date))
+        )
+      ) module_row
+    ),'[]'::jsonb),
+    'operational_services',coalesce((
+      select jsonb_agg(jsonb_build_object('id',s.id,'code',s.code,'name',s.name,'team_id',s.owner_team_id) order by s.name)
+      from public.services s
+      where s.is_active and s.is_published and exists(
+        select 1 from public.team_members tm where tm.profile_id=uid and tm.team_id=s.owner_team_id and tm.is_active
+      )
+    ),'[]'::jsonb)
+  ) into result
+  from public.profiles p
+  left join public.departments d on d.id=p.department_id
+  left join public.positions pos on pos.id=p.position_id
+  where p.id=uid;
+
+  if result is null then
+    return jsonb_build_object('profile',null,'roles','[]'::jsonb,'permissions','[]'::jsonb,'teams','[]'::jsonb,'modules','[]'::jsonb,'operational_services','[]'::jsonb);
+  end if;
+  return result;
+end;
+$$;
+
+create or replace function public.get_accessible_tickets(p_limit integer default 200, p_offset integer default 0)
+returns table(
+  id uuid,ticket_number text,subject text,description text,status text,priority text,approval_status text,
+  service_id uuid,service_code text,service_name text,current_team_id uuid,team_name text,
+  requester_id uuid,requester_name text,current_assignee_id uuid,assignee_name text,
+  scheduled_start_at timestamptz,scheduled_end_at timestamptz,due_at timestamptz,last_activity_at timestamptz,created_at timestamptz
+)
+language sql
+stable
+security definer
+set search_path=public
+as $$
+  select t.id,t.ticket_number,t.subject,t.description,t.status,t.priority,t.approval_status,
+    s.id,s.code,s.name,t.current_team_id,tm.name,t.requester_id,coalesce(req.display_name,req.full_name),
+    t.current_assignee_id,coalesce(ass.display_name,ass.full_name),t.scheduled_start_at,t.scheduled_end_at,t.due_at,t.last_activity_at,t.created_at
+  from public.tickets t
+  join public.services s on s.id=t.service_id
+  left join public.teams tm on tm.id=t.current_team_id
+  left join public.profiles req on req.id=t.requester_id
+  left join public.profiles ass on ass.id=t.current_assignee_id
+  where public.can_access_ticket(t.id)
+  order by t.last_activity_at desc
+  limit least(greatest(coalesce(p_limit,200),1),500)
+  offset greatest(coalesce(p_offset,0),0);
+$$;
+
+create or replace function public.get_ticket_detail(p_ticket_id uuid)
+returns jsonb
+language plpgsql
+stable
+security definer
+set search_path=public
+as $$
+declare result jsonb;
+begin
+  if auth.uid() is null or not public.can_access_ticket(p_ticket_id) then
+    raise exception 'ticket_access_denied' using errcode='42501';
+  end if;
+
+  select jsonb_build_object(
+    'ticket',jsonb_build_object(
+      'id',t.id,'ticket_number',t.ticket_number,'subject',t.subject,'description',t.description,'status',t.status,'priority',t.priority,
+      'approval_status',t.approval_status,'created_at',t.created_at,'last_activity_at',t.last_activity_at,'due_at',t.due_at,
+      'scheduled_start_at',t.scheduled_start_at,'scheduled_end_at',t.scheduled_end_at,'resolution_summary',t.resolution_summary,
+      'requester_id',t.requester_id,'requester_name',coalesce(req.display_name,req.full_name),
+      'assignee_id',t.current_assignee_id,'assignee_name',coalesce(ass.display_name,ass.full_name),
+      'team_id',t.current_team_id,'team_name',team.name,'service_id',s.id,'service_code',s.code,'service_name',s.name
+    ),
+    'can_manage',public.can_manage_ticket(t.id),
+    'can_internal',public.can_view_internal_ticket_content(t.id),
+    'fields',coalesce((select jsonb_agg(jsonb_build_object('key',v.field_key,'label',coalesce(v.field_label,v.field_key),'value',v.value) order by v.created_at) from public.ticket_field_values v where v.ticket_id=t.id),'[]'::jsonb),
+    'messages',coalesce((select jsonb_agg(jsonb_build_object('id',m.id,'type',m.message_type,'visibility',m.visibility,'body',m.body,'created_at',m.created_at,'author_id',m.author_id,'author_name',coalesce(ap.display_name,ap.full_name,'Sistema')) order by m.created_at) from public.ticket_messages m left join public.profiles ap on ap.id=m.author_id where m.ticket_id=t.id and (m.visibility='public' or public.can_view_internal_ticket_content(t.id))),'[]'::jsonb),
+    'history',coalesce((select jsonb_agg(jsonb_build_object('from',h.from_status,'to',h.to_status,'reason',h.reason,'created_at',h.created_at,'changed_by',coalesce(hp.display_name,hp.full_name)) order by h.created_at) from public.ticket_status_history h left join public.profiles hp on hp.id=h.changed_by where h.ticket_id=t.id),'[]'::jsonb),
+    'sla',coalesce((select jsonb_agg(jsonb_build_object('state',i.state,'due_at',i.due_at,'completed_at',i.completed_at,'metric',st.metric,'target_minutes',st.target_minutes) order by st.metric) from public.ticket_sla_instances i join public.sla_targets st on st.id=i.target_id where i.ticket_id=t.id),'[]'::jsonb),
+    'reservations',coalesce((select jsonb_agg(jsonb_build_object('id',r.id,'start_at',r.start_at,'end_at',r.end_at,'status',r.status,'title',r.title,'location',r.location) order by r.start_at) from public.reservations r where r.ticket_id=t.id),'[]'::jsonb)
+  ) into result
+  from public.tickets t
+  join public.services s on s.id=t.service_id
+  left join public.teams team on team.id=t.current_team_id
+  left join public.profiles req on req.id=t.requester_id
+  left join public.profiles ass on ass.id=t.current_assignee_id
+  where t.id=p_ticket_id;
+
+  return result;
+end;
+$$;
+
+create or replace function public.get_ticket_assignable_people(p_ticket_id uuid)
+returns table(profile_id uuid,display_name text,team_id uuid,team_name text,is_available boolean)
+language plpgsql
+stable
+security definer
+set search_path=public
+as $$
+begin
+  if not public.can_manage_ticket(p_ticket_id) and not public.has_permission('tickets.assign') then
+    raise exception 'assignment_denied' using errcode='42501';
+  end if;
+  return query
+  select p.id,coalesce(p.display_name,p.full_name),t.id,t.name,p.is_available
+  from public.tickets tk
+  join public.team_members tm on tm.team_id=tk.current_team_id and tm.is_active
+  join public.profiles p on p.id=tm.profile_id and p.is_active
+  join public.teams t on t.id=tm.team_id
+  where tk.id=p_ticket_id
+    and (tm.valid_from is null or tm.valid_from<=current_date)
+    and (tm.valid_to is null or tm.valid_to>=current_date)
+  order by p.is_available desc,coalesce(p.display_name,p.full_name);
+end;
+$$;
+
+revoke all on function public.has_role(text) from public;
+revoke all on function public.get_my_app_context() from public;
+revoke all on function public.get_accessible_tickets(integer,integer) from public;
+revoke all on function public.get_ticket_detail(uuid) from public;
+revoke all on function public.get_ticket_assignable_people(uuid) from public;
+grant execute on function public.has_role(text),public.get_my_app_context(),public.get_accessible_tickets(integer,integer),public.get_ticket_detail(uuid),public.get_ticket_assignable_people(uuid) to authenticated;
+
+
+-- ============================================================================
+-- 24_launch_security_hardening.sql
+-- ============================================================================
+-- Mesa de Ayuda TIC · 24_launch_security_hardening.sql
+-- Least privilege corrections for production launch.
+
+-- Team membership is no longer a public authenticated directory.
+drop policy if exists team_members_read_auth on public.team_members;
+create policy team_members_read_scoped on public.team_members for select to authenticated using (
+  profile_id=auth.uid()
+  or public.has_permission('directory.read')
+  or public.has_permission('teams.manage')
+);
+
+-- Directory RPC must not leak the complete staff directory to requesters.
+create or replace function public.get_profile_directory()
+returns table(
+  id uuid,
+  display_name text,
+  full_name text,
+  avatar_url text,
+  department_id uuid,
+  position_id uuid,
+  is_available boolean
+)
+language sql
+stable
+security definer
+set search_path=public
+as $$
+  select p.id,p.display_name,p.full_name,p.avatar_url,p.department_id,p.position_id,p.is_available
+  from public.profiles p
+  where p.is_active
+    and (
+      p.id=auth.uid()
+      or public.has_permission('directory.read')
+      or public.has_permission('teams.manage')
+    )
+  order by coalesce(p.display_name,p.full_name);
+$$;
+
+-- Superadmin is the only role allowed to administer Auth users and bulk imports.
+delete from public.role_permissions rp
+using public.roles r, public.permissions p
+where rp.role_id=r.id and rp.permission_id=p.id
+  and r.code<>'super_admin' and p.code in ('users.manage','roles.manage','teams.manage','imports.manage');
+
+insert into public.role_permissions(role_id,permission_id)
+select r.id,p.id from public.roles r join public.permissions p on p.code in ('users.manage','roles.manage','teams.manage','imports.manage')
+where r.code='super_admin'
+on conflict do nothing;
+
+-- Initial bootstrap grants root role instead of the legacy admin role.
+create or replace function public.claim_initial_admin()
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_uid uuid := auth.uid();
+  v_email text := lower(coalesce(auth.jwt()->>'email',''));
+  v_role_id uuid;
+begin
+  if v_uid is null then raise exception 'authentication_required' using errcode='42501'; end if;
+  if v_email <> 'adminterritorial@sanpedro-valle.gov.co' then
+    raise exception 'bootstrap_admin_email_not_allowed' using errcode='42501';
+  end if;
+
+  select id into v_role_id from public.roles where code='super_admin';
+  if v_role_id is null then raise exception 'super_admin_role_not_seeded'; end if;
+
+  insert into public.profiles(id,full_name,display_name,institutional_email,is_active)
+  values(v_uid,'Administrador Territorial','Administrador Territorial',v_email,true)
+  on conflict(id) do update set institutional_email=excluded.institutional_email,is_active=true,updated_at=now();
+
+  insert into public.user_roles(profile_id,role_id,scope_type,scope_id,granted_by)
+  values(v_uid,v_role_id,'global',null,v_uid)
+  on conflict (profile_id,role_id,scope_type,scope_id) do nothing;
+
+  insert into public.audit_events(actor_id,entity_type,entity_id,action,new_data,context)
+  values(v_uid,'profile',v_uid::text,'bootstrap_super_admin_claimed',jsonb_build_object('email',v_email),jsonb_build_object('source','claim_initial_admin'));
+
+  return jsonb_build_object('ok',true,'profile_id',v_uid,'role','super_admin');
+end;
+$$;
+
+create or replace function public.is_admin_user(profile_uuid uuid default auth.uid())
+returns boolean
+language sql
+stable
+security definer
+set search_path=public
+as $$
+  select exists(
+    select 1 from public.user_roles ur join public.roles r on r.id=ur.role_id
+    where ur.profile_id=profile_uuid and r.code in ('super_admin','admin')
+      and (ur.valid_until is null or ur.valid_until>now())
+  );
+$$;
+
+revoke all on function public.claim_initial_admin() from public;
+revoke all on function public.is_admin_user(uuid) from public;
+grant execute on function public.claim_initial_admin(),public.is_admin_user(uuid),public.get_profile_directory() to authenticated;
+
+-- Useful indexes for the production shell.
+create index if not exists team_members_profile_active_idx on public.team_members(profile_id,is_active,team_id);
+create index if not exists user_roles_profile_valid_idx on public.user_roles(profile_id,valid_until,role_id);
+create index if not exists notifications_profile_read_idx on public.notifications(profile_id,read_at,created_at desc);
+create index if not exists reservations_profile_start_idx on public.reservations(profile_id,start_at);
+
+update public.import_templates
+set optional_headers=array['display_name','department_code','position_code','phone','role_code','team_codes','is_active'],
+    mapping_help=mapping_help || '{"team_codes":"Códigos de equipos separados por punto y coma, por ejemplo COM o TIC;DATOS.","role_code":"requester, communications_agent, tic_agent, coordinator, approver, auditor, catalog_manager, admin o super_admin."}'::jsonb
+where entity_code='users';
+
+
+-- ============================================================================
+-- 25_production_launch_final.sql
+-- ============================================================================
+-- Mesa de Ayuda TIC · 25_production_launch_final.sql
+-- Final production hardening. No demo users, tickets, assets or operational records are created here.
+
+-- 1) Make module visibility mutually aligned with the production roles.
+delete from public.role_modules rm
+using public.roles r
+where rm.role_id=r.id and r.code in (
+  'requester','agent','tic_agent','communications_agent','coordinator','admin','super_admin','auditor'
+);
+
+-- Requester: self-service only.
+insert into public.role_modules(role_id,module_code)
+select r.id,m.code from public.roles r join public.app_modules m on m.code in (
+  'home','new_request','my_requests','notifications','knowledge','service_status','my_calendar'
+) where r.code='requester'
+on conflict do nothing;
+
+-- Generic/service agents: operational shell only; team membership adds the actual work module.
+insert into public.role_modules(role_id,module_code)
+select r.id,m.code from public.roles r join public.app_modules m on m.code in (
+  'home','notifications','knowledge','team_calendar'
+) where r.code='agent'
+on conflict do nothing;
+
+-- TIC agent: no requester portal; only TIC operation plus useful support modules.
+insert into public.role_modules(role_id,module_code)
+select r.id,m.code from public.roles r join public.app_modules m on m.code in (
+  'home','notifications','knowledge','operations','team_calendar','continuity','assets'
+) where r.code='tic_agent'
+on conflict do nothing;
+
+-- Communications agent: publications/campaign coverage workspace, team agenda and supporting knowledge only.
+insert into public.role_modules(role_id,module_code)
+select r.id,m.code from public.roles r join public.app_modules m on m.code in (
+  'home','notifications','knowledge','communications','team_calendar'
+) where r.code='communications_agent'
+on conflict do nothing;
+
+-- Coordinator: visibility comes from the team; can additionally see team indicators.
+insert into public.role_modules(role_id,module_code)
+select r.id,m.code from public.roles r join public.app_modules m on m.code in (
+  'home','notifications','knowledge','team_calendar','reports'
+) where r.code='coordinator'
+on conflict do nothing;
+
+-- Configuration administrator is not automatically an operational agent.
+insert into public.role_modules(role_id,module_code)
+select r.id,m.code from public.roles r join public.app_modules m on m.code in (
+  'home','catalog','workflows','admin_settings','audit'
+) where r.code='admin'
+on conflict do nothing;
+
+insert into public.role_modules(role_id,module_code)
+select r.id,m.code from public.roles r join public.app_modules m on m.code in ('home','reports','audit')
+where r.code='auditor'
+on conflict do nothing;
+
+-- Superadmin is the only role with the complete application shell.
+insert into public.role_modules(role_id,module_code)
+select r.id,m.code from public.roles r cross join public.app_modules m
+where r.code='super_admin' and m.is_active
+on conflict do nothing;
+
+-- 2) Superadmin bootstrap is exclusive: no inherited requester role remains.
+create or replace function public.claim_initial_admin()
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_uid uuid := auth.uid();
+  v_email text := lower(coalesce(auth.jwt()->>'email',''));
+  v_role_id uuid;
+begin
+  if v_uid is null then raise exception 'authentication_required' using errcode='42501'; end if;
+  if v_email <> 'adminterritorial@sanpedro-valle.gov.co' then
+    raise exception 'bootstrap_admin_email_not_allowed' using errcode='42501';
+  end if;
+
+  select id into v_role_id from public.roles where code='super_admin';
+  if v_role_id is null then raise exception 'super_admin_role_not_seeded'; end if;
+
+  insert into public.profiles(id,full_name,display_name,institutional_email,is_active)
+  values(v_uid,'Administrador Territorial','Administrador Territorial',v_email,true)
+  on conflict(id) do update set institutional_email=excluded.institutional_email,is_active=true,updated_at=now();
+
+  delete from public.user_roles where profile_id=v_uid;
+  insert into public.user_roles(profile_id,role_id,scope_type,scope_id,granted_by)
+  values(v_uid,v_role_id,'global',null,v_uid);
+
+  insert into public.audit_events(actor_id,entity_type,entity_id,action,new_data,context)
+  values(v_uid,'profile',v_uid::text,'bootstrap_super_admin_claimed',jsonb_build_object('email',v_email),jsonb_build_object('source','claim_initial_admin'));
+
+  return jsonb_build_object('ok',true,'profile_id',v_uid,'role','super_admin');
+end;
+$$;
+
+revoke all on function public.claim_initial_admin() from public;
+grant execute on function public.claim_initial_admin() to authenticated;
+
+-- 3) Ticket creation belongs to requester accounts (or superadmin for support/testing).
+create or replace function public.create_ticket(
+  p_service_code text,
+  p_subject text,
+  p_description text default null,
+  p_priority text default 'medium',
+  p_field_values jsonb default '{}'::jsonb,
+  p_department_id uuid default null
+)
+returns uuid
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  uid uuid := auth.uid();
+  service_row record;
+  ticket_id uuid;
+  kv record;
+begin
+  if uid is null then raise exception 'authentication_required' using errcode='42501'; end if;
+  if not (public.has_role('requester') or public.has_role('super_admin')) then
+    raise exception 'requester_role_required' using errcode='42501';
+  end if;
+  if not exists(select 1 from public.profiles p where p.id=uid and p.is_active) then
+    raise exception 'inactive_profile' using errcode='42501';
+  end if;
+  if nullif(btrim(p_subject),'') is null then raise exception 'subject_required'; end if;
+  if p_priority not in ('low','medium','high','critical') then raise exception 'invalid_priority'; end if;
+
+  select * into service_row from public.services where code=p_service_code and is_active and is_published;
+  if service_row.id is null then raise exception 'service_not_available'; end if;
+
+  insert into public.tickets(
+    ticket_number,requester_id,requester_department_id,service_id,current_team_id,
+    subject,description,priority,impact,urgency,status,approval_status
+  ) values (
+    public.next_ticket_number('MA'),uid,coalesce(p_department_id,(select department_id from public.profiles where id=uid)),service_row.id,service_row.owner_team_id,
+    btrim(p_subject),nullif(btrim(coalesce(p_description,'')),''),p_priority,p_priority,p_priority,
+    case when service_row.requires_approval then 'pending_approval' else 'new' end,
+    case when service_row.requires_approval then 'pending' else 'not_required' end
+  ) returning id into ticket_id;
+
+  for kv in select key,value from jsonb_each(coalesce(p_field_values,'{}'::jsonb)) loop
+    insert into public.ticket_field_values(ticket_id,field_id,field_key,field_label,value)
+    select ticket_id,sf.id,kv.key,sf.label,kv.value
+    from public.service_forms f
+    join public.service_fields sf on sf.form_id=f.id and sf.field_key=kv.key
+    where f.service_id=service_row.id and f.is_published
+    order by f.version desc limit 1
+    on conflict(ticket_id,field_key) do update set value=excluded.value,field_label=excluded.field_label,field_id=excluded.field_id;
+
+    if not found then
+      insert into public.ticket_field_values(ticket_id,field_key,value)
+      values(ticket_id,kv.key,kv.value)
+      on conflict(ticket_id,field_key) do update set value=excluded.value;
+    end if;
+  end loop;
+
+  insert into public.ticket_messages(ticket_id,author_id,message_type,visibility,body)
+  values(ticket_id,uid,'system','public','Solicitud radicada desde la Mesa de Ayuda TIC.');
+
+  return ticket_id;
+end;
+$$;
+
+-- 4) Assignment requires BOTH ticket scope and assignment permission.
+create or replace function public.assign_ticket(
+  p_ticket_id uuid,
+  p_assignee_id uuid,
+  p_team_id uuid default null,
+  p_method text default 'manual',
+  p_reason jsonb default '{}'::jsonb
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  uid uuid := auth.uid();
+  resolved_team uuid;
+begin
+  if uid is null then raise exception 'authentication_required' using errcode='42501'; end if;
+  if not public.can_manage_ticket(p_ticket_id) then raise exception 'ticket_scope_denied' using errcode='42501'; end if;
+  if not (public.has_permission('tickets.assign') or public.has_permission('tickets.manage.all')) then
+    raise exception 'assignment_permission_required' using errcode='42501';
+  end if;
+  if not exists(select 1 from public.profiles where id=p_assignee_id and is_active) then raise exception 'assignee_not_active'; end if;
+
+  resolved_team := coalesce(p_team_id,(select current_team_id from public.tickets where id=p_ticket_id));
+  if resolved_team is null then raise exception 'responsible_team_required'; end if;
+  if not exists(select 1 from public.team_members tm where tm.profile_id=p_assignee_id and tm.team_id=resolved_team and tm.is_active) then
+    raise exception 'assignee_not_in_responsible_team';
+  end if;
+
+  update public.ticket_assignments set ended_at=now() where ticket_id=p_ticket_id and ended_at is null;
+  insert into public.ticket_assignments(ticket_id,team_id,assignee_id,assigned_by,assignment_method,reason)
+  values(p_ticket_id,resolved_team,p_assignee_id,uid,p_method,p_reason);
+  update public.tickets
+  set current_team_id=resolved_team,current_assignee_id=p_assignee_id,
+      status=case when status in ('new','triage') then 'assigned' else status end,last_activity_at=now()
+  where id=p_ticket_id;
+end;
+$$;
+
+-- 5) Published catalog is self-service; operational roles do not get create RPC access without requester role.
+revoke all on function public.create_ticket(text,text,text,text,jsonb,uuid) from public;
+revoke all on function public.assign_ticket(uuid,uuid,uuid,text,jsonb) from public;
+grant execute on function public.create_ticket(text,text,text,text,jsonb,uuid) to authenticated;
+grant execute on function public.assign_ticket(uuid,uuid,uuid,text,jsonb) to authenticated;
+
+-- 6) Production role labels and import help.
+update public.roles set name='Funcionario solicitante',description='Radica y consulta únicamente sus propias solicitudes.' where code='requester';
+update public.roles set name='Gestor de Comunicaciones',description='Opera únicamente los servicios asignados al equipo de Comunicaciones.' where code='communications_agent';
+update public.roles set name='Gestor TIC',description='Opera únicamente los servicios asignados al equipo TIC.' where code='tic_agent';
+update public.roles set name='Superadministrador',description='Control total de usuarios, seguridad, configuración y operación.' where code='super_admin';
+
+update public.import_templates
+set mapping_help = mapping_help || jsonb_build_object(
+  'role_code','Roles de lanzamiento: requester, communications_agent, tic_agent, coordinator, approver, auditor, admin o super_admin.',
+  'team_codes','communications_agent debe pertenecer a COM; tic_agent debe pertenecer a TIC; coordinator puede pertenecer a uno o más equipos.'
+)
+where entity_code='users';
+
+-- 7) Only institutional accounts may be provisioned through Auth.
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if new.email is null or lower(new.email) !~ '^[^@]+@sanpedro-valle\.gov\.co$' then
+    raise exception 'institutional_email_required' using errcode='42501';
+  end if;
+
+  insert into public.profiles(id, full_name, display_name, institutional_email, metadata)
+  values (
+    new.id,
+    coalesce(new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'name', ''),
+    coalesce(new.raw_user_meta_data->>'display_name', new.raw_user_meta_data->>'full_name', new.email, ''),
+    lower(new.email),
+    coalesce(new.raw_user_meta_data, '{}'::jsonb)
+  )
+  on conflict (id) do update set institutional_email=excluded.institutional_email,updated_at=now();
+
+  insert into public.user_roles(profile_id, role_id, scope_type, scope_id)
+  select new.id,r.id,'global',null from public.roles r where r.code='requester'
+  on conflict (profile_id,role_id,scope_type,scope_id) do nothing;
+  return new;
+end;
+$$;
+
+-- 8) Requesters cannot mutate institutional authorization fields on their own profile.
+revoke update on public.profiles from authenticated;
+grant update(display_name,phone,avatar_url,timezone,locale,is_available) on public.profiles to authenticated;
+

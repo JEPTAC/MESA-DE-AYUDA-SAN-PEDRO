@@ -1,22 +1,25 @@
-01_extensions_and_types.sql
-02_organization.sql
-03_auth_profiles_rbac.sql
-04_catalog_forms.sql
-05_tickets_core.sql
-06_messages_attachments_audit.sql
-07_skills_routing.sql
-08_calendar_capacity.sql
-09_sla.sql
-10_workflows.sql
-11_approvals.sql
-12_knowledge.sql
-13_assets_cmdb.sql
-14_itsm_continuity.sql
-15_notifications_surveys.sql
-16_functions_triggers.sql
-17_security_helpers_rls.sql
-18_storage_realtime.sql
-19_seed_core.sql
-20_validation.sql
-21_import_center_and_email_inventory.sql
-22_bootstrap_admin_helpers.sql
+01. 01_extensions_and_types.sql
+02. 02_organization.sql
+03. 03_auth_profiles_rbac.sql
+04. 04_catalog_forms.sql
+05. 05_tickets_core.sql
+06. 06_messages_attachments_audit.sql
+07. 07_skills_routing.sql
+08. 08_calendar_capacity.sql
+09. 09_sla.sql
+10. 10_workflows.sql
+11. 11_approvals.sql
+12. 12_knowledge.sql
+13. 13_assets_cmdb.sql
+14. 14_itsm_continuity.sql
+15. 15_notifications_surveys.sql
+16. 16_functions_triggers.sql
+17. 17_security_helpers_rls.sql
+18. 18_storage_realtime.sql
+19. 19_seed_core.sql
+20. 20_validation.sql
+21. 21_import_center_and_email_inventory.sql
+22. 22_bootstrap_admin_helpers.sql
+23. 23_launch_access_model.sql
+24. 24_launch_security_hardening.sql
+25. 25_production_launch_final.sql
