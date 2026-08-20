@@ -103,7 +103,7 @@ function loadColor(load){ return load>=85?'#d14343':load>=70?'#d98b00':'#1557c0'
 function setView(view){
   $$('.view').forEach(v=>v.classList.remove('active')); const target=$(`#view-${view}`); if(target) target.classList.add('active');
   $$('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.view===view));
-  const names={home:'Inicio','new-request':'Nueva solicitud','my-tickets':'Mis solicitudes',calendar:'Agenda y disponibilidad',ops:'Centro de operaciones',team:'Equipo y capacidad',catalog:'Catálogo de servicios',reports:'Indicadores',admin:'Configuración'};
+  const names={home:'Inicio','new-request':'Nueva solicitud','my-tickets':'Mis solicitudes',calendar:'Agenda y disponibilidad',ops:'Centro de mando TIC',team:'Equipo y capacidad',catalog:'Catálogo de servicios',reports:'Indicadores',admin:'Configuración'};
   $('#breadcrumb').textContent=`Mesa de Ayuda TIC / ${names[view]||'Inicio'}`;
   renderView(view);
   if(innerWidth<860) $('#sidebar').classList.remove('open');
@@ -1247,7 +1247,7 @@ document.addEventListener('change',e=>{if(e.target.id==='assetTypeFilter'){asset
 const setViewV4=setView;
 setView=function(view){
   $$('.view').forEach(v=>v.classList.remove('active'));const target=$(`#view-${view}`);if(!target)return;target.classList.add('active');$$('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.view===view));
-  const names={home:'Inicio','new-request':'Nueva solicitud','my-tickets':'Mis solicitudes',notifications:'Actualizaciones',knowledge:'Centro de conocimiento',status:'Estado de servicios',calendar:'Agenda y disponibilidad',ops:'Centro de operaciones',continuity:'Incidentes, problemas y cambios',team:'Equipo y capacidad',assets:'Activos y CMDB',catalog:'Catálogo de servicios',reports:'Indicadores',workflows:'Flujos y automatización',admin:'Configuración'};$('#breadcrumb').textContent=`Mesa de Ayuda TIC / ${names[view]||'Inicio'}`;renderView(view);if(innerWidth<860)$('#sidebar').classList.remove('open');
+  const names={home:'Inicio','new-request':'Nueva solicitud','my-tickets':'Mis solicitudes',notifications:'Actualizaciones',knowledge:'Centro de conocimiento',status:'Estado de servicios',calendar:'Agenda y disponibilidad',ops:'Centro de mando TIC',continuity:'Incidentes, problemas y cambios',team:'Equipo y capacidad',assets:'Activos y CMDB',catalog:'Catálogo de servicios',reports:'Indicadores',workflows:'Flujos y automatización',admin:'Configuración'};$('#breadcrumb').textContent=`Mesa de Ayuda TIC / ${names[view]||'Inicio'}`;renderView(view);if(innerWidth<860)$('#sidebar').classList.remove('open');
 };
 
 updateBadges();
@@ -1610,7 +1610,7 @@ document.addEventListener('change',e=>{
 // Extiende renderView / breadcrumbs sin romper v0.5.
 renderView=function(view){const fn={home:renderHomeV5,'new-request':renderNewRequest,'my-tickets':renderMyTicketsV5,notifications:renderNotifications,knowledge:renderKnowledge,status:renderStatus,calendar:renderCalendar,ops:renderOps,continuity:renderContinuity,team:renderTeam,assets:renderAssets,catalog:renderCatalog,reports:renderReports,workflows:renderWorkflows,admin:renderAdmin}[view];fn?.();};
 const setViewV6Base=setView;
-setView=function(view){$$('.view').forEach(v=>v.classList.remove('active'));const target=$(`#view-${view}`);if(!target)return;target.classList.add('active');$$('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.view===view));const names={home:'Inicio','new-request':'Nueva solicitud','my-tickets':'Mis solicitudes',notifications:'Actualizaciones',knowledge:'Centro de conocimiento',status:'Estado de servicios',calendar:'Agenda y disponibilidad',ops:'Centro de operaciones',continuity:'Incidentes, problemas y cambios',team:'Equipo y capacidad',assets:'Activos y CMDB',catalog:'Catálogo multidependencia',reports:'Indicadores',workflows:'Diseñador de workflows',admin:'Administración'};$('#breadcrumb').textContent=`Mesa de Ayuda TIC / ${names[view]||'Inicio'}`;renderView(view);if(innerWidth<860)$('#sidebar').classList.remove('open');};
+setView=function(view){$$('.view').forEach(v=>v.classList.remove('active'));const target=$(`#view-${view}`);if(!target)return;target.classList.add('active');$$('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.view===view));const names={home:'Inicio','new-request':'Nueva solicitud','my-tickets':'Mis solicitudes',notifications:'Actualizaciones',knowledge:'Centro de conocimiento',status:'Estado de servicios',calendar:'Agenda y disponibilidad',ops:'Centro de mando TIC',continuity:'Incidentes, problemas y cambios',team:'Equipo y capacidad',assets:'Activos y CMDB',catalog:'Catálogo multidependencia',reports:'Indicadores',workflows:'Diseñador de workflows',admin:'Administración'};$('#breadcrumb').textContent=`Mesa de Ayuda TIC / ${names[view]||'Inicio'}`;renderView(view);if(innerWidth<860)$('#sidebar').classList.remove('open');};
 
 // Catálogo multidependencia: agrega navegación por área propietaria.
 const renderCatalogV5=renderCatalog;
@@ -1827,3 +1827,269 @@ document.addEventListener('input',e=>{
     window.addEventListener('resize',()=>{if(innerWidth>=980)q('#sidebar')?.classList.remove('open')},{passive:true});
   });
 })();
+/* =========================================================
+   Mesa de Ayuda TIC v1.0 · UX OPERATIONS
+   Workspace gestor, multi-pestañas, operación multivista,
+   calendario 3.0, timeline visual y copiloto contextual.
+   ========================================================= */
+
+const v10State = {
+  inbox:'all',
+  view:'list',
+  selected:new Set(),
+  openTabs:[],
+  activeTicket:null,
+  calendarMiniMonth:'2026-08',
+  activityFilter:'all'
+};
+
+function v10Icon(name, size=20){
+  const map={
+    inbox:'<path d="M4 5h16v14H4z"/><path d="M4 13h4l1.5 2h5L16 13h4"/>',
+    list:'<path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/>',
+    board:'<rect x="3" y="4" width="5" height="16" rx="1.5"/><rect x="10" y="4" width="5" height="10" rx="1.5"/><rect x="17" y="4" width="4" height="13" rx="1.5"/>',
+    timeline:'<path d="M4 6h6M4 12h10M4 18h15"/><circle cx="12" cy="6" r="2"/><circle cx="16" cy="12" r="2"/><circle cx="21" cy="18" r="2"/>',
+    load:'<path d="M4 18V9M10 18V5M16 18v-7M22 18V3"/>',
+    spark:'<path d="m3 17 5-5 4 3 8-9"/><path d="M17 6h3v3"/>',
+    user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c.8-5 3.5-7 8-7s7.2 2 8 7"/>',
+    clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    link:'<path d="M10 13a4 4 0 0 0 5.6.3l2.6-2.6a4 4 0 0 0-5.7-5.7l-1.5 1.5"/><path d="M14 11a4 4 0 0 0-5.6-.3l-2.6 2.6a4 4 0 1 0 5.7 5.7l1.5-1.5"/>',
+    note:'<path d="M5 4h14v16H5z"/><path d="M8 8h8M8 12h8M8 16h5"/>',
+    bot:'<rect x="5" y="7" width="14" height="11" rx="3"/><path d="M12 3v4M8 12h.01M16 12h.01M9 15h6"/>',
+    chevron:'<path d="m9 6 6 6-6 6"/>',
+    calendar:'<rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M7 3v4M17 3v4M3 10h18"/>',
+    filter:'<path d="M4 5h16l-6 7v6l-4 2v-8z"/>',
+    check:'<path d="m5 12 4 4L19 6"/>',
+    alert:'<path d="M12 3 2.8 20h18.4z"/><path d="M12 9v4M12 17h.01"/>',
+    search:'<circle cx="11" cy="11" r="7"/><path d="m16.2 16.2 4 4"/>',
+    move:'<path d="M12 2v20M2 12h20M8 6l4-4 4 4M8 18l4 4 4-4M6 8l-4 4 4 4M18 8l4 4-4 4"/>',
+    plus:'<path d="M12 5v14M5 12h14"/>'
+  };
+  return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true">${map[name]||map.note}</svg>`;
+}
+
+function v10TicketCounts(){
+  const active=tickets.filter(t=>!['Resuelto','Cerrado','Cancelado'].includes(t.status));
+  return {
+    all:active.length,
+    mine:active.filter(t=>t.assignee==='juan').length,
+    new:active.filter(t=>t.status==='Nuevo').length,
+    action:active.filter(t=>ensureTicketModel(t).requesterActionRequired).length,
+    critical:active.filter(t=>['Crítica','Alta'].includes(t.priority)||['critical','risk'].includes(slaHealth(t).key)).length,
+    today:active.filter(t=>String(t.due).toLowerCase().includes('hoy')||t.status==='Programado').length,
+    mentions:2
+  };
+}
+
+function v10InboxTickets(){
+  const active=tickets.filter(t=>!['Resuelto','Cerrado','Cancelado'].includes(t.status));
+  const f=v10State.inbox;
+  if(f==='mine')return active.filter(t=>t.assignee==='juan');
+  if(f==='new')return active.filter(t=>t.status==='Nuevo');
+  if(f==='action')return active.filter(t=>ensureTicketModel(t).requesterActionRequired);
+  if(f==='critical')return active.filter(t=>['Crítica','Alta'].includes(t.priority)||['critical','risk'].includes(slaHealth(t).key));
+  if(f==='today')return active.filter(t=>String(t.due).toLowerCase().includes('hoy')||t.status==='Programado');
+  if(f==='mentions')return active.slice(0,2);
+  return active;
+}
+
+function v10RecordTabs(){
+  if(!v10State.openTabs.length)return '';
+  return `<div class="record-tabs">${v10State.openTabs.map(id=>{const t=tickets.find(x=>x.id===id);return t?`<button class="record-tab ${v10State.activeTicket===id?'active':''}" data-v10-tab="${id}"><span>${t.id}</span><strong>${safe(t.title)}</strong><i data-v10-close-tab="${id}">×</i></button>`:''}).join('')}</div>`;
+}
+
+function v10OpsMetric(label,value,sub,tone,filter){
+  return `<button class="v10-metric ${tone||''}" data-v10-inbox="${filter||'all'}"><span>${label}</span><strong>${value}</strong><small>${sub}</small><div class="v10-spark"><i></i><i></i><i></i><i></i><i></i><i></i></div></button>`;
+}
+
+function v10QuickActions(t){
+  return `<div class="v10-row-actions"><button data-v10-open-ticket="${t.id}" title="Abrir">${v10Icon('chevron',16)}</button><button data-v10-status="${t.id}|En gestión" title="Tomar">${v10Icon('check',16)}</button><button data-v10-open-ticket="${t.id}" data-v10-open-tab="activity" title="Responder">${v10Icon('note',16)}</button><button data-v10-schedule="${t.id}" title="Programar">${v10Icon('calendar',16)}</button></div>`;
+}
+
+function v10OpsList(items){
+  return `<div class="v10-list-head"><label class="v10-check"><input type="checkbox" data-v10-select-all><span></span></label><span>Solicitud</span><span>Responsable</span><span>Estado y SLA</span><span>Acciones</span></div><div class="v10-list">${items.map(t=>{const s=serviceById(t.service),p=personById(t.assignee),h=slaHealth(t);const checked=v10State.selected.has(t.id);return `<article class="v10-ticket-row ${h.key} ${checked?'selected':''}"><label class="v10-check"><input type="checkbox" data-v10-select="${t.id}" ${checked?'checked':''}><span></span></label><button class="v10-ticket-main" data-v10-open-ticket="${t.id}"><div class="v10-ticket-kicker"><b>${t.id}</b>${priorityPill(t.priority)}${t.unread?'<em>Nueva actualización</em>':''}</div><h3>${safe(t.title)}</h3><p>${safe(s?.title||t.service)} · ${safe(t.requester)}</p></button><div class="v10-assignee">${p?`<div class="avatar">${p.initials}</div><div><strong>${p.name}</strong><small>${p.role} · ${p.load}% carga</small></div>`:'<div class="avatar">?</div><div><strong>Sin asignar</strong><small>Requiere triage</small></div>'}</div><div class="v10-health"><div>${statusPill(t.status)}${slaBadge(t)}</div><strong>${h.detail}</strong><div class="v10-healthbar"><i class="${h.key}" style="width:${h.pct}%"></i></div></div>${v10QuickActions(t)}</article>`}).join('')||v10EmptyState('Todo bajo control','No hay solicitudes que coincidan con esta bandeja.','Ver todas las solicitudes','all')}</div>`;
+}
+
+function v10Kanban(items){
+  const cols=[['Nuevo','Nuevo'],['En gestión','En gestión'],['En espera','En espera'],['Programado','Programado']];
+  return `<div class="v10-kanban">${cols.map(([label,status])=>{const list=items.filter(t=>t.status===status);return `<section><header><strong>${label}</strong><span>${list.length}</span></header><div>${list.map(t=>{const p=personById(t.assignee),h=slaHealth(t);return `<button class="v10-kanban-card ${h.key}" data-v10-open-ticket="${t.id}"><span>${t.id}</span><h4>${safe(t.title)}</h4><p>${safe(t.requester)}</p><footer>${p?`<div class="avatar">${p.initials}</div>`:'<div class="avatar">?</div>'}<div><b>${h.label}</b><small>${h.detail}</small></div></footer></button>`}).join('')||'<div class="v10-mini-empty">Sin casos</div>'}</div></section>`}).join('')}</div>`;
+}
+
+function v10TimelineView(items){
+  return `<div class="v10-timeline-board">${items.map((t,i)=>{const p=personById(t.assignee),h=slaHealth(t);return `<div class="v10-timeline-ticket"><div class="v10-timeline-person"><div class="avatar">${p?.initials||'?'}</div><div><strong>${p?.name||'Sin asignar'}</strong><small>${p?.role||'Pendiente'}</small></div></div><button data-v10-open-ticket="${t.id}"><span>${t.id}</span><h3>${safe(t.title)}</h3><p>${safe(t.requester)} · ${h.detail}</p></button><div class="v10-timeline-bar"><i style="left:${Math.min(i*8,38)}%;width:${Math.max(28,78-i*6)}%" class="${h.key}"></i></div></div>`}).join('')}</div>`;
+}
+
+function v10LoadView(){
+  const days=['Lun','Mar','Mié','Jue','Vie'];
+  return `<div class="v10-load-grid"><div class="v10-load-head"><strong>Funcionario</strong>${days.map(d=>`<strong>${d}</strong>`).join('')}<strong>Promedio</strong></div>${team.map((p,idx)=>{const vals=days.map((_,d)=>Math.max(20,Math.min(96,p.load+((idx*13+d*17)%34)-17)));const avg=Math.round(vals.reduce((a,b)=>a+b,0)/vals.length);return `<div class="v10-load-row"><div class="v10-load-person"><div class="avatar">${p.initials}</div><div><strong>${p.name}</strong><small>${p.role}</small></div></div>${vals.map(v=>`<button class="v10-load-cell ${v>=85?'hot':v>=68?'warm':'cool'}" title="${v}% de ocupación"><strong>${v}%</strong><span>${v>=85?'Alta carga':v>=68?'Moderado':'Disponible'}</span></button>`).join('')}<div class="v10-load-average"><strong>${avg}%</strong><span>${avg<65?'Buen margen':avg<82?'Vigilancia':'Redistribuir'}</span></div></div>`}).join('')}</div>`;
+}
+
+function v10EmptyState(title,text,action,filter){
+  return `<div class="v10-empty"><div>${v10Icon('check',34)}</div><h3>${title}</h3><p>${text}</p>${action?`<button class="btn btn-secondary" data-v10-inbox="${filter||'all'}">${action}</button>`:''}</div>`;
+}
+
+function v10OpsContent(items){
+  if(v10State.view==='board')return v10Kanban(items);
+  if(v10State.view==='timeline')return v10TimelineView(items);
+  if(v10State.view==='load')return v10LoadView();
+  return v10OpsList(items);
+}
+
+function renderOpsV10(){
+  const counts=v10TicketCounts(),items=v10InboxTickets();
+  const inboxes=[['all','Toda la operación',counts.all],['mine','Asignadas a mí',counts.mine],['new','Nuevas',counts.new],['action','Requieren respuesta',counts.action],['critical','Riesgo / críticas',counts.critical],['today','Para hoy',counts.today],['mentions','Menciones',counts.mentions]];
+  const views=[['list','Lista'],['board','Tablero'],['calendar','Agenda'],['timeline','Timeline'],['load','Carga']];
+  const risk=tickets.filter(t=>['critical','risk'].includes(slaHealth(t).key)&&!['Resuelto','Cerrado'].includes(t.status)).length;
+  const cap=Math.round(team.reduce((a,p)=>a+(100-p.load),0)/team.length);
+  $('#view-ops').innerHTML=`
+    <div class="v10-workspace-shell">
+      ${v10RecordTabs()}
+      <header class="v10-workspace-head"><div><span class="eyebrow">Workspace del gestor</span><h1>Centro de mando TIC</h1><p>Todo tu trabajo, capacidad, SLA y contexto en una sola superficie.</p></div><div class="v10-workspace-actions"><button class="btn btn-secondary" data-command-open>${v10Icon('search',17)} Buscar</button><button class="btn btn-primary" data-action="open-new-request">${v10Icon('plus',17)} Radicar solicitud</button></div></header>
+      <div class="v10-metrics">${v10OpsMetric('Cola activa',counts.all,'Trabajo pendiente','','all')}${v10OpsMetric('Riesgo SLA',risk,'Requieren foco','danger','critical')}${v10OpsMetric('Para hoy',counts.today,'Agenda y vencimientos','warning','today')}${v10OpsMetric('Capacidad libre',cap+'%','Promedio del equipo','success','load')}</div>
+      <div class="v10-ops-layout">
+        <aside class="v10-inbox"><div class="v10-inbox-title"><span>${v10Icon('inbox',20)}</span><div><strong>Mi trabajo</strong><small>Colas inteligentes</small></div></div>${inboxes.map(([id,l,c])=>`<button class="${v10State.inbox===id?'active':''}" data-v10-inbox="${id}"><span>${l}</span><b>${c}</b></button>`).join('')}<div class="v10-inbox-divider"></div><button data-view-link="calendar"><span>Agenda del equipo</span>${v10Icon('chevron',15)}</button><button data-view-link="knowledge"><span>Conocimiento</span>${v10Icon('chevron',15)}</button></aside>
+        <main class="v10-queue"><div class="v10-queue-toolbar"><div><h2>${inboxes.find(x=>x[0]===v10State.inbox)?.[1]||'Solicitudes'}</h2><p>${items.length} casos · ordenados por prioridad operativa</p></div><div class="v10-view-switch">${views.map(([id,l])=>`<button class="${v10State.view===id?'active':''}" data-v10-view="${id}" title="Vista ${l}">${v10Icon(id==='board'?'board':id==='calendar'?'calendar':id==='timeline'?'timeline':id==='load'?'load':'list',17)}<span>${l}</span></button>`).join('')}</div></div>${v10State.selected.size?`<div class="v10-bulkbar"><strong>${v10State.selected.size} seleccionadas</strong><button data-v10-bulk="assign">Asignar a Juan</button><button data-v10-bulk="priority">Prioridad alta</button><button data-v10-bulk="resolve">Resolver</button><button data-v10-bulk="clear">Cancelar selección</button></div>`:''}<div class="v10-queue-content">${v10OpsContent(items)}</div></main>
+        <aside class="v10-ops-insights"><section><div class="v10-insight-head"><span>${v10Icon('spark',19)}</span><div><strong>Pulso operativo</strong><small>Últimas 7 horas</small></div></div><div class="v10-volume-chart">${[42,58,45,74,62,88,69,83].map((v,i)=>`<i style="height:${v}%" title="${v} solicitudes relativas"></i>`).join('')}</div><div class="v10-chart-labels"><span>8</span><span>10</span><span>12</span><span>14</span><span>16</span></div></section><section><div class="v10-insight-head"><span>${v10Icon('user',19)}</span><div><strong>Capacidad del equipo</strong><small>Balance de carga</small></div></div>${team.slice().sort((a,b)=>a.load-b.load).map(p=>`<button class="v10-person-load" data-view-link="calendar"><div class="avatar">${p.initials}</div><div><strong>${p.name}</strong><span>${p.slots[0]}</span><i><u style="width:${p.load}%;background:${loadColor(p.load)}"></u></i></div><b>${p.load}%</b></button>`).join('')}</section><section class="v10-ai-card"><span>${v10Icon('bot',22)}</span><div><strong>Copiloto operativo</strong><p>4 solicitudes parecen relacionadas con la intermitencia del segundo piso.</p><button data-view-link="continuity">Revisar posible incidente →</button></div></section></aside>
+      </div>
+    </div>`;
+}
+renderOps=renderOpsV10;
+
+function v10OpenTab(id){
+  if(!v10State.openTabs.includes(id))v10State.openTabs.push(id);
+  v10State.activeTicket=id;
+  if(v10State.openTabs.length>5)v10State.openTabs.shift();
+}
+
+function v10CloseTab(id){
+  v10State.openTabs=v10State.openTabs.filter(x=>x!==id);
+  if(v10State.activeTicket===id)v10State.activeTicket=v10State.openTabs.at(-1)||null;
+}
+
+function v10ActivityIcon(m){
+  if(m.visibility==='internal')return 'note';
+  if(m.kind==='comment')return 'user';
+  if(/sla|espera|reanud/i.test(m.text||''))return 'clock';
+  return 'spark';
+}
+
+function v10TicketMessages(t){
+  ensureTicketModel(t);
+  const visible=(t.messages||[]).filter(m=>currentRole!=='requester'||m.visibility!=='internal');
+  return visible.map(m=>`<div class="v10-activity-item ${m.visibility==='internal'?'internal':''} ${m.kind||'system'}"><div class="v10-activity-node">${v10Icon(v10ActivityIcon(m),16)}</div><div class="v10-activity-content"><header><strong>${safe(m.author||'Mesa de Ayuda TIC')}</strong><span>${safe(m.at||'')}</span>${m.visibility==='internal'?'<em>Nota interna</em>':''}</header><p>${safe(m.text||'')}</p></div></div>`).join('');
+}
+
+function v10TicketWorkspace(id,tab='activity'){
+  const t=tickets.find(x=>x.id===id);if(!t)return;
+  ensureTicketModel(t);v10OpenTab(id);t.unread=false;saveTickets();
+  const s=serviceById(t.service),p=personById(t.assignee),h=slaHealth(t);
+  let overlay=$('#v10TicketWorkspace');
+  if(!overlay){overlay=document.createElement('div');overlay.id='v10TicketWorkspace';overlay.className='v10-ticket-overlay';document.body.appendChild(overlay)}
+  const related=tickets.filter(x=>x.id!==t.id&&(x.service===t.service||x.requester===t.requester)).slice(0,3);
+  overlay.innerHTML=`<div class="v10-ticket-workspace">
+    <header class="v10-ticket-top"><div class="v10-record-tabs">${v10RecordTabs()}</div><div class="v10-ticket-top-actions"><button data-v10-ticket-close aria-label="Cerrar">×</button></div></header>
+    <div class="v10-ticket-titlebar"><div><span>${t.id} · ${safe(s?.title||t.service)}</span><h1>${safe(t.title)}</h1><div>${statusPill(t.status)}${priorityPill(t.priority)}${slaBadge(t)}</div></div><div class="v10-ticket-actions"><button class="btn btn-secondary" data-v10-status="${t.id}|En espera">Pausar</button><button class="btn btn-soft" data-v10-schedule="${t.id}">Programar</button><button class="btn btn-primary" data-v10-status="${t.id}|Resuelto">Resolver</button></div></div>
+    <div class="v10-ticket-grid">
+      <aside class="v10-ticket-left"><section><h3>Información esencial</h3><dl><div><dt>Solicitante</dt><dd>${safe(t.requester)}</dd></div><div><dt>Servicio</dt><dd>${safe(s?.title||t.service)}</dd></div><div><dt>Prioridad</dt><dd>${safe(t.priority)}</dd></div><div><dt>Creada</dt><dd>${safe(t.created)}</dd></div><div><dt>Vencimiento</dt><dd>${safe(t.due)}</dd></div></dl></section><section><h3>Responsable</h3>${p?`<div class="v10-owner"><div class="avatar">${p.initials}</div><div><strong>${p.name}</strong><span>${p.role}</span><small>${p.load}% de carga · ${p.slots[0]}</small></div></div>`:'<div class="v10-owner"><div class="avatar">?</div><div><strong>Sin asignar</strong><span>Requiere triage</span></div></div>'}</section><section><h3>Descripción</h3><p>${safe(t.description)}</p></section><section><h3>Adjuntos</h3><div class="v10-attachments">${(t.attachments||[]).map(a=>`<button>${v10Icon('note',16)}<span>${safe(a.name)}</span><small>${safe(a.size)}</small></button>`).join('')||'<p>Sin archivos adjuntos.</p>'}</div></section></aside>
+      <main class="v10-ticket-center"><div class="v10-conversation-head"><div><h2>Actividad y conversación</h2><p>Respuestas, automatizaciones, SLA y notas internas en una sola línea temporal.</p></div><div class="v10-activity-filters"><button class="active">Todo</button><button>Público</button><button>Interno</button></div></div><div class="v10-activity-stream">${v10TicketMessages(t)}</div><div class="v10-composer"><div class="v10-composer-modes"><label><input type="radio" name="v10Mode" value="public" checked> Respuesta al funcionario</label><label><input type="radio" name="v10Mode" value="internal"> Nota interna</label></div><textarea id="v10Composer" placeholder="Escribe una actualización clara y útil…"></textarea><footer><div><button data-v10-template>Respuesta rápida</button><button data-v10-attach>${v10Icon('note',15)} Adjuntar</button></div><button class="btn btn-primary" data-v10-send="${t.id}">Publicar actualización</button></footer></div></main>
+      <aside class="v10-ticket-right"><section class="v10-sla-panel ${h.key}"><span>Salud del servicio</span><strong>${h.label}</strong><p>${h.detail}</p><div><i style="width:${h.pct}%"></i></div><small>SLA objetivo: ${safe(s?.sla||t.sla)}</small></section><section><h3>Contexto relacionado</h3>${related.map(r=>`<button class="v10-related" data-v10-open-ticket="${r.id}"><span>${r.id}</span><strong>${safe(r.title)}</strong><small>${safe(r.requester)}</small></button>`).join('')||'<p>Sin casos similares.</p>'}</section><section class="v10-copilot"><div><span>${v10Icon('bot',20)}</span><strong>Copiloto MESA</strong></div><article><span>Posible solución</span><p>${t.service==='internet'?'Hay un incidente activo de conectividad en el segundo piso.':'Este caso coincide con soluciones documentadas del servicio.'}</p></article><article><span>Acción sugerida</span><p>${h.key==='critical'?'Priorizar respuesta y confirmar impacto antes de 15 minutos.':'Responder al solicitante y registrar evidencia de cierre.'}</p></article><button data-view-link="knowledge">Ver conocimiento relacionado →</button></section><section><h3>Actividad del solicitante</h3><div class="v10-context-stat"><span>Solicitudes abiertas</span><strong>${tickets.filter(x=>x.requester===t.requester&&!['Resuelto','Cerrado'].includes(x.status)).length}</strong></div><div class="v10-context-stat"><span>Último contacto</span><strong>Hoy</strong></div></section></aside>
+    </div></div>`;
+  overlay.classList.add('open');document.body.style.overflow='hidden';
+}
+
+const openTicketV09=openTicket;
+openTicket=function(id,tab='overview'){
+  if(currentRole==='requester')return openTicketV09(id,tab);
+  v10TicketWorkspace(id,tab==='overview'?'activity':tab);
+};
+
+function v10CloseWorkspace(){const o=$('#v10TicketWorkspace');if(o)o.classList.remove('open');document.body.style.overflow='';v10State.activeTicket=null;}
+
+function v10MiniCalendar(date){
+  const anchor=parseLocalDate(date),first=new Date(anchor.getFullYear(),anchor.getMonth(),1),start=startOfWeek(first);
+  const cells=Array.from({length:35},(_,i)=>addDays(start,i));
+  return `<div class="v10-mini-calendar"><header><button data-v10-mini-nav="prev">‹</button><strong>${['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][anchor.getMonth()]} ${anchor.getFullYear()}</strong><button data-v10-mini-nav="next">›</button></header><div class="v10-mini-days">${['L','M','M','J','V','S','D'].map(x=>`<span>${x}</span>`).join('')}</div><div class="v10-mini-grid">${cells.map(d=>`<button class="${d.getMonth()!==anchor.getMonth()?'outside':''} ${toISO(d)===calendarState.date?'active':''}" data-calendar-date="${toISO(d)}">${d.getDate()}${scheduleEvents.some(e=>e.date===toISO(d))?'<i></i>':''}</button>`).join('')}</div></div>`;
+}
+
+function v10ThreeDayScheduler(people,anchor){
+  const days=[0,1,2].map(i=>addDays(anchor,i));
+  return `<div class="v10-three-board"><div class="v10-three-head"><div>Funcionario</div>${days.map(d=>`<button data-calendar-date="${toISO(d)}"><span>${['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'][d.getDay()]}</span><strong>${d.getDate()}</strong><small>${monthShort(d)}</small></button>`).join('')}</div>${people.map(p=>`<div class="v10-three-row"><div class="v10-three-person"><div class="avatar">${p.initials}</div><div><strong>${p.name}</strong><span>${p.role}</span></div></div>${days.map(d=>{const iso=toISO(d),events=scheduleEvents.filter(e=>e.person===p.id&&e.date===iso);const free=freeMinutesForDay(p.id,iso);return `<div class="v10-three-cell"><header><span>${Math.round((1-free/480)*100)}% ocupado</span><strong>${(free/60).toFixed(1)} h libres</strong></header>${events.map(e=>`<button class="v10-three-event ${e.type}" data-schedule-event="${e.id}"><span>${formatTime(e.start)}</span><strong>${safe(e.title)}</strong><small>${formatTime(e.end)}</small></button>`).join('')||'<button class="v10-three-free" data-calendar-date="'+iso+'">Día con alta disponibilidad</button>'}</div>`}).join('')}</div>`).join('')}</div>`;
+}
+
+function v10ResourceHeatmap(people,anchor){
+  const monday=startOfWeek(anchor),days=Array.from({length:5},(_,i)=>addDays(monday,i));
+  return `<div class="v10-resource-heatmap"><div class="v10-heat-head"><div>Funcionario</div>${days.map(d=>`<button data-calendar-date="${toISO(d)}"><span>${['Lun','Mar','Mié','Jue','Vie'][days.indexOf(d)]}</span><strong>${d.getDate()}</strong></button>`).join('')}<div>Semana</div></div>${people.map(p=>{const vals=days.map(d=>Math.round((1-freeMinutesForDay(p.id,toISO(d))/480)*100));const avg=Math.round(vals.reduce((a,b)=>a+b,0)/vals.length);return `<div class="v10-heat-row"><div class="v10-heat-person"><div class="avatar">${p.initials}</div><div><strong>${p.name}</strong><span>${p.role}</span></div></div>${vals.map((v,i)=>`<button class="v10-heat-cell ${v>=85?'hot':v>=65?'warm':'cool'}" data-calendar-date="${toISO(days[i])}"><strong>${v}%</strong><span>${v>=85?'Alta':v>=65?'Media':'Disponible'}</span></button>`).join('')}<div class="v10-heat-total"><strong>${avg}%</strong><span>promedio</span></div></div>`}).join('')}</div>`;
+}
+
+const renderCalendarV09=renderCalendar;
+renderCalendar=function(){
+  renderCalendarV09();
+  const view=$('#view-calendar');if(!view)return;
+  const seg=$('.view-segment',view);if(seg)seg.innerHTML=[['day','Día'],['three','3 días'],['week','Semana'],['resources','Recursos']].map(([id,l])=>`<button class="${calendarState.view===id?'active':''}" data-calendar-view="${id}">${l}</button>`).join('');
+  const finder=$('.scheduler-finder',view);if(finder&&!$('.v10-mini-calendar',finder))finder.insertAdjacentHTML('afterbegin',v10MiniCalendar(calendarState.date));
+  const people=calendarQualifiedTeam().filter(p=>calendarState.team==='all'||calendarTeamGroup(p)===calendarState.team);
+  const main=$('.scheduler-main',view);if(!main)return;
+  if(calendarState.view==='three'){
+    const board=$('.week-board',main);if(board)board.outerHTML=v10ThreeDayScheduler(people,parseLocalDate(calendarState.date));
+  }
+  if(calendarState.view==='resources'){
+    const board=$('.week-board',main);if(board)board.outerHTML=v10ResourceHeatmap(people,parseLocalDate(calendarState.date));
+  }
+  const title=$('.calendar-page-head p',view);if(title)title.textContent='Planifica personas y servicios con zoom, vistas por recursos, mapa de ocupación, espacios libres y reserva directa.';
+};
+const calendarNavigateV09=calendarNavigate;
+calendarNavigate=function(dir){
+  if(dir==='today')return calendarNavigateV09(dir);
+  const d=parseLocalDate(calendarState.date);const step=calendarState.view==='week'||calendarState.view==='resources'?7:calendarState.view==='three'?3:1;
+  calendarState.date=toISO(addDays(d,dir==='prev'?-step:step));calendarState.scrollLeft=null;renderCalendar();
+};
+
+function enhanceHomeV10(){
+  const view=$('#view-home');if(!view||$('.v10-trending',view))return;
+  const target=$('.knowledge-preview',view)||$('.service-journey-grid',view);
+  if(target){target.insertAdjacentHTML('afterend',`<section class="v10-trending"><header><div><span class="eyebrow">Tendencias y ayuda contextual</span><h2>Lo que más están consultando hoy</h2></div><button class="link-btn" data-view="knowledge">Ver centro de conocimiento →</button></header><div>${knowledgeArticles.slice().sort((a,b)=>b.views-a.views).slice(0,4).map((a,i)=>`<button data-knowledge="${a.id}"><span class="v10-trend-rank">0${i+1}</span><div class="v10-trend-icon">${typeof iconFor==='function'?iconFor(a.service):v10Icon('note')}</div><div><strong>${safe(a.title)}</strong><p>${safe(a.summary)}</p><small>${a.views} consultas · ${a.helpful}% útil</small></div>${v10Icon('chevron',17)}</button>`).join('')}</div></section>`)}
+}
+
+function enhanceKnowledgeV10(){
+  const view=$('#view-knowledge');if(!view||$('.v10-knowledge-categories',view))return;
+  const hero=$('.knowledge-search-hero',view);if(hero)hero.insertAdjacentHTML('afterend',`<div class="v10-knowledge-categories">${knowledgeCategories().filter(x=>x!=='Todos').map(cat=>{const count=knowledgeArticles.filter(a=>a.category===cat).length;return `<button data-knowledge-category="${cat}"><span>${v10Icon('note',18)}</span><strong>${cat}</strong><small>${count} artículos</small></button>`}).join('')}</div>`);
+}
+
+function enhanceMyTicketsV10(){
+  const view=$('#view-my-tickets');if(!view||$('.v10-request-summary',view))return;
+  const head=$('.page-head',view);if(head)head.insertAdjacentHTML('afterend',`<div class="v10-request-summary"><div><span>En proceso</span><strong>${tickets.filter(t=>!['Resuelto','Cerrado','Cancelado'].includes(t.status)).length}</strong><small>solicitudes activas</small></div><div><span>Requieren tu acción</span><strong>${tickets.filter(t=>ensureTicketModel(t).requesterActionRequired).length}</strong><small>responde para continuar</small></div><div><span>Programadas</span><strong>${tickets.filter(t=>t.status==='Programado').length}</strong><small>con espacio reservado</small></div><div><span>Satisfacción</span><strong>4.8</strong><small>promedio reciente</small></div></div>`);
+}
+
+const renderViewV09=renderView;
+renderView=function(view){
+  if(view==='ops'){renderOpsV10();if(innerWidth<860)$('#sidebar')?.classList.remove('open');return;}
+  if(view==='calendar'){renderCalendar();if(innerWidth<860)$('#sidebar')?.classList.remove('open');return;}
+  renderViewV09(view);
+  requestAnimationFrame(()=>{if(view==='home')enhanceHomeV10();if(view==='knowledge')enhanceKnowledgeV10();if(view==='my-tickets')enhanceMyTicketsV10();});
+};
+
+// Acciones UX Operations.
+document.addEventListener('click',e=>{
+  const inbox=e.target.closest('[data-v10-inbox]');if(inbox){v10State.inbox=inbox.dataset.v10Inbox;v10State.selected.clear();renderOpsV10();return;}
+  const view=e.target.closest('[data-v10-view]');if(view){if(view.dataset.v10View==='calendar'){setView('calendar');return;}v10State.view=view.dataset.v10View;renderOpsV10();return;}
+  const open=e.target.closest('[data-v10-open-ticket]');if(open){v10TicketWorkspace(open.dataset.v10OpenTicket,open.dataset.v10OpenTab||'activity');return;}
+  const tab=e.target.closest('[data-v10-tab]');if(tab){v10TicketWorkspace(tab.dataset.v10Tab);return;}
+  const closeTab=e.target.closest('[data-v10-close-tab]');if(closeTab){e.stopPropagation();v10CloseTab(closeTab.dataset.v10CloseTab);if(v10State.activeTicket)v10TicketWorkspace(v10State.activeTicket);else v10CloseWorkspace();renderOpsV10();return;}
+  if(e.target.closest('[data-v10-ticket-close]')){v10CloseWorkspace();renderOpsV10();return;}
+  const sel=e.target.closest('[data-v10-select]');if(sel){if(sel.checked)v10State.selected.add(sel.dataset.v10Select);else v10State.selected.delete(sel.dataset.v10Select);renderOpsV10();return;}
+  const all=e.target.closest('[data-v10-select-all]');if(all){v10InboxTickets().forEach(t=>all.checked?v10State.selected.add(t.id):v10State.selected.delete(t.id));renderOpsV10();return;}
+  const bulk=e.target.closest('[data-v10-bulk]');if(bulk){const ids=[...v10State.selected];if(bulk.dataset.v10Bulk==='clear'){v10State.selected.clear();renderOpsV10();return;}ids.forEach(id=>{const t=tickets.find(x=>x.id===id);if(!t)return;if(bulk.dataset.v10Bulk==='assign')t.assignee='juan';if(bulk.dataset.v10Bulk==='priority')t.priority='Alta';if(bulk.dataset.v10Bulk==='resolve')t.status='Resuelto';});saveTickets();showToast('Acción aplicada',`Se actualizaron ${ids.length} solicitudes.`);v10State.selected.clear();renderOpsV10();return;}
+  const st=e.target.closest('[data-v10-status]');if(st){const [id,status]=st.dataset.v10Status.split('|'),t=tickets.find(x=>x.id===id);if(t){t.status=status;ensureTicketModel(t);t.messages.push({kind:'system',visibility:'public',author:'Mesa de Ayuda TIC',text:`Estado actualizado a ${status}.`,at:'Ahora'});saveTickets();showToast('Estado actualizado',`${id} ahora está ${status.toLowerCase()}.`);if($('#v10TicketWorkspace')?.classList.contains('open'))v10TicketWorkspace(id);else renderOpsV10();}return;}
+  const sched=e.target.closest('[data-v10-schedule]');if(sched){const t=tickets.find(x=>x.id===sched.dataset.v10Schedule);if(t){calendarState.service=t.service;setView('calendar');showToast('Agenda filtrada',`Busca un espacio para ${t.id}.`);}return;}
+  const send=e.target.closest('[data-v10-send]');if(send){const t=tickets.find(x=>x.id===send.dataset.v10Send),ta=$('#v10Composer');if(t&&ta&&ta.value.trim()){const mode=$('input[name="v10Mode"]:checked')?.value||'public';ensureTicketModel(t);t.messages.push({kind:'comment',visibility:mode,author:'Juan Pérez',text:ta.value.trim(),at:'Ahora'});saveTickets();showToast(mode==='internal'?'Nota interna registrada':'Respuesta enviada',mode==='internal'?'Solo visible para el equipo gestor.':'El funcionario verá la actualización.');v10TicketWorkspace(t.id);}return;}
+  if(e.target.closest('[data-v10-template]')){const ta=$('#v10Composer');if(ta)ta.value='Hola. Revisamos tu solicitud y necesitamos una validación adicional para continuar. Por favor confirma si el comportamiento persiste y adjunta una captura si es posible.';return;}
+  if(e.target.closest('[data-v10-attach]')){showToast('Adjunto listo','En producción este botón abrirá Storage; la interacción ya está preparada.');return;}
+  const mini=e.target.closest('[data-v10-mini-nav]');if(mini){const d=parseLocalDate(calendarState.date);d.setMonth(d.getMonth()+(mini.dataset.v10MiniNav==='prev'?-1:1));calendarState.date=toISO(d);renderCalendar();return;}
+},true);
+
+// Navegación coherente: cada cambio de módulo inicia en la cabecera y conserva el foco visual.
+const setViewV10Base=setView;
+setView=function(view){setViewV10Base(view);try{window.scrollTo({top:0,left:0,behavior:'instant'});}catch(_){window.scrollTo(0,0);}};
+
+// Refrescar la vista activa con el nuevo shell.
+requestAnimationFrame(()=>{const active=$('.view.active')?.id.replace('view-','')||'home';renderView(active)});
