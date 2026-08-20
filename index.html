@@ -89,10 +89,11 @@
         </div>
         <button class="close-btn" data-action="close-request-modal">×</button>
       </div>
-      <div class="stepper">
-        <div class="step active" data-step="1"><span>1</span><div><strong>Servicio</strong><small>Qué necesitas</small></div></div>
-        <div class="step" data-step="2"><span>2</span><div><strong>Detalles</strong><small>Información clave</small></div></div>
-        <div class="step" data-step="3"><span>3</span><div><strong>Asignación</strong><small>Responsable y fecha</small></div></div>
+      <div class="stepper guided-stepper">
+        <div class="step active" data-step="1"><span>1</span><div><strong>Necesidad</strong><small>Te orientamos</small></div></div>
+        <div class="step" data-step="2"><span>2</span><div><strong>Información</strong><small>Una pregunta a la vez</small></div></div>
+        <div class="step" data-step="3"><span>3</span><div><strong>Programación</strong><small>Agenda y responsable</small></div></div>
+        <div class="step" data-step="4"><span>4</span><div><strong>Confirmación</strong><small>Revisa y radica</small></div></div>
       </div>
       <div class="modal-body" id="requestWizard"></div>
       <div class="modal-footer" id="requestWizardFooter"></div>
@@ -104,6 +105,17 @@
   </div>
 
   <div class="toast-stack" id="toastStack"></div>
+  <div class="modal-backdrop command-backdrop" id="commandBackdrop" hidden>
+    <div class="command-palette" role="dialog" aria-modal="true" aria-labelledby="commandTitle">
+      <div class="command-search-row">
+        <span class="command-symbol">⌕</span>
+        <input id="commandInput" type="search" placeholder="Busca o escribe una acción: crear cubrimiento, abrir agenda, MA-2026..." autocomplete="off" />
+        <kbd>ESC</kbd>
+      </div>
+      <div class="command-hint" id="commandTitle">CENTRO DE COMANDOS · MESA 360</div>
+      <div class="command-results" id="commandResults"></div>
+    </div>
+  </div>
 
   <script src="app.js"></script>
 </body>

@@ -469,6 +469,423 @@ document.addEventListener('keydown',e=>{
   if(e.key.toLowerCase()==='f'){e.preventDefault();captureCalendarScroll();calendarState.focusMode=!calendarState.focusMode;renderCalendar();}
 });
 
+/* =========================================================
+   MESA 360 v0.4 · SERVICE DESK INSTITUCIONAL
+   Radicación guiada, Command Center, SLA, Operación PRO y ficha 360
+   ========================================================= */
+
+const guidedFamilies = [
+  {id:'comunicaciones',icon:'✦',title:'Comunicación institucional',desc:'Publicaciones, cubrimientos, sitio web y validaciones.',services:['publicaciones','cubrimientos','web','revision']},
+  {id:'soporte',icon:'⌁',title:'Soporte tecnológico',desc:'Correo, equipos, conectividad, accesos y seguridad.',services:['correo','equipos','internet','accesos','seguridad']},
+  {id:'soluciones',icon:'⌘',title:'Soluciones y automatización',desc:'Aplicaciones, automatizaciones, formularios, datos y tableros.',services:['desarrollo','datos']},
+  {id:'acompanamiento',icon:'◎',title:'Acompañamiento',desc:'Capacitaciones y asistencia para herramientas o procesos.',services:['capacitacion']}
+];
+const dependencyOptions = ['Secretaría General','Despacho del Alcalde','Planeación','Hacienda','Gobierno','Gestión del Riesgo','Control Interno','Desarrollo Social','Infraestructura','UMATA','Comisaría de Familia','Otra dependencia'];
+const selfHelpGuides = {
+  correo:[
+    ['Verifica tu conexión','Confirma que otras páginas o aplicaciones tengan acceso a internet.'],
+    ['Prueba en el navegador','Ingresa desde la versión web del correo para descartar un problema del dispositivo.'],
+    ['No compartas tu contraseña','La Mesa 360 nunca te pedirá escribir la contraseña dentro de la solicitud.']
+  ],
+  internet:[
+    ['Identifica el alcance','Confirma si falla solo tu equipo o también otros funcionarios de la misma zona.'],
+    ['Revisa la conexión física','Si usas cable de red, verifica que esté conectado. No desconectes equipos de red institucionales.'],
+    ['Registra la ubicación','Indicar piso, oficina o dependencia acelera el diagnóstico.']
+  ],
+  equipos:[
+    ['Reinicio seguro','Si es posible, guarda tu trabajo y reinicia el equipo una sola vez.'],
+    ['Anota el mensaje','Si aparece un error, copia el texto o toma una captura para adjuntarla después.'],
+    ['No desarmes el equipo','Evita manipular componentes o conexiones internas.']
+  ],
+  accesos:[
+    ['Confirma el usuario','Verifica que estés usando la cuenta institucional correcta.'],
+    ['Diferencia acceso y contraseña','Si puedes entrar al sistema pero no a una opción específica, probablemente sea un permiso.'],
+    ['Justificación mínima','Los permisos nuevos requieren indicar para qué función institucional se necesitan.']
+  ]
+};
+const approvalOwnerByService = {
+  publicaciones:'Coordinación de Comunicaciones',
+  desarrollo:'Líder TIC / Secretaría General',
+  accesos:'Líder TIC y responsable del recurso'
+};
+const scheduleServiceIds = new Set(['cubrimientos','capacitacion','publicaciones','revision']);
+const selectableAssigneeIds = new Set(['publicaciones','cubrimientos','revision','desarrollo','datos','capacitacion','web']);
+let opsState = {filter:'now'};
+let ticketDrawerState = {id:null,tab:'overview'};
+let draggedScheduleId = null;
+
+function freshWizard(serviceId=null,prefill={}){
+  const family=serviceId ? guidedFamilies.find(f=>f.services.includes(serviceId))?.id||null : null;
+  const {assignee='auto',...details}=prefill;
+  return {
+    stage: serviceId ? (selfHelpGuides[serviceId]?'selfhelp':'questions') : 'family',
+    family,
+    service:serviceId,
+    questionIndex:0,
+    details,
+    assignee,
+    error:'',
+    selfHelpDone:false
+  };
+}
+
+function statusPill(status){
+  const map={'Nuevo':'blue','En gestión':'blue','En espera':'amber','Programado':'purple','En aprobación':'amber','Bloqueado':'red','Resuelto':'green','Cerrado':'gray','Cancelado':'red'};
+  return `<span class="pill ${map[status]||'gray'}"><span class="dot"></span>${safe(status)}</span>`;
+}
+
+function familyForService(serviceId){ return guidedFamilies.find(f=>f.services.includes(serviceId)); }
+function canScheduleService(s){ return !!s && (s.sla==='Agenda'||scheduleServiceIds.has(s.id)); }
+function canChooseAssignee(s){ return !!s && selectableAssigneeIds.has(s.id); }
+function wizardMacroStep(){
+  if(['family','service'].includes(wizard.stage))return 1;
+  if(['selfhelp','questions'].includes(wizard.stage))return 2;
+  if(['schedule','assignment'].includes(wizard.stage))return 3;
+  return 4;
+}
+function updateWizardChrome(){
+  const macro=wizardMacroStep();
+  $$('.step').forEach(s=>{const n=Number(s.dataset.step);s.classList.toggle('active',n===macro);s.classList.toggle('done',n<macro)});
+  const service=serviceById(wizard.service);
+  $('#requestModalTitle').textContent=service?.title || (wizard.family?guidedFamilies.find(f=>f.id===wizard.family)?.title:'Radicar una solicitud');
+}
+function openRequestModal(serviceId=null){
+  wizard=freshWizard(serviceId);
+  $('#requestModalBackdrop').hidden=false;
+  document.body.style.overflow='hidden';
+  renderWizard();
+}
+function closeRequestModal(){ $('#requestModalBackdrop').hidden=true; document.body.style.overflow=''; }
+function setWizardStage(stage){ wizard.stage=stage; wizard.error=''; renderWizard(); }
+
+function questionHelper(label,service){
+  const l=label.toLowerCase();
+  if(l.includes('dependencia'))return 'Esto permite entregar trazabilidad por área y dirigir aprobaciones cuando correspondan.';
+  if(l.includes('asunto'))return 'Usa una frase corta y concreta; será el título visible de la solicitud.';
+  if(l.includes('prioridad'))return 'La prioridad debe representar impacto operativo, no preferencia personal.';
+  if(l.includes('fecha'))return 'La agenda utilizará esta fecha para sugerir espacios compatibles.';
+  if(l.includes('lugar')||l.includes('ubicación'))return 'Entre más precisa sea la ubicación, menos reprocesos tendrá el equipo.';
+  if(l.includes('descripción')||l.includes('problema')||l.includes('qué ocurrió'))return 'Cuéntanos qué necesitas, qué esperabas que ocurriera y qué sucede actualmente.';
+  if(service?.id==='seguridad')return 'No incluyas contraseñas, códigos de verificación ni información sensible innecesaria.';
+  return 'Esta información ayuda a asignar correctamente el caso desde el primer momento.';
+}
+function isQuestionRequired(q){
+  if(['requester','title','priority'].includes(q.key))return true;
+  return !/(Enlace|Activo|placa|Hora aproximada|si aplica)/i.test(q.label);
+}
+function buildWizardQuestions(s){
+  const priorityOptions=s.critical?['Crítica']:['Baja','Media','Alta','Crítica'];
+  const base=[
+    {key:'requester',label:'¿Desde qué dependencia estás radicando?',type:'select',options:dependencyOptions},
+    {key:'title',label:'Resume en una frase lo que necesitas',type:'text',placeholder:'Ej. Cubrimiento fotográfico para jornada institucional'},
+    {key:'priority',label:'¿Qué nivel de impacto tiene esta solicitud?',type:'select',options:priorityOptions}
+  ];
+  const custom=s.fields.map(([label,type,opts],i)=>({key:`f${i}`,label,type,options:opts||[],placeholder:type==='textarea'?'Describe la necesidad con el contexto suficiente':''}));
+  return [...base,...custom];
+}
+function priorityDescription(value){
+  return {Baja:'Puede programarse sin afectar la operación.',Media:'Necesidad normal dentro del servicio.',Alta:'Afecta una actividad importante o tiene fecha próxima.',Crítica:'Detiene operación, afecta seguridad o requiere atención inmediata.'}[value]||'';
+}
+function questionControl(q,s){
+  const value=wizard.details[q.key]??(q.key==='requester'?'Secretaría General':q.key==='priority'?(s.critical?'Crítica':'Media'):'');
+  if(wizard.details[q.key]==null && value!=='') wizard.details[q.key]=value;
+  if(q.type==='select'){
+    return `<div class="guided-choice-grid ${q.key==='priority'?'priority-choices':''}">${q.options.map(o=>`<button type="button" class="guided-choice ${String(value)===String(o)?'selected':''}" data-guide-answer="${safe(o)}" data-guide-key="${q.key}"><span class="choice-radio"></span><div><strong>${safe(o)}</strong>${q.key==='priority'?`<small>${priorityDescription(o)}</small>`:''}</div></button>`).join('')}</div>`;
+  }
+  if(q.type==='textarea')return `<textarea class="guided-control guided-textarea" data-guide-field="${q.key}" placeholder="${safe(q.placeholder||'Escribe aquí...')}">${safe(value)}</textarea>`;
+  return `<input class="guided-control" data-guide-field="${q.key}" type="${q.type}" value="${safe(value)}" placeholder="${safe(q.placeholder||'')}">`;
+}
+function renderWizardFamily(body,foot){
+  body.innerHTML=`<div class="guided-intro"><span class="guided-kicker">RADICACIÓN ASISTIDA</span><h3>¿Qué necesitas gestionar?</h3><p>No necesitas conocer el nombre técnico del servicio. Elige la opción que más se parezca a tu necesidad y MESA 360 te llevará por el camino correcto.</p></div><div class="guided-family-grid">${guidedFamilies.map(f=>`<button type="button" class="guided-family-card" data-guide-family="${f.id}"><span class="guided-family-icon">${f.icon}</span><div><h4>${f.title}</h4><p>${f.desc}</p><small>${f.services.length} servicios disponibles</small></div><span class="guided-arrow">›</span></button>`).join('')}</div><div class="guided-help-strip"><span>?</span><div><strong>¿No sabes cuál elegir?</strong><small>Usa el buscador superior o selecciona la categoría más cercana. Podrás volver atrás sin perder información.</small></div></div>`;
+  foot.innerHTML=`<button class="btn btn-secondary" data-action="close-request-modal">Cancelar</button><span class="guided-footer-note">La radicación aún no se ha creado</span>`;
+}
+function renderWizardService(body,foot){
+  const family=guidedFamilies.find(f=>f.id===wizard.family);
+  const list=family.services.map(serviceById).filter(Boolean);
+  body.innerHTML=`<div class="guided-intro compact"><button class="guided-back-link" type="button" data-guide-back>← Cambiar categoría</button><span class="guided-kicker">${family.icon} ${family.title.toUpperCase()}</span><h3>¿Cuál de estas opciones describe mejor tu necesidad?</h3><p>Al elegirla, las siguientes preguntas se adaptarán automáticamente al servicio.</p></div><div class="guided-service-list">${list.map(s=>`<button type="button" class="guided-service-row" data-guide-service="${s.id}">${toneIcon(s)}<div><h4>${s.title}</h4><p>${s.desc}</p><span>${s.sla==='Agenda'?'Se programa en agenda':`SLA ${s.sla}`}${s.approval?' · requiere aprobación':''}</span></div><b>›</b></button>`).join('')}</div>`;
+  foot.innerHTML=`<button class="btn btn-secondary" data-guide-back>← Atrás</button><span class="guided-footer-note">Selecciona un servicio para continuar</span>`;
+}
+function renderWizardSelfHelp(body,foot,s){
+  const guide=selfHelpGuides[s.id]||[];
+  body.innerHTML=`<div class="guided-intro"><span class="guided-kicker">COMPROBACIÓN RÁPIDA</span><h3>Antes de radicar, revisa estas ${guide.length} cosas</h3><p>Puede resolver casos sencillos inmediatamente y, si el problema continúa, conservarás el camino de radicación.</p></div><div class="selfhelp-list">${guide.map(([t,d],i)=>`<div class="selfhelp-item"><span>${i+1}</span><div><strong>${t}</strong><p>${d}</p></div></div>`).join('')}</div><div class="selfhelp-security">✓ Nunca escribas contraseñas, códigos MFA o información confidencial en la descripción.</div>`;
+  foot.innerHTML=`<button class="btn btn-secondary" data-guide-back>← Cambiar servicio</button><div class="footer-actions"><button class="btn btn-soft" data-guide-solved>Se solucionó</button><button class="btn btn-primary" data-guide-selfhelp-continue>Sigue fallando · Radicar →</button></div>`;
+}
+function renderWizardQuestion(body,foot,s){
+  const questions=buildWizardQuestions(s); wizard.questionIndex=Math.max(0,Math.min(wizard.questionIndex,questions.length-1));
+  const q=questions[wizard.questionIndex]; const pct=Math.round(((wizard.questionIndex+1)/questions.length)*100);
+  body.innerHTML=`<div class="question-shell"><div class="question-progress"><div><span>PREGUNTA ${wizard.questionIndex+1} DE ${questions.length}</span><strong>${pct}%</strong></div><div class="question-progress-track"><i style="width:${pct}%"></i></div></div><div class="guided-question"><span class="guided-kicker">${s.category.toUpperCase()}</span><h3>${safe(q.label)} ${isQuestionRequired(q)?'<em>*</em>':''}</h3><p>${questionHelper(q.label,s)}</p>${questionControl(q,s)}${wizard.error?`<div class="guided-error">${safe(wizard.error)}</div>`:''}</div></div>`;
+  foot.innerHTML=`<button class="btn btn-secondary" data-guide-back>← Atrás</button><div class="footer-actions"><span class="guided-footer-note">${wizard.questionIndex+1}/${questions.length}</span><button class="btn btn-primary" data-guide-question-next>${wizard.questionIndex===questions.length-1?'Continuar a programación →':'Continuar →'}</button></div>`;
+  requestAnimationFrame(()=>$('#requestWizard [data-guide-field]')?.focus());
+}
+function preferredDateForService(s){
+  const idx=s.fields.findIndex(([label,type])=>type==='date'||label.toLowerCase().includes('fecha'));
+  const value=idx>=0?wizard.details[`f${idx}`]:'';
+  return /^\d{4}-\d{2}-\d{2}$/.test(value||'')?value:calendarState.date;
+}
+function guidedDurationForService(s){
+  if(s.id==='cubrimientos'){
+    const start=wizard.details.f2,end=wizard.details.f3;
+    if(/^\d\d:\d\d$/.test(start||'')&&/^\d\d:\d\d$/.test(end||'')){
+      const d=timeToMin(end)-timeToMin(start); if(d>0&&d<=8*60)return d;
+    }
+  }
+  return s.id==='capacitacion'?90:s.id==='publicaciones'?60:60;
+}
+function renderWizardSchedule(body,foot,s){
+  const date=preferredDateForService(s),duration=guidedDurationForService(s);
+  const qualified=rankCandidates(s);
+  const suggestions=findBestSlots(date,duration,s.id,qualified).slice(0,6);
+  const selected=wizard.details.scheduledDate;
+  body.innerHTML=`<div class="guided-intro compact"><span class="guided-kicker">PROGRAMACIÓN INTELIGENTE</span><h3>${selected?'Espacio seleccionado':'Escoge un espacio disponible'}</h3><p>MESA 360 cruza la competencia requerida con agenda y carga. ${s.id==='cubrimientos'?'Para cubrimientos, la fecha del evento tiene prioridad.':'Puedes reservar ahora o dejar que el equipo gestione el horario según el SLA.'}</p></div>${selected?`<div class="selected-slot-hero"><div class="avatar">${personById(wizard.assignee)?.initials||'✓'}</div><div><span>ESPACIO RESERVADO</span><strong>${personById(wizard.assignee)?.name||'Responsable'} · ${formatTime(wizard.details.scheduledStart)}–${formatTime(wizard.details.scheduledEnd)}</strong><small>${wizard.details.scheduledDate} · ${minutesLabel(timeToMin(wizard.details.scheduledEnd)-timeToMin(wizard.details.scheduledStart))}</small></div><button data-guide-clear-slot type="button">Cambiar</button></div>`:''}<div class="guided-slot-grid">${suggestions.map((x,i)=>`<button type="button" class="guided-slot-card ${i===0?'recommended':''}" data-guide-slot="${x.person.id}|${x.date}|${x.start}|${x.end}">${i===0?'<em>MEJOR OPCIÓN</em>':''}<div class="guided-slot-time"><strong>${formatTime(x.start)}</strong><span>${formatTime(x.end)}</span></div><div class="guided-slot-person"><div class="avatar">${x.person.initials}</div><div><strong>${x.person.name}</strong><small>${x.person.role} · ${x.person.load}% ocupado</small></div></div></button>`).join('')||'<div class="guided-no-slots">No encontramos un bloque continuo con esa duración en la fecha indicada. Puedes continuar sin reservar y el equipo propondrá un horario.</div>'}</div>`;
+  foot.innerHTML=`<button class="btn btn-secondary" data-guide-back>← Editar información</button><div class="footer-actions"><button class="btn btn-soft" data-guide-skip-schedule>Gestionar horario después</button>${selected?'<button class="btn btn-primary" data-guide-to-assignment>Continuar →</button>':''}</div>`;
+}
+function routingReason(p,s,index){
+  const skill=matchCount(p,s); const capacity=100-p.load;
+  if(index===0)return `Mejor equilibrio: ${skill} competencias coincidentes y ${capacity}% de capacidad libre.`;
+  return `${skill} competencias coincidentes · ${capacity}% de capacidad libre · próximo espacio ${p.slots[0]}.`;
+}
+function renderWizardAssignment(body,foot,s){
+  const candidates=rankCandidates(s).slice(0,4),recommended=candidates[0];
+  if(!wizard.assignee||wizard.assignee==='auto')wizard.assignee=recommended?.id||'';
+  const choose=canChooseAssignee(s);
+  body.innerHTML=`<div class="guided-intro compact"><span class="guided-kicker">ENRUTAMIENTO POR COMPETENCIA + CAPACIDAD</span><h3>${choose?'Responsable recomendado':'MESA 360 asignará el responsable'}</h3><p>${choose?'Puedes conservar la recomendación o escoger otro funcionario compatible.':'Por seguridad y consistencia operativa, este servicio se enruta automáticamente al perfil competente.'}</p></div><div class="routing-explain"><span>AI</span><div><strong>¿Por qué esta recomendación?</strong><p>Se ponderan competencias del servicio, carga estimada y disponibilidad próxima. En la versión con Supabase se agregarán turnos, ausencias y reglas de escalamiento.</p></div></div><div class="guided-routing-list">${candidates.map((p,i)=>`<button type="button" class="guided-routing-card ${wizard.assignee===p.id?'selected':''} ${i===0?'recommended':''}" ${choose?`data-guide-assignee="${p.id}"`:i===0?'data-guide-assignee-auto="1"':'disabled'}><div class="avatar">${p.initials}</div><div class="guided-routing-main"><div><strong>${p.name}</strong>${i===0?'<em>RECOMENDADO</em>':''}</div><span>${p.role}</span><small>${routingReason(p,s,i)}</small></div><div class="guided-routing-cap"><b>${p.load}%</b><span>ocupado</span><i><u style="width:${p.load}%;background:${loadColor(p.load)}"></u></i></div></button>`).join('')}</div>`;
+  foot.innerHTML=`<button class="btn btn-secondary" data-guide-back>← Atrás</button><button class="btn btn-primary" data-guide-review>Revisar solicitud →</button>`;
+}
+function detailLabel(s,key){
+  if(key==='requester')return 'Dependencia'; if(key==='title')return 'Asunto'; if(key==='priority')return 'Prioridad';
+  const m=String(key).match(/^f(\d+)$/); return m?s.fields[Number(m[1])]?.[0]||key:key;
+}
+function renderWizardReview(body,foot,s){
+  const p=personById(wizard.assignee); const approval=s.approval?approvalOwnerByService[s.id]||'Responsable aprobador configurado':'No requiere aprobación';
+  const detailEntries=Object.entries(wizard.details).filter(([k,v])=>v!==''&&v!=null&&!['scheduledDate','scheduledStart','scheduledEnd'].includes(k));
+  body.innerHTML=`<div class="review-hero"><div class="review-check">✓</div><div><span>LISTA PARA RADICAR</span><h3>Revisa que todo esté correcto</h3><p>Después de crearla podrás consultar la trazabilidad completa desde “Mis solicitudes”.</p></div></div><div class="review-grid"><div class="review-panel"><h4>Información de la solicitud</h4>${detailEntries.map(([k,v])=>`<div class="review-line"><span>${safe(detailLabel(s,k))}</span><strong>${safe(v)}</strong></div>`).join('')}</div><div class="review-panel accent"><h4>Ruta de atención</h4><div class="review-route"><span>${toneIcon(s)}</span><div><small>SERVICIO</small><strong>${s.title}</strong></div></div><div class="review-route"><div class="avatar">${p?.initials||'—'}</div><div><small>RESPONSABLE</small><strong>${p?.name||'Cola del servicio'}</strong></div></div><div class="review-line"><span>SLA objetivo</span><strong>${s.sla}</strong></div><div class="review-line"><span>Aprobación</span><strong>${approval}</strong></div>${wizard.details.scheduledDate?`<div class="review-line"><span>Agenda</span><strong>${wizard.details.scheduledDate}<br>${formatTime(wizard.details.scheduledStart)}–${formatTime(wizard.details.scheduledEnd)}</strong></div>`:''}</div></div><div class="review-notice"><span>i</span><div><strong>Al radicar</strong><p>Se generará un número único, se registrará la ruta de asignación y comenzará el control de tiempos del servicio${s.approval?', una vez supere la aprobación correspondiente':''}.</p></div></div>`;
+  foot.innerHTML=`<button class="btn btn-secondary" data-guide-back>← Ajustar</button><button class="btn btn-primary guided-submit" data-guide-submit>✓ Radicar solicitud</button>`;
+}
+function renderWizard(){
+  updateWizardChrome();
+  const body=$('#requestWizard'),foot=$('#requestWizardFooter'); if(!body||!foot)return;
+  const s=serviceById(wizard.service);
+  if(wizard.stage==='family')return renderWizardFamily(body,foot);
+  if(wizard.stage==='service')return renderWizardService(body,foot);
+  if(wizard.stage==='selfhelp')return renderWizardSelfHelp(body,foot,s);
+  if(wizard.stage==='questions')return renderWizardQuestion(body,foot,s);
+  if(wizard.stage==='schedule')return renderWizardSchedule(body,foot,s);
+  if(wizard.stage==='assignment')return renderWizardAssignment(body,foot,s);
+  return renderWizardReview(body,foot,s);
+}
+function captureGuidedCurrent(){
+  const el=$('#requestWizard [data-guide-field]'); if(!el)return true;
+  wizard.details[el.dataset.guideField]=el.value.trim();
+  const s=serviceById(wizard.service),q=buildWizardQuestions(s)[wizard.questionIndex];
+  if(isQuestionRequired(q)&&!wizard.details[q.key]){wizard.error='Este dato es necesario para continuar sin devoluciones.';renderWizard();return false;}
+  wizard.error='';return true;
+}
+function guidedQuestionNext(){
+  if(!captureGuidedCurrent())return;
+  const s=serviceById(wizard.service),qs=buildWizardQuestions(s);
+  if(wizard.questionIndex<qs.length-1){wizard.questionIndex++;renderWizard();return;}
+  wizard.stage=canScheduleService(s)?'schedule':'assignment';renderWizard();
+}
+function guidedBack(){
+  const s=serviceById(wizard.service);
+  if(wizard.stage==='service'){wizard.stage='family';wizard.family=null;}
+  else if(wizard.stage==='selfhelp'){wizard.stage='service';}
+  else if(wizard.stage==='questions'){
+    if(wizard.questionIndex>0)wizard.questionIndex--; else wizard.stage=selfHelpGuides[s?.id]?'selfhelp':'service';
+  } else if(wizard.stage==='schedule'){wizard.stage='questions';wizard.questionIndex=Math.max(0,buildWizardQuestions(s).length-1);}
+  else if(wizard.stage==='assignment'){wizard.stage=canScheduleService(s)?'schedule':'questions'; if(wizard.stage==='questions')wizard.questionIndex=Math.max(0,buildWizardQuestions(s).length-1);}
+  else if(wizard.stage==='review'){wizard.stage='assignment';}
+  wizard.error='';renderWizard();
+}
+function reserveQuickSlot(payload){
+  if(!payload)return; const [personId,date,start,end]=payload.split('|'),p=personById(personId),s=serviceById(calendarState.service);
+  wizard=freshWizard(s?.id||null,{requester:'Secretaría General',priority:'Media',scheduledDate:date,scheduledStart:start,scheduledEnd:end,assignee:personId});
+  wizard.assignee=personId;
+  if(s){wizard.stage=selfHelpGuides[s.id]?'selfhelp':'questions';} else wizard.stage='family';
+  $('#requestModalBackdrop').hidden=false;document.body.style.overflow='hidden';renderWizard();
+  showToast('Espacio preseleccionado',`${p.name} · ${formatTime(start)} a ${formatTime(end)}. MESA 360 conservará esta reserva mientras completas la solicitud.`);
+}
+function scheduleTypeForService(id){return id==='cubrimientos'?'coverage':['correo','equipos','internet','accesos','seguridad'].includes(id)?'support':id==='desarrollo'||id==='datos'?'development':id==='revision'?'review':'internal';}
+function submitRequest(){
+  const s=serviceById(wizard.service),p=personById(wizard.assignee); if(!s)return;
+  const nextNum=Math.max(148,...tickets.map(t=>Number(String(t.id).match(/(\d+)$/)?.[1]||0)))+1;
+  const id=`MA-2026-${String(nextNum).padStart(4,'0')}`;
+  const scheduled=!!wizard.details.scheduledDate;
+  const status=s.approval?'En aprobación':scheduled?'Programado':'Nuevo';
+  const timeline=[['Solicitud radicada mediante asistente guiado','19 Ago · ahora']];
+  if(s.approval)timeline.push([`Enviada a aprobación · ${approvalOwnerByService[s.id]||'Aprobador del servicio'}`,'19 Ago · ahora']);
+  timeline.push([p?`Enrutada a ${p.name} por competencia y capacidad`:'Enrutada a la cola correspondiente','19 Ago · ahora']);
+  if(scheduled)timeline.push([`Agenda reservada · ${wizard.details.scheduledDate} ${formatTime(wizard.details.scheduledStart)}–${formatTime(wizard.details.scheduledEnd)}`,'19 Ago · ahora']);
+  const newT={
+    id,service:s.id,title:wizard.details.title||s.title,requester:wizard.details.requester||'Secretaría General',assignee:p?.id||'',priority:wizard.details.priority||(s.critical?'Crítica':'Media'),status,created:'19 Ago · ahora',due:s.sla==='Inmediato'?'Inmediato':s.sla==='Agenda'?'Según agenda':'Según SLA',sla:s.sla,
+    description:(()=>{const i=s.fields.findIndex(([,type])=>type==='textarea');return (i>=0&&wizard.details[`f${i}`])||wizard.details.title||'Solicitud registrada desde el portal.';})(),details:{...wizard.details},approval:s.approval?{required:true,owner:approvalOwnerByService[s.id]||'Aprobador configurado',status:'Pendiente'}:{required:false,status:'No aplica'},timeline
+  };
+  tickets.unshift(newT);saveTickets();
+  if(scheduled&&p){scheduleEvents.push({id:`ev-${id}`,person:p.id,date:wizard.details.scheduledDate,start:wizard.details.scheduledStart,end:wizard.details.scheduledEnd,title:newT.title,type:scheduleTypeForService(s.id),service:s.id,ticket:id});}
+  closeRequestModal();showToast('Solicitud radicada',`${id} quedó registrada${s.approval?' y enviada a aprobación':''}.`);setView('my-tickets');
+}
+
+function slaHealth(t){
+  if(['Resuelto','Cerrado'].includes(t.status))return {key:'met',label:'Cumplido',detail:'Objetivo atendido',pct:100};
+  if(t.status==='En espera')return {key:'paused',label:'Pausado',detail:'Esperando información',pct:48};
+  if(t.priority==='Crítica'||t.sla==='Inmediato')return {key:'critical',label:'Crítico',detail:'Atención inmediata',pct:92};
+  const mins=String(t.sla).match(/(\d+)\s*min/i); if(mins&&Number(mins[1])<=60)return {key:'critical',label:'Crítico',detail:`${mins[1]} min restantes`,pct:90};
+  if(t.priority==='Alta'||(mins&&Number(mins[1])<=120))return {key:'risk',label:'En riesgo',detail:'Requiere atención prioritaria',pct:74};
+  if(t.status==='En aprobación')return {key:'approval',label:'En aprobación',detail:'Reloj controlado por flujo',pct:32};
+  return {key:'ontime',label:'En tiempo',detail:'Dentro del objetivo',pct:42};
+}
+function slaBadge(t){const h=slaHealth(t);return `<span class="sla-health ${h.key}"><i></i>${h.label}</span>`;}
+function opsFilterTickets(){
+  return tickets.filter(t=>{
+    const h=slaHealth(t);
+    if(opsState.filter==='now')return !['Resuelto','Cerrado','Cancelado'].includes(t.status);
+    if(opsState.filter==='risk')return ['risk','critical'].includes(h.key);
+    if(opsState.filter==='unassigned')return !t.assignee&&!['Resuelto','Cerrado'].includes(t.status);
+    if(opsState.filter==='scheduled')return t.status==='Programado';
+    if(opsState.filter==='approvals')return t.status==='En aprobación'||t.approval?.status==='Pendiente';
+    return true;
+  });
+}
+function opsTicketRow(t){
+  const s=serviceById(t.service),p=personById(t.assignee),h=slaHealth(t);
+  return `<button class="ops-ticket-row" data-ticket="${t.id}"><div class="ops-ticket-main"><div class="ops-ticket-titleline"><span class="ops-code">${t.id}</span>${priorityPill(t.priority)}${slaBadge(t)}</div><strong>${safe(t.title)}</strong><small>${safe(t.requester)} · ${safe(s?.title||'Servicio')}</small></div><div class="ops-ticket-assignee">${p?`<div class="avatar">${p.initials}</div><div><strong>${p.name}</strong><small>${p.load}% ocupado</small></div>`:'<div><strong>Sin asignar</strong><small>Requiere triage</small></div>'}</div><div class="ops-sla-cell"><div class="ops-sla-top"><span>${h.detail}</span><b>${safe(t.sla)}</b></div><div class="ops-sla-progress"><i class="${h.key}" style="width:${h.pct}%"></i></div><small>${safe(t.due)}</small></div><span class="ops-row-arrow">›</span></button>`;
+}
+function renderOps(){
+  const list=opsFilterTickets(),open=tickets.filter(t=>!['Resuelto','Cerrado','Cancelado'].includes(t.status)),risk=open.filter(t=>['risk','critical'].includes(slaHealth(t).key)),approvals=open.filter(t=>t.status==='En aprobación'),unassigned=open.filter(t=>!t.assignee);
+  const filters=[['now','Ahora',open.length],['risk','En riesgo',risk.length],['approvals','Aprobaciones',approvals.length],['scheduled','Programados',open.filter(t=>t.status==='Programado').length],['unassigned','Sin asignar',unassigned.length],['all','Todos',tickets.length]];
+  $('#view-ops').innerHTML=`<div class="ops-page-head"><div><span class="eyebrow">COMMAND CENTER · OPERACIÓN</span><h1>Centro de Operaciones</h1><p>Prioriza por riesgo, SLA, aprobación y capacidad. Cada caso conserva su contexto completo sin abandonar la consola.</p></div><div class="ops-head-actions"><button class="btn btn-secondary" data-command-open>⌕ Buscar</button><button class="btn btn-primary" data-action="open-new-request">＋ Radicar solicitud</button></div></div><div class="ops-kpis"><div><span>COLA ACTIVA</span><strong>${open.length}</strong><small>${open.filter(t=>t.status==='Nuevo').length} nuevos</small></div><div class="risk"><span>RIESGO SLA</span><strong>${risk.length}</strong><small>requieren foco</small></div><div class="approval"><span>APROBACIONES</span><strong>${approvals.length}</strong><small>pendientes</small></div><div><span>CAPACIDAD EQUIPO</span><strong>${Math.round(team.reduce((a,p)=>a+(100-p.load),0)/team.length)}%</strong><small>libre promedio</small></div></div><div class="ops-workspace"><section class="ops-queue"><div class="ops-filterbar">${filters.map(([id,label,count])=>`<button class="${opsState.filter===id?'active':''}" data-ops-filter="${id}">${label}<span>${count}</span></button>`).join('')}</div><div class="ops-queue-head"><div><strong>${filters.find(x=>x[0]===opsState.filter)?.[1]||'Solicitudes'}</strong><span>${list.length} resultados ordenados por prioridad operativa</span></div><button class="link-btn" data-view-link="calendar">Abrir planificador →</button></div><div class="ops-ticket-list">${list.map(opsTicketRow).join('')||'<div class="empty-state"><div class="empty-icon">✓</div><h3>No hay casos en esta bandeja</h3><p>La cola está al día con este criterio.</p></div>'}</div></section><aside class="ops-side"><div class="ops-side-head"><div><span>CAPACIDAD EN VIVO</span><strong>Equipo</strong></div><button data-view-link="team">Ver todo</button></div>${team.slice().sort((a,b)=>a.load-b.load).map(p=>`<div class="ops-person"><div class="avatar">${p.initials}</div><div class="ops-person-main"><strong>${p.name}</strong><span>${p.role}</span><i><u style="width:${p.load}%;background:${loadColor(p.load)}"></u></i></div><div class="ops-person-load"><b>${p.load}%</b><span>${p.slots[0]}</span></div></div>`).join('')}<div class="ops-side-rule"><span>⚡</span><div><strong>Asignación inteligente</strong><p>La recomendación evita perfiles incompatibles y penaliza la sobrecarga.</p></div></div></aside></div>`;
+}
+
+function renderTicketDrawer(){
+  const t=tickets.find(x=>x.id===ticketDrawerState.id); if(!t)return;
+  const s=serviceById(t.service),p=personById(t.assignee),h=slaHealth(t);
+  const tabs=[['overview','Resumen'],['activity','Actividad'],['sla','SLA'],['approval','Aprobación']];
+  let content='';
+  if(ticketDrawerState.tab==='overview'){
+    const detailEntries=Object.entries(t.details||{}).filter(([k,v])=>v!==''&&v!=null&&!['title','requester','priority','scheduledDate','scheduledStart','scheduledEnd'].includes(k));
+    content=`<div class="ticket-360-hero"><div><span>ESTADO DEL SERVICIO</span><strong>${h.label}</strong><p>${h.detail}</p></div><div class="ticket-360-progress"><i class="${h.key}" style="width:${h.pct}%"></i></div></div><div class="detail-grid ticket-detail-grid"><div class="detail-box"><span>Responsable</span><strong>${p?.name||'Sin asignar'}</strong><small>${p?.role||'Pendiente de triage'}</small></div><div class="detail-box"><span>Vencimiento</span><strong>${safe(t.due)}</strong><small>SLA ${safe(t.sla)}</small></div><div class="detail-box"><span>Dependencia</span><strong>${safe(t.requester)}</strong></div><div class="detail-box"><span>Servicio</span><strong>${safe(s?.title||t.service)}</strong></div></div><div class="ticket-section"><h3>Descripción</h3><p>${safe(t.description)}</p></div>${detailEntries.length?`<div class="ticket-section"><h3>Información radicada</h3><div class="ticket-field-list">${detailEntries.map(([k,v])=>`<div><span>${safe(detailLabel(s,k))}</span><strong>${safe(v)}</strong></div>`).join('')}</div></div>`:''}<div class="ticket-route-card"><div><span>ENRUTAMIENTO</span><strong>${p?`${p.name} · ${matchCount(p,s)} competencias coincidentes`:'Cola del servicio'}</strong><small>Asignación basada en competencia, capacidad y reglas del servicio.</small></div>${t.details?.scheduledDate?`<div><span>AGENDA</span><strong>${t.details.scheduledDate} · ${formatTime(t.details.scheduledStart)}–${formatTime(t.details.scheduledEnd)}</strong><small>Reserva asociada a la solicitud.</small></div>`:''}</div>`;
+  } else if(ticketDrawerState.tab==='activity'){
+    content=`<div class="activity-head"><div><h3>Historial y conversación</h3><p>La trazabilidad diferencia mensajes al funcionario y notas internas.</p></div></div><div class="timeline ticket-timeline">${(t.timeline||[]).map(([a,d])=>`<div class="timeline-item"><strong>${safe(a)}</strong><p>${safe(d)}</p></div>`).join('')}</div><div class="comment-box pro-comment"><div class="comment-mode"><label><input type="radio" name="commentMode" value="public" checked> Respuesta al funcionario</label>${currentRole!=='requester'?'<label><input type="radio" name="commentMode" value="internal"> Nota interna</label>':''}</div><textarea id="ticketCommentText" placeholder="Escribe una actualización clara..."></textarea><div class="comment-actions"><span>Las notas internas solo las ve el equipo gestor.</span><button class="btn btn-primary compact" data-ticket-comment="${t.id}">Publicar actualización</button></div></div>`;
+  } else if(ticketDrawerState.tab==='sla'){
+    content=`<div class="sla-detail-card ${h.key}"><span>SEMÁFORO SLA</span><strong>${h.label}</strong><p>${h.detail}. Objetivo configurado para <b>${safe(s?.title||'este servicio')}</b>: ${safe(s?.sla||t.sla)}.</p><div class="sla-detail-track"><i style="width:${h.pct}%"></i></div><div class="sla-detail-meta"><div><span>Inicio</span><strong>${safe(t.created)}</strong></div><div><span>Objetivo</span><strong>${safe(t.due)}</strong></div><div><span>Prioridad</span><strong>${safe(t.priority)}</strong></div></div></div><div class="ticket-section"><h3>Reglas de escalamiento simuladas</h3><div class="rule-list"><div><span>70%</span><div><strong>Advertencia preventiva</strong><p>Notifica al responsable y resalta el caso en Operaciones.</p></div></div><div><span>90%</span><div><strong>Escalamiento</strong><p>Eleva el caso al líder del servicio y recomienda redistribución.</p></div></div><div><span>100%</span><div><strong>Incumplimiento</strong><p>Registra el evento y exige causa/cierre de mejora.</p></div></div></div></div>`;
+  } else {
+    const ap=t.approval||(s?.approval?{required:true,owner:approvalOwnerByService[s.id]||'Aprobador configurado',status:t.status==='En aprobación'?'Pendiente':'Aprobada'}:{required:false,status:'No aplica'});
+    content=ap.required?`<div class="approval-flow"><div class="approval-icon">✓</div><span>FLUJO DE APROBACIÓN</span><h3>${safe(ap.status)}</h3><p>Responsable: <strong>${safe(ap.owner)}</strong></p><div class="approval-steps"><div class="done"><i>1</i><div><strong>Radicación</strong><small>Solicitud completa</small></div></div><div class="${ap.status==='Pendiente'?'active':'done'}"><i>2</i><div><strong>Validación / aprobación</strong><small>${safe(ap.owner)}</small></div></div><div><i>3</i><div><strong>Ejecución</strong><small>Se activa al aprobar</small></div></div></div>${currentRole!=='requester'&&ap.status==='Pendiente'?`<div class="approval-actions"><button class="btn btn-secondary" data-ticket-status="En espera" data-ticket-id="${t.id}">Solicitar ajuste</button><button class="btn btn-primary" data-approve-ticket="${t.id}">Aprobar</button></div>`:''}</div>`:`<div class="empty-state"><div class="empty-icon">✓</div><h3>Este servicio no requiere aprobación</h3><p>La solicitud puede pasar directamente a asignación y ejecución.</p></div>`;
+  }
+  $('#ticketDrawer').innerHTML=`<div class="drawer-head ticket-360-head"><div class="drawer-head-top"><div><span class="eyebrow">${t.id}</span><h2>${safe(t.title)}</h2><p>${safe(s?.title||'Servicio')} · ${safe(t.requester)}</p></div><button class="close-btn" data-action="close-ticket-drawer">×</button></div><div class="ticket-360-chips">${statusPill(t.status)}${priorityPill(t.priority)}${slaBadge(t)}</div><div class="ticket-tabs">${tabs.map(([id,label])=>`<button class="${ticketDrawerState.tab===id?'active':''}" data-ticket-tab="${id}">${label}</button>`).join('')}</div></div><div class="drawer-body ticket-360-body">${content}${currentRole!=='requester'&&ticketDrawerState.tab==='overview'?`<div class="ticket-actionbar"><button class="btn btn-soft" data-ticket-status="En gestión" data-ticket-id="${t.id}">Tomar caso</button><button class="btn btn-secondary" data-ticket-status="En espera" data-ticket-id="${t.id}">Poner en espera</button><button class="btn btn-primary" data-ticket-status="Resuelto" data-ticket-id="${t.id}">Resolver</button></div>`:''}</div>`;
+}
+function openTicket(id,tab='overview'){ if(!tickets.find(x=>x.id===id))return;ticketDrawerState={id,tab};renderTicketDrawer();$('#ticketDrawerBackdrop').hidden=false;document.body.style.overflow='hidden'; }
+function closeTicketDrawer(){ $('#ticketDrawerBackdrop').hidden=true;document.body.style.overflow='';ticketDrawerState.id=null; }
+function changeTicketStatus(id,status){
+  const t=tickets.find(x=>x.id===id);if(!t)return;t.status=status;t.timeline=t.timeline||[];t.timeline.push([`Estado cambiado a ${status}`,'19 Ago · ahora']);saveTickets();showToast('Estado actualizado',`${id} ahora está ${status.toLowerCase()}.`);if(ticketDrawerState.id===id)renderTicketDrawer();const active=$('.view.active')?.id.replace('view-','');if(active)renderView(active);
+}
+function approveTicket(id){const t=tickets.find(x=>x.id===id);if(!t)return;t.status=t.details?.scheduledDate?'Programado':'Nuevo';t.approval={...(t.approval||{}),required:true,status:'Aprobada',owner:t.approval?.owner||approvalOwnerByService[t.service]};t.timeline=t.timeline||[];t.timeline.push(['Solicitud aprobada','19 Ago · ahora']);saveTickets();showToast('Solicitud aprobada',`${id} ya puede continuar a ejecución.`);renderTicketDrawer();}
+function addTicketComment(id){
+  const t=tickets.find(x=>x.id===id),text=$('#ticketCommentText')?.value.trim();if(!t||!text)return;
+  const mode=$('input[name="commentMode"]:checked')?.value||'public';t.timeline=t.timeline||[];t.timeline.push([`${mode==='internal'?'Nota interna':'Respuesta al funcionario'} · ${text}`,'19 Ago · ahora']);saveTickets();renderTicketDrawer();showToast(mode==='internal'?'Nota interna registrada':'Actualización publicada','La trazabilidad del caso fue actualizada.');
+}
+
+function commandEntries(query=''){
+  const q=query.trim().toLowerCase();
+  const base=[
+    {kind:'action',icon:'＋',title:'Radicar nueva solicitud',sub:'Asistente guiado paso a paso',action:'new'},
+    {kind:'view',icon:'▦',title:'Abrir agenda y disponibilidad',sub:'Planificador visual de recursos',view:'calendar'},
+    ...(currentRole!=='requester'?[{kind:'view',icon:'◫',title:'Abrir Centro de Operaciones',sub:'SLA, prioridades y capacidad',view:'ops'}]:[]),
+    {kind:'view',icon:'◇',title:'Explorar catálogo de servicios',sub:'Todos los servicios institucionales',view:'catalog'}
+  ];
+  const sv=services.map(s=>({kind:'service',icon:s.icon,title:s.title,sub:`${s.category} · ${s.sla}`,service:s.id}));
+  const tk=tickets.slice(0,20).map(t=>({kind:'ticket',icon:'▤',title:t.title,sub:`${t.id} · ${t.requester}`,ticket:t.id}));
+  const all=[...base,...sv,...tk]; if(!q)return all.slice(0,10);
+  return all.filter(x=>`${x.title} ${x.sub}`.toLowerCase().includes(q)).slice(0,12);
+}
+function renderCommandPalette(q=''){
+  const items=commandEntries(q);$('#commandResults').innerHTML=items.length?items.map(x=>`<button class="command-item" ${x.kind==='action'?`data-command-action="${x.action}"`:x.kind==='view'?`data-command-view="${x.view}"`:x.kind==='service'?`data-command-service="${x.service}"`:`data-command-ticket="${x.ticket}"`}><span class="command-item-icon">${x.icon}</span><div><strong>${safe(x.title)}</strong><small>${safe(x.sub)}</small></div><kbd>↵</kbd></button>`).join(''):`<div class="command-empty"><span>⌕</span><strong>Sin coincidencias</strong><p>Prueba con “correo”, “cubrimiento”, una dependencia o el número MA-2026.</p></div>`;
+}
+function openCommandPalette(initial=''){closeRequestModal();$('#commandBackdrop').hidden=false;document.body.style.overflow='hidden';$('#commandInput').value=initial;renderCommandPalette(initial);requestAnimationFrame(()=>$('#commandInput').focus());}
+function closeCommandPalette(){if(!$('#commandBackdrop'))return;$('#commandBackdrop').hidden=true;document.body.style.overflow='';}
+function globalSearch(q){openCommandPalette(q||'');}
+
+// Scheduler PRO 2.0: los agentes pueden mover bloques entre personas y horas.
+function renderDayScheduler(people,date){
+  const timelineStart=8*60,timelineEnd=17*60,totalMinutes=timelineEnd-timelineStart;
+  const hourWidth=calendarState.zoom,timelineWidth=(totalMinutes/60)*hourWidth;
+  const ticks=[];for(let h=8;h<=17;h++)ticks.push(h);
+  const minor=[];for(let m=timelineStart;m<=timelineEnd;m+=calendarState.snap){if(m%60!==0)minor.push(m);}
+  const now=new Date(),showNow=toISO(now)===date&&now.getHours()*60+now.getMinutes()>=timelineStart&&now.getHours()*60+now.getMinutes()<=timelineEnd,nowMinute=now.getHours()*60+now.getMinutes();
+  const px=minute=>((minute-timelineStart)/60)*hourWidth;
+  const visiblePeople=people.filter(p=>!calendarState.availableOnly||freeMinutesForDay(p.id,date)>=calendarState.duration);
+  const rows=visiblePeople.map(p=>{
+    const evs=scheduleEvents.filter(e=>e.person===p.id&&e.date===date),free=getFreeWindows(p.id,date,calendarState.duration);
+    return `<div class="resource-row" style="--timeline-width:${timelineWidth}px"><div class="resource-person sticky-resource"><div class="avatar resource-avatar">${p.initials}</div><div class="resource-copy"><strong>${p.name}</strong><span>${p.role}</span><div class="resource-meta"><span class="resource-load ${p.load>=85?'danger':p.load>=70?'warn':'ok'}">${p.load}% ocupado</span><span>${free.length?`${free.length} espacios`:'Sin espacio'}</span></div></div></div><div class="resource-timeline ${currentRole!=='requester'?'editable-timeline':''}" data-calendar-drop-person="${p.id}" data-calendar-drop-date="${date}" style="width:${timelineWidth}px"><div class="lunch-band" style="left:${px(12*60)}px;width:${hourWidth}px"><span>12:00–1:00 · Almuerzo</span></div>${minor.map(m=>`<div class="minor-time-line" style="left:${px(m)}px"></div>`).join('')}${ticks.map(h=>`<div class="hour-line" style="left:${px(h*60)}px"></div>`).join('')}${showNow?`<div class="now-line" style="left:${px(nowMinute)}px"><span>Ahora</span></div>`:''}${calendarState.showFree?free.map(f=>{const left=px(timeToMin(f.start)),width=((timeToMin(f.end)-timeToMin(f.start))/60)*hourWidth;return `<button class="free-window" data-quick-slot="${p.id}|${date}|${f.start}|${f.end}" style="left:${left}px;width:${width}px" title="Libre ${formatTime(f.start)} – ${formatTime(f.end)}"><strong>LIBRE</strong><span>${width>120?`${formatTime(f.start)}–${formatTime(f.end)}`:'Reservar'}</span></button>`}).join(''):''}${evs.map(e=>{const left=px(timeToMin(e.start)),width=((timeToMin(e.end)-timeToMin(e.start))/60)*hourWidth;return `<button class="schedule-event ${e.type}" data-schedule-event="${e.id}" draggable="${currentRole!=='requester'?'true':'false'}" style="left:${Math.max(0,left)}px;width:${Math.max(48,width)}px" title="${safe(e.title)} · ${formatTime(e.start)}–${formatTime(e.end)}${currentRole!=='requester'?' · Arrastra para reprogramar':''}"><strong>${safe(e.title)}</strong><span>${formatTime(e.start)}–${formatTime(e.end)}</span>${currentRole!=='requester'?'<i class="event-drag-grip">⋮⋮</i>':''}</button>`}).join('')}</div><div class="resource-next sticky-availability"><span>Próximo libre</span><strong>${free[0]?`${formatTime(free[0].start)}–${formatTime(free[0].end)}`:'—'}</strong><button ${free[0]?'':'disabled'} data-quick-slot="${free[0]?`${p.id}|${date}|${free[0].start}|${free[0].end}`:''}">Reservar</button></div></div>`;
+  }).join('');
+  const ruler=`<div class="timeline-ruler" style="width:${timelineWidth}px">${minor.map(m=>`<div class="ruler-minor" style="left:${px(m)}px"></div>`).join('')}${ticks.map(h=>`<div class="ruler-hour" style="left:${px(h*60)}px"><strong>${formatTime(`${String(h).padStart(2,'0')}:00`)}</strong>${h<17?'<span>hora</span>':''}</div>`).join('')}${showNow?`<div class="ruler-now" style="left:${px(nowMinute)}px"></div>`:''}</div>`;
+  return `<div class="scheduler-scroll" id="resourceScroll" data-calendar-pan><div class="resource-header" style="--timeline-width:${timelineWidth}px"><div class="resource-header-person sticky-resource">Funcionario / carga</div>${ruler}<div class="resource-header-next sticky-availability">Disponibilidad</div></div><div class="resource-board">${rows||'<div class="scheduler-empty">No hay funcionarios disponibles con los filtros actuales.</div>'}</div></div>`;
+}
+function workWindowContains(start,end){return workWindows.some(([a,b])=>timeToMin(a)<=start&&timeToMin(b)>=end);}
+function scheduleConflict(eventId,person,date,start,end){return scheduleEvents.some(e=>e.id!==eventId&&e.person===person&&e.date===date&&timeToMin(e.start)<end&&timeToMin(e.end)>start);}
+function moveScheduleEvent(eventId,person,date,startMinute){
+  const ev=scheduleEvents.find(e=>e.id===eventId);if(!ev)return;
+  const duration=timeToMin(ev.end)-timeToMin(ev.start),snap=calendarState.snap||30;
+  let start=Math.round(startMinute/snap)*snap,end=start+duration;start=Math.max(8*60,Math.min(17*60-duration,start));end=start+duration;
+  if(!workWindowContains(start,end)){showToast('Horario no disponible','El bloque debe quedar completamente dentro de la jornada laboral y no atravesar el almuerzo.');return;}
+  if(scheduleConflict(ev.id,person,date,start,end)){showToast('Conflicto de agenda','Ya existe otra actividad que se cruza con ese horario.');return;}
+  ev.person=person;ev.date=date;ev.start=minToTime(start);ev.end=minToTime(end);
+  const t=ev.ticket?tickets.find(x=>x.id===ev.ticket):null;if(t){t.assignee=person;t.details=t.details||{};t.details.scheduledDate=date;t.details.scheduledStart=ev.start;t.details.scheduledEnd=ev.end;t.timeline=t.timeline||[];t.timeline.push([`Agenda reprogramada a ${personById(person)?.name} · ${formatTime(ev.start)}–${formatTime(ev.end)}`,'19 Ago · ahora']);saveTickets();}
+  showToast('Agenda actualizada',`${ev.title} · ${personById(person)?.name} · ${formatTime(ev.start)}–${formatTime(ev.end)}.`);renderCalendar();
+}
+
+// Interacciones v0.4, separadas de los manejadores de compatibilidad de versiones anteriores.
+document.addEventListener('click',e=>{
+  const family=e.target.closest('[data-guide-family]');if(family){wizard.family=family.dataset.guideFamily;wizard.stage='service';renderWizard();return;}
+  const service=e.target.closest('[data-guide-service]');if(service){wizard.service=service.dataset.guideService;wizard.family=familyForService(wizard.service)?.id;wizard.stage=selfHelpGuides[wizard.service]?'selfhelp':'questions';wizard.questionIndex=0;renderWizard();return;}
+  const answer=e.target.closest('[data-guide-answer]');if(answer){wizard.details[answer.dataset.guideKey]=answer.dataset.guideAnswer;wizard.error='';renderWizard();return;}
+  if(e.target.closest('[data-guide-back]')){guidedBack();return;}
+  if(e.target.closest('[data-guide-selfhelp-continue]')){wizard.selfHelpDone=true;wizard.stage='questions';wizard.questionIndex=0;renderWizard();return;}
+  if(e.target.closest('[data-guide-solved]')){closeRequestModal();showToast('Listo','No fue necesario radicar una solicitud. Si vuelve a ocurrir, MESA 360 conserva el servicio para una nueva radicación.');return;}
+  if(e.target.closest('[data-guide-question-next]')){guidedQuestionNext();return;}
+  const slot=e.target.closest('[data-guide-slot]');if(slot){const [person,date,start,end]=slot.dataset.guideSlot.split('|');wizard.assignee=person;Object.assign(wizard.details,{scheduledDate:date,scheduledStart:start,scheduledEnd:end});wizard.stage='assignment';renderWizard();return;}
+  if(e.target.closest('[data-guide-clear-slot]')){delete wizard.details.scheduledDate;delete wizard.details.scheduledStart;delete wizard.details.scheduledEnd;wizard.assignee='auto';renderWizard();return;}
+  if(e.target.closest('[data-guide-skip-schedule]')){delete wizard.details.scheduledDate;delete wizard.details.scheduledStart;delete wizard.details.scheduledEnd;wizard.stage='assignment';renderWizard();return;}
+  if(e.target.closest('[data-guide-to-assignment]')){wizard.stage='assignment';renderWizard();return;}
+  const assignee=e.target.closest('[data-guide-assignee]');if(assignee){wizard.assignee=assignee.dataset.guideAssignee;renderWizard();return;}
+  if(e.target.closest('[data-guide-review]')){wizard.stage='review';renderWizard();return;}
+  if(e.target.closest('[data-guide-submit]')){submitRequest();return;}
+  const ops=e.target.closest('[data-ops-filter]');if(ops){opsState.filter=ops.dataset.opsFilter;renderOps();return;}
+  const tab=e.target.closest('[data-ticket-tab]');if(tab&&ticketDrawerState.id){ticketDrawerState.tab=tab.dataset.ticketTab;renderTicketDrawer();return;}
+  const comment=e.target.closest('[data-ticket-comment]');if(comment){addTicketComment(comment.dataset.ticketComment);return;}
+  const approve=e.target.closest('[data-approve-ticket]');if(approve){approveTicket(approve.dataset.approveTicket);return;}
+  if(e.target.closest('[data-command-open]')){openCommandPalette();return;}
+  const ca=e.target.closest('[data-command-action]');if(ca){closeCommandPalette();if(ca.dataset.commandAction==='new')openRequestModal();return;}
+  const cv=e.target.closest('[data-command-view]');if(cv){closeCommandPalette();setView(cv.dataset.commandView);return;}
+  const cs=e.target.closest('[data-command-service]');if(cs){closeCommandPalette();openRequestModal(cs.dataset.commandService);return;}
+  const ct=e.target.closest('[data-command-ticket]');if(ct){closeCommandPalette();openTicket(ct.dataset.commandTicket);return;}
+});
+document.addEventListener('input',e=>{
+  if(e.target.matches('[data-guide-field]')){wizard.details[e.target.dataset.guideField]=e.target.value;wizard.error='';}
+  if(e.target.id==='commandInput')renderCommandPalette(e.target.value);
+});
+document.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openCommandPalette();}
+  if(e.key==='Escape'&&!$('#commandBackdrop')?.hidden){closeCommandPalette();}
+  if(e.key==='Enter'&&e.target?.id==='commandInput'){const first=$('#commandResults .command-item');first?.click();}
+  if(e.key==='Enter'&&e.target?.matches?.('[data-guide-field]')&&e.target.tagName!=='TEXTAREA'){e.preventDefault();guidedQuestionNext();}
+},true);
+$('#commandBackdrop')?.addEventListener('click',e=>{if(e.target.id==='commandBackdrop')closeCommandPalette();});
+$('#globalSearch')?.addEventListener('click',()=>openCommandPalette($('#globalSearch').value||''));
+
+document.addEventListener('dragstart',e=>{
+  const ev=e.target.closest?.('.schedule-event[data-schedule-event]');if(!ev||currentRole==='requester')return;
+  draggedScheduleId=ev.dataset.scheduleEvent;ev.classList.add('dragging-event');e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',draggedScheduleId);
+});
+document.addEventListener('dragend',e=>{e.target.closest?.('.schedule-event')?.classList.remove('dragging-event');draggedScheduleId=null;$$('.editable-timeline').forEach(x=>x.classList.remove('drag-over'));});
+document.addEventListener('dragover',e=>{const tl=e.target.closest?.('[data-calendar-drop-person]');if(!tl||currentRole==='requester')return;e.preventDefault();e.dataTransfer.dropEffect='move';$$('.editable-timeline').forEach(x=>x.classList.toggle('drag-over',x===tl));});
+document.addEventListener('drop',e=>{
+  const tl=e.target.closest?.('[data-calendar-drop-person]');if(!tl||currentRole==='requester')return;e.preventDefault();
+  const id=draggedScheduleId||e.dataTransfer.getData('text/plain'),rect=tl.getBoundingClientRect(),minute=8*60+((e.clientX-rect.left)/calendarState.zoom)*60;
+  $$('.editable-timeline').forEach(x=>x.classList.remove('drag-over'));moveScheduleEvent(id,tl.dataset.calendarDropPerson,tl.dataset.calendarDropDate,minute);draggedScheduleId=null;
+});
+
+
 setRole('requester');
 renderHome();
 updateBadges();
