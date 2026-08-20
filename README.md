@@ -36,3 +36,9 @@ Las solicitudes creadas se guardan en `localStorage` del navegador. Las activida
 ### Próxima fase recomendada
 
 Conectar Supabase para: perfiles/roles, catálogo configurable, tickets, estados, eventos de auditoría, archivos, comentarios, aprobaciones, disponibilidad, ausencias, reglas SLA, notificaciones y seguridad RLS.
+
+---
+
+## v0.6 · Administration Studio
+
+La versión v0.6 agrega el Control Plane pre-Supabase: constructor no-code de servicios/pop-ups, diseñador avanzado de workflows, RBAC simulado, notificaciones configurables, plantillas, auditoría y catálogo ESM multidependencia. Ver `README_v0.6.md` y `ADMIN_STUDIO_v0.6.md`.
