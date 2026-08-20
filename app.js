@@ -1,891 +1,251 @@
-const services = [
-  { id:'publicaciones', category:'Comunicaciones', icon:'✦', tone:'#eaf2ff', color:'#1557c0', title:'Solicitar publicación', desc:'Piezas, copys, publicación en web, redes sociales o canales institucionales.', sla:'1–3 días', skills:['Diseño','Redes sociales','Web'], approval:true,
-    fields:[['Canal requerido','select',['Redes sociales','Sitio web','Cartelera interna','Prensa / boletín','Varios canales']],['Fecha ideal de publicación','date'],['Objetivo y mensaje principal','textarea'],['¿Cuenta con insumos?','select',['Sí, completos','Parciales','No']],['Enlace o ubicación de archivos','text']] },
-  { id:'cubrimientos', category:'Comunicaciones', icon:'◉', tone:'#f1edff', color:'#7053c6', title:'Solicitar cubrimiento', desc:'Fotografía, video, transmisión, acompañamiento o registro de eventos institucionales.', sla:'Agenda', skills:['Foto/Video','Protocolo','Redes sociales'], approval:false,
-    fields:[['Tipo de cubrimiento','select',['Fotografía','Video','Foto + video','Transmisión en vivo','Acompañamiento de comunicaciones']],['Fecha del evento','date'],['Hora de inicio','time'],['Hora estimada de finalización','time'],['Lugar','text'],['Descripción del evento','textarea']] },
-  { id:'desarrollo', category:'Desarrollo y datos', icon:'⌘', tone:'#e8f8fb', color:'#087e98', title:'Aplicaciones y automatizaciones', desc:'Crear, mejorar o automatizar aplicaciones, formularios, procesos y herramientas internas.', sla:'Evaluación', skills:['Desarrollo','Procesos','Datos'], approval:true,
-    fields:[['Tipo de necesidad','select',['Nueva aplicación','Nueva funcionalidad','Automatización','Formulario digital','Integración','Dashboard / reporte']],['Problema que se quiere resolver','textarea'],['Usuarios o dependencias involucradas','text'],['Fecha objetivo','date'],['Impacto esperado','select',['Bajo','Medio','Alto','Crítico']] ] },
-  { id:'revision', category:'Calidad digital', icon:'✓', tone:'#e9f8f2', color:'#0e9f6e', title:'Revisión y validación', desc:'Revisar piezas, documentos, páginas, formularios, aplicaciones o contenidos antes de publicar.', sla:'4–24 h', skills:['QA','Web','Comunicaciones'], approval:false,
-    fields:[['Elemento a revisar','select',['Pieza gráfica','Documento','Página web','Formulario','Aplicación','Publicación']],['Enlace o archivo','text'],['Qué debe validarse','textarea'],['Fecha límite','date']] },
-  { id:'correo', category:'Soporte TIC', icon:'@', tone:'#fff6dd', color:'#bd7500', title:'Correo institucional', desc:'Acceso, bloqueo, creación, contraseña, configuración, envío/recepción y listas de correo.', sla:'2–8 h', skills:['Correo','Microsoft 365','Soporte'], approval:false,
-    fields:[['Tipo de problema','select',['No puedo ingresar','Olvidé contraseña','No envía','No recibe','Crear cuenta','Configurar dispositivo','Lista / grupo','Otro']],['Cuenta afectada','email'],['Descripción','textarea']] },
-  { id:'equipos', category:'Soporte TIC', icon:'▣', tone:'#eef2f6', color:'#516174', title:'Equipo o periférico', desc:'Computador, impresora, escáner, proyector, periféricos o mantenimiento preventivo.', sla:'4–24 h', skills:['Hardware','Soporte'], approval:false,
-    fields:[['Equipo','select',['Computador','Portátil','Impresora','Escáner','Proyector','Teclado / mouse','Otro']],['Activo / placa (si aplica)','text'],['Síntoma o falla','textarea'],['¿Impide trabajar?','select',['Sí','Parcialmente','No']] ] },
-  { id:'internet', category:'Soporte TIC', icon:'⌁', tone:'#e8f8fb', color:'#087e98', title:'Internet y conectividad', desc:'Wi‑Fi, red cableada, VPN, acceso a servicios, puntos de red e intermitencias.', sla:'1–6 h', skills:['Redes de datos','Infraestructura'], approval:false,
-    fields:[['Tipo de conexión','select',['Wi‑Fi','Cableada','VPN','Acceso a sistema','Punto de red']],['Ubicación','text'],['Descripción de la falla','textarea'],['¿A cuántas personas afecta?','number']] },
-  { id:'accesos', category:'Identidad y acceso', icon:'◇', tone:'#fff0f0', color:'#c03c3c', title:'Usuarios, accesos y permisos', desc:'Altas, bajas, permisos, bloqueos y accesos a sistemas o recursos institucionales.', sla:'2–24 h', skills:['Identidad','Seguridad','Soporte'], approval:true,
-    fields:[['Solicitud','select',['Crear usuario','Modificar permisos','Retirar acceso','Desbloquear','Acceso a carpeta','Acceso a aplicación']],['Usuario involucrado','text'],['Sistema / recurso','text'],['Justificación','textarea']] },
-  { id:'web', category:'Comunicaciones', icon:'◫', tone:'#eaf2ff', color:'#1557c0', title:'Sitio web institucional', desc:'Actualizar páginas, publicar información, corregir enlaces, crear secciones o formularios web.', sla:'4–48 h', skills:['Web','Contenido','Accesibilidad'], approval:false,
-    fields:[['Tipo de cambio','select',['Actualizar contenido','Crear sección','Corregir error','Publicar archivo','Crear formulario','Enlace roto']],['URL o sección','text'],['Detalle del cambio','textarea'],['Fecha requerida','date']] },
-  { id:'datos', category:'Desarrollo y datos', icon:'▥', tone:'#f1edff', color:'#7053c6', title:'Datos e informes', desc:'Extracciones, consolidaciones, tableros, indicadores, depuración y análisis de información.', sla:'1–5 días', skills:['Datos','BI','Procesos'], approval:false,
-    fields:[['Producto esperado','select',['Base consolidada','Indicador','Dashboard','Informe','Cruce de datos','Depuración']],['Fuentes de información','text'],['Descripción del requerimiento','textarea'],['Fecha de corte','date']] },
-  { id:'seguridad', category:'Seguridad digital', icon:'△', tone:'#fff0f0', color:'#c03c3c', title:'Incidente de seguridad', desc:'Phishing, malware, cuenta comprometida, pérdida de equipo o comportamiento sospechoso.', sla:'Inmediato', skills:['Seguridad','Infraestructura'], approval:false, critical:true,
-    fields:[['Tipo de incidente','select',['Correo sospechoso / phishing','Cuenta comprometida','Malware','Pérdida de equipo','Acceso no autorizado','Otro']],['Qué ocurrió','textarea'],['Hora aproximada','time'],['¿El equipo sigue conectado?','select',['Sí','No','No aplica']] ] },
-  { id:'capacitacion', category:'Acompañamiento', icon:'◎', tone:'#e9f8f2', color:'#0e9f6e', title:'Capacitación o acompañamiento', desc:'Solicitar orientación, capacitación o asistencia para herramientas digitales y procesos.', sla:'Agenda', skills:['Capacitación','Soporte'], approval:false,
-    fields:[['Tema','text'],['Número aproximado de asistentes','number'],['Modalidad','select',['Presencial','Virtual','Indiferente']],['Fecha preferida','date'],['Necesidad específica','textarea']] }
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const fmt=n=>Number(n||0).toLocaleString('es-CO');
+const pct=n=>`${Number(n||0).toFixed(1).replace('.',',')}%`;
+const esc=s=>String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+const slug=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+const parseDate=v=>{if(!v)return null;if(v?.toDate)return v.toDate();const d=new Date(v);return isNaN(d)?null:d};
+const niceDate=v=>{const d=parseDate(v);return d?d.toLocaleDateString('es-CO',{day:'numeric',month:'long',year:'numeric'}):String(v||'—')};
+const shortDate=v=>{const d=parseDate(v);return d?d.toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'}).replace('.',''):String(v||'—')};
+const number=val=>Math.max(0,Number(val)||0);
+const palette={blue:'#0a5be8',teal:'#0c9485',green:'#38a169',orange:'#f0a11e',amber:'#f0a11e',red:'#d93c45',darkred:'#9e2632',violet:'#7655d9',magenta:'#c63f92',gray:'#91a2b5',yellow:'#f4c542',mint:'#27b99a',aqua:'#08a8c6'};
+const PHOTO_LIBRARY=[
+  {src:'assets/photos/photo-03.jpg',title:'Reconstrucción de vivienda',description:'Registro de intervención y remoción de escombros.',date:'2026-08-18'},
+  {src:'assets/photos/photo-04.jpg',title:'Verificación en terreno',description:'Lectura visual de daños y labores comunitarias.',date:'2026-08-18'},
+  {src:'assets/photos/photo-06.jpg',title:'Clasificación de ayudas',description:'Organización logística para la respuesta municipal.',date:'2026-08-18'},
+  {src:'assets/photos/photo-11.jpg',title:'Daño en cubierta',description:'Afectación visible en estructura liviana de vivienda.',date:'2026-08-18'},
+  {src:'assets/photos/photo-16.jpg',title:'Evaluación de afectaciones',description:'Evidencia fotográfica para soporte operativo.',date:'2026-08-18'},
+  {src:'assets/photos/photo-21.jpg',title:'Afectación en vivienda',description:'Daños reportados en techo y muros.',date:'2026-08-18'},
+  {src:'assets/photos/photo-24.jpg',title:'Recorrido de campo',description:'Registro visual complementario del territorio.',date:'2026-08-18'},
+  {src:'assets/photos/photo-29.jpg',title:'Apoyo en recuperación',description:'Evidencia de respuesta comunitaria.',date:'2026-08-18'}
 ];
 
-const team = [
-  {id:'ana',name:'Ana López',initials:'AL',role:'Comunicaciones',skills:['Diseño','Redes sociales','Foto/Video','Contenido'],load:58,status:'Disponible',slots:['Hoy 2:30 p. m.','Mañana 9:00 a. m.']},
-  {id:'carlos',name:'Carlos Rojas',initials:'CR',role:'TIC · Soporte',skills:['Soporte','Correo','Microsoft 365','Hardware'],load:72,status:'Ocupado',slots:['Hoy 4:00 p. m.','Mañana 8:00 a. m.']},
-  {id:'juan',name:'Juan Pérez',initials:'JP',role:'TIC · Desarrollo',skills:['Desarrollo','Web','Datos','Procesos','QA'],load:64,status:'Disponible',slots:['Hoy 3:30 p. m.','Mañana 10:30 a. m.']},
-  {id:'diana',name:'Diana Gómez',initials:'DG',role:'TIC · Infraestructura',skills:['Redes de datos','Infraestructura','Seguridad','Identidad'],load:41,status:'Disponible',slots:['Hoy 11:30 a. m.','Hoy 2:00 p. m.']},
-  {id:'sofia',name:'Sofía Martínez',initials:'SM',role:'Comunicaciones',skills:['Foto/Video','Protocolo','Redes sociales'],load:86,status:'Alta carga',slots:['Mañana 11:00 a. m.','Viernes 8:30 a. m.']},
-  {id:'mateo',name:'Mateo Valencia',initials:'MV',role:'Datos y calidad',skills:['Datos','BI','QA','Accesibilidad'],load:33,status:'Disponible',slots:['Hoy 1:45 p. m.','Hoy 4:30 p. m.']}
-];
+let DATA=null, SOURCE='fallback', releases=[], map=null;
+let territoryFilters={search:'',sort:'families',minFamilies:0,onlyPriority:false,selected:null,compare:new Set()};
+let housingMode='pct', docFilter='all', admin={draft:null,territories:[],workflow:null};
 
-// Agenda operativa simulada. En la fase Supabase se reemplaza por tablas de disponibilidad, bloqueos y reservas.
-const workWindows = [['08:00','12:00'],['13:00','17:00']];
-const scheduleEvents = [
-  {id:'ev01',person:'ana',date:'2026-08-19',start:'08:30',end:'10:00',title:'Diseño campaña de salud',type:'internal',service:'publicaciones',ticket:'MA-2026-0148'},
-  {id:'ev02',person:'ana',date:'2026-08-19',start:'14:00',end:'15:00',title:'Comité de comunicaciones',type:'meeting'},
-  {id:'ev03',person:'carlos',date:'2026-08-19',start:'08:00',end:'09:30',title:'Soporte correo · Planeación',type:'support',ticket:'MA-2026-0147'},
-  {id:'ev04',person:'carlos',date:'2026-08-19',start:'10:30',end:'12:00',title:'Mantenimiento equipos',type:'support'},
-  {id:'ev05',person:'juan',date:'2026-08-19',start:'09:00',end:'11:30',title:'Formulario emergencias',type:'development',ticket:'MA-2026-0145'},
-  {id:'ev06',person:'juan',date:'2026-08-19',start:'13:30',end:'14:30',title:'Revisión con Gestión del Riesgo',type:'meeting'},
-  {id:'ev07',person:'diana',date:'2026-08-19',start:'08:00',end:'09:00',title:'Revisión red segundo piso',type:'support',ticket:'MA-2026-0144'},
-  {id:'ev08',person:'diana',date:'2026-08-19',start:'15:00',end:'16:00',title:'Inventario de red',type:'internal'},
-  {id:'ev09',person:'sofia',date:'2026-08-19',start:'08:00',end:'11:00',title:'Cubrimiento institucional',type:'coverage'},
-  {id:'ev10',person:'sofia',date:'2026-08-19',start:'14:00',end:'16:30',title:'Edición y publicación',type:'coverage'},
-  {id:'ev11',person:'mateo',date:'2026-08-19',start:'10:00',end:'11:00',title:'Validación formulario',type:'review'},
-  {id:'ev12',person:'mateo',date:'2026-08-19',start:'14:30',end:'15:30',title:'Tablero de indicadores',type:'development'},
-
-  {id:'ev13',person:'ana',date:'2026-08-20',start:'09:00',end:'10:30',title:'Pieza rendición de cuentas',type:'internal'},
-  {id:'ev14',person:'ana',date:'2026-08-20',start:'15:00',end:'16:00',title:'Revisión de contenidos',type:'review'},
-  {id:'ev15',person:'carlos',date:'2026-08-20',start:'08:30',end:'10:00',title:'Configuración de correos',type:'support'},
-  {id:'ev16',person:'juan',date:'2026-08-20',start:'10:00',end:'12:00',title:'Desarrollo módulo interno',type:'development'},
-  {id:'ev17',person:'diana',date:'2026-08-20',start:'13:00',end:'14:30',title:'Punto de red · Hacienda',type:'support'},
-  {id:'ev18',person:'sofia',date:'2026-08-20',start:'09:00',end:'11:30',title:'Consejo de Gobierno',type:'coverage',ticket:'MA-2026-0146'},
-  {id:'ev19',person:'mateo',date:'2026-08-20',start:'08:00',end:'09:30',title:'Depuración base',type:'development'},
-
-  {id:'ev20',person:'ana',date:'2026-08-21',start:'10:00',end:'11:00',title:'Planeación parrilla',type:'meeting'},
-  {id:'ev21',person:'carlos',date:'2026-08-21',start:'13:00',end:'14:00',title:'Soporte impresoras',type:'support'},
-  {id:'ev22',person:'juan',date:'2026-08-21',start:'08:00',end:'10:00',title:'QA portal institucional',type:'review'},
-  {id:'ev23',person:'diana',date:'2026-08-21',start:'09:30',end:'11:00',title:'Seguridad perimetral',type:'support'},
-  {id:'ev24',person:'sofia',date:'2026-08-21',start:'08:30',end:'10:00',title:'Registro fotográfico',type:'coverage'},
-  {id:'ev25',person:'mateo',date:'2026-08-21',start:'14:00',end:'16:00',title:'Informe de calidad',type:'development'},
-
-  {id:'ev26',person:'ana',date:'2026-08-17',start:'09:00',end:'11:00',title:'Contenido institucional',type:'internal'},
-  {id:'ev27',person:'carlos',date:'2026-08-17',start:'14:00',end:'15:30',title:'Soporte general',type:'support'},
-  {id:'ev28',person:'sofia',date:'2026-08-17',start:'08:00',end:'12:00',title:'Cubrimiento externo',type:'coverage'},
-  {id:'ev29',person:'juan',date:'2026-08-18',start:'08:30',end:'11:00',title:'Automatización interna',type:'development'},
-  {id:'ev30',person:'diana',date:'2026-08-18',start:'13:00',end:'15:00',title:'Revisión infraestructura',type:'support'},
-  {id:'ev31',person:'mateo',date:'2026-08-18',start:'09:00',end:'10:30',title:'Control de calidad',type:'review'}
-];
-
-const sampleTickets = [
-  {id:'MA-2026-0148',service:'publicaciones',title:'Publicación jornada de vacunación',requester:'Secretaría de Salud',assignee:'ana',priority:'Media',status:'En gestión',created:'19 Ago · 8:18',due:'Hoy 3:00 p. m.',sla:'4 h 12 min',description:'Diseñar y publicar pieza para redes sociales y sitio web con información de la jornada de vacunación.',timeline:[['Solicitud creada','19 Ago · 8:18'],['Asignada automáticamente a Ana López','19 Ago · 8:19'],['Insumos validados','19 Ago · 8:47']]},
-  {id:'MA-2026-0147',service:'correo',title:'No permite iniciar sesión en correo',requester:'Planeación',assignee:'carlos',priority:'Alta',status:'En espera',created:'19 Ago · 7:42',due:'Hoy 12:00 p. m.',sla:'1 h 06 min',description:'La cuenta institucional solicita autenticación y vuelve a la pantalla de inicio.',timeline:[['Solicitud creada','19 Ago · 7:42'],['Carlos Rojas tomó el caso','19 Ago · 7:50'],['En espera de validación del usuario','19 Ago · 8:12']]},
-  {id:'MA-2026-0146',service:'cubrimientos',title:'Cubrimiento Consejo de Gobierno',requester:'Despacho del Alcalde',assignee:'sofia',priority:'Alta',status:'Programado',created:'18 Ago · 4:25',due:'20 Ago · 9:00 a. m.',sla:'Agenda',description:'Registro fotográfico y clips cortos para redes del Consejo de Gobierno.',timeline:[['Solicitud creada','18 Ago · 4:25'],['Sofía Martínez reservó agenda','18 Ago · 4:41']]},
-  {id:'MA-2026-0145',service:'desarrollo',title:'Formulario de reporte de emergencias',requester:'Gestión del Riesgo',assignee:'juan',priority:'Alta',status:'En gestión',created:'18 Ago · 2:10',due:'22 Ago',sla:'2 d 5 h',description:'Crear formulario interno que permita reportar afectaciones con fotos y ubicación.',timeline:[['Solicitud creada','18 Ago · 2:10'],['Aprobada por Secretaría General','18 Ago · 3:02'],['Juan Pérez inició análisis','18 Ago · 3:15']]},
-  {id:'MA-2026-0144',service:'internet',title:'Intermitencia Wi‑Fi segundo piso',requester:'Hacienda',assignee:'diana',priority:'Alta',status:'Nuevo',created:'18 Ago · 11:30',due:'Hoy 11:00 a. m.',sla:'38 min',description:'La conexión se cae cada pocos minutos para varios funcionarios.',timeline:[['Solicitud creada','18 Ago · 11:30'],['Enrutada al grupo Infraestructura','18 Ago · 11:31']]},
-  {id:'MA-2026-0143',service:'revision',title:'Revisión formulario rendición de cuentas',requester:'Control Interno',assignee:'mateo',priority:'Media',status:'Resuelto',created:'18 Ago · 9:13',due:'18 Ago · 4:00 p. m.',sla:'Cumplido',description:'Validar campos, redacción, enlaces y experiencia móvil.',timeline:[['Solicitud creada','18 Ago · 9:13'],['Mateo Valencia inició revisión','18 Ago · 9:40'],['Revisión finalizada','18 Ago · 2:16']]}
-];
-
-let tickets = JSON.parse(localStorage.getItem('mesa360_tickets') || 'null') || sampleTickets;
-let currentRole = 'requester';
-let wizard = {step:1, service:null, details:{}, assignee:'auto'};
-let calendarState = { date:'2026-08-19', view:'day', team:'all', service:'all', duration:60, availableOnly:false, zoom:160, snap:30, focusMode:false, density:'spacious', showFree:true, scrollLeft:null };
-
-const $ = (sel, root=document) => root.querySelector(sel);
-const $$ = (sel, root=document) => [...root.querySelectorAll(sel)];
-const serviceById = id => services.find(s=>s.id===id);
-const personById = id => team.find(p=>p.id===id);
-const safe = str => String(str ?? '').replace(/[&<>'"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
-
-function saveTickets(){ localStorage.setItem('mesa360_tickets', JSON.stringify(tickets)); updateBadges(); }
-function updateBadges(){ $('#myTicketsBadge').textContent = Math.min(tickets.length,99); }
-function toneIcon(service){ return `<div class="service-icon" style="background:${service.tone};color:${service.color}">${service.icon}</div>`; }
-function statusPill(status){ const map={'Nuevo':'blue','En gestión':'blue','En espera':'amber','Programado':'purple','Resuelto':'green','Cerrado':'gray','Cancelado':'red'}; return `<span class="pill ${map[status]||'gray'}"><span class="dot"></span>${safe(status)}</span>`; }
-function priorityPill(priority){ const map={Crítica:'red',Alta:'amber',Media:'blue',Baja:'gray'}; return `<span class="pill ${map[priority]||'gray'}">${safe(priority)}</span>`; }
-function loadColor(load){ return load>=85?'#d14343':load>=70?'#d98b00':'#1557c0'; }
-
-function setView(view){
-  $$('.view').forEach(v=>v.classList.remove('active')); const target=$(`#view-${view}`); if(target) target.classList.add('active');
-  $$('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.view===view));
-  const names={home:'Inicio','new-request':'Nueva solicitud','my-tickets':'Mis solicitudes',calendar:'Agenda y disponibilidad',ops:'Centro de operaciones',team:'Equipo y capacidad',catalog:'Catálogo de servicios',reports:'Indicadores',admin:'Configuración'};
-  $('#breadcrumb').textContent=`Mesa de Ayuda TIC / ${names[view]||'Inicio'}`;
-  renderView(view);
-  if(innerWidth<860) $('#sidebar').classList.remove('open');
-}
-function renderView(view){ const fn={home:renderHome,'new-request':renderNewRequest,'my-tickets':renderMyTickets,calendar:renderCalendar,ops:renderOps,team:renderTeam,catalog:renderCatalog,reports:renderReports,admin:renderAdmin}[view]; fn?.(); }
-
-function renderHome(){
-  const open=tickets.filter(t=>!['Resuelto','Cerrado','Cancelado'].includes(t.status)).length;
-  const urgent=tickets.filter(t=>['Alta','Crítica'].includes(t.priority)&&!['Resuelto','Cerrado'].includes(t.status)).length;
-  const free=team.filter(p=>p.load<70).length;
-  $('#view-home').innerHTML=`
-    <div class="hero">
-      <div class="hero-grid">
-        <div>
-          <span class="eyebrow" style="color:#bcd5ff">SERVICIOS INTERNOS · ALCALDÍA</span>
-          <h1>¿Qué necesitas gestionar hoy?</h1>
-          <p>Solicita soporte, publicaciones, cubrimientos, desarrollos, revisiones y servicios digitales desde un solo lugar. La mesa asigna cada caso según competencia, carga y disponibilidad.</p>
-          <div class="hero-actions"><button class="btn btn-primary" data-action="open-new-request">＋ Crear una solicitud</button><button class="btn btn-secondary" data-view-link="catalog">Explorar servicios</button></div>
-        </div>
-        <div class="availability-panel">
-          <h3>Disponibilidad del equipo · hoy</h3>
-          ${team.slice().sort((a,b)=>a.load-b.load).slice(0,3).map(p=>`<div class="avail-item"><div class="avatar">${p.initials}</div><div><strong>${p.name}</strong><span>${p.role} · ${p.load}% ocupado</span></div><span class="pill ${p.load<70?'green':p.load<85?'amber':'red'}">${p.load<70?'Disponible':p.load<85?'Ocupado':'Alta carga'}</span></div>`).join('')}
-        </div>
-      </div>
-    </div>
-    <div class="grid grid-4" style="margin-top:16px">
-      <div class="card metric-card"><div class="metric-label">Solicitudes abiertas</div><div class="metric-value">${open}</div><div class="metric-foot"><span class="trend-up">●</span> En seguimiento activo</div></div>
-      <div class="card metric-card"><div class="metric-label">Prioridad alta</div><div class="metric-value">${urgent}</div><div class="metric-foot">Casos que requieren atención</div></div>
-      <div class="card metric-card"><div class="metric-label">Equipo disponible</div><div class="metric-value">${free}/${team.length}</div><div class="metric-foot">Por debajo del 70% de carga</div></div>
-      <div class="card metric-card"><div class="metric-label">Cumplimiento SLA</div><div class="metric-value">94%</div><div class="metric-foot"><span class="trend-up">↑ 3%</span> frente a la semana anterior</div></div>
-    </div>
-    <div class="section-head"><div><h2>Servicios más usados</h2><p>Selecciona una categoría para iniciar una solicitud con el formulario correcto.</p></div><button class="link-btn" data-view-link="catalog">Ver catálogo completo →</button></div>
-    <div class="service-grid">${services.slice(0,8).map(serviceCard).join('')}</div>
-    <div class="section-head"><div><h2>Actividad reciente</h2><p>Tus solicitudes y los casos que requieren seguimiento.</p></div><button class="link-btn" data-view-link="my-tickets">Ver todas →</button></div>
-    <div class="quick-layout">
-      <div class="card ticket-table-card">${ticketTable(tickets.slice(0,5))}</div>
-      <div class="card card-pad"><h3 style="margin:0;font-size:13px">Capacidad del equipo</h3><p style="font-size:9px;color:var(--muted);margin:4px 0 8px">Carga estimada según agenda y solicitudes activas.</p><div class="capacity-list">${team.slice(0,4).map(capacityItem).join('')}</div><button class="btn btn-soft" style="width:100%;margin-top:7px" data-view-link="team">Ver disponibilidad completa</button></div>
-    </div>`;
-}
-function serviceCard(s){ return `<button class="service-card" data-service="${s.id}">${toneIcon(s)}<h3>${s.title}</h3><p>${s.desc}</p><div class="service-meta"><span>${s.category}</span><span>${s.sla}</span></div></button>`; }
-function capacityItem(p){ return `<div class="capacity-item"><div class="capacity-top"><div class="capacity-person"><div class="avatar">${p.initials}</div><div><strong>${p.name}</strong><small>${p.role}</small></div></div><div class="capacity-number" style="color:${loadColor(p.load)}">${p.load}%</div></div><div class="progress"><span style="width:${p.load}%;background:${loadColor(p.load)}"></span></div></div>`; }
-function ticketTable(items){ return `<div class="table-toolbar"><h3>Solicitudes</h3><div class="toolbar-actions"><select class="mini-select"><option>Todos los estados</option><option>Nuevos</option><option>En gestión</option></select></div></div><div class="table-wrap"><table><thead><tr><th>Solicitud</th><th>Servicio</th><th>Estado</th><th>Prioridad</th><th>Responsable</th><th>SLA</th></tr></thead><tbody>${items.map(t=>{const s=serviceById(t.service),p=personById(t.assignee);return `<tr class="ticket-row" data-ticket="${t.id}"><td><div class="ticket-title">${safe(t.title)}</div><div class="ticket-sub">${t.id} · ${safe(t.requester)}</div></td><td>${safe(s?.title||t.service)}</td><td>${statusPill(t.status)}</td><td>${priorityPill(t.priority)}</td><td>${p?`<div class="assignee"><div class="avatar">${p.initials}</div>${p.name}</div>`:'Sin asignar'}</td><td><span class="sla-time ${String(t.sla).includes('min')?'warning':''}">${safe(t.sla)}</span></td></tr>`}).join('')}</tbody></table></div>`; }
-
-function renderNewRequest(){ $('#view-new-request').innerHTML=`<div class="page-head"><div><span class="eyebrow">CATÁLOGO DE SERVICIOS</span><h1>¿Qué necesitas solicitar?</h1><p>Elige el servicio. El formulario cambia según la necesidad y la plataforma propondrá el responsable con mejor combinación de habilidad, carga y disponibilidad.</p></div></div><div class="service-grid">${services.map(serviceCard).join('')}</div>`; }
-function renderMyTickets(){
-  $('#view-my-tickets').innerHTML=`<div class="page-head"><div><span class="eyebrow">TRAZABILIDAD</span><h1>Mis solicitudes</h1><p>Consulta el estado, responsable, tiempos de servicio y conversación de cada caso.</p></div><button class="btn btn-primary" data-action="open-new-request">＋ Nueva solicitud</button></div><div class="card ticket-table-card">${ticketTable(tickets)}</div>`;
-}
-function renderCalendar(){
-  const date = parseLocalDate(calendarState.date);
-  const qualified = calendarQualifiedTeam();
-  const visible = qualified.filter(p=>calendarState.team==='all' || calendarTeamGroup(p)===calendarState.team);
-  const dayEvents = scheduleEvents.filter(e=>e.date===calendarState.date && visible.some(p=>p.id===e.person));
-  const suggestions = findBestSlots(calendarState.date, calendarState.duration, calendarState.service, visible).slice(0,6);
-  const freeHours = visible.reduce((sum,p)=>sum + freeMinutesForDay(p.id,calendarState.date)/60,0);
-  const now = new Date();
-  const nowMinutes = now.getHours()*60 + now.getMinutes();
-  const selectedIsToday = toISO(now)===calendarState.date;
-  const occupiedNow = selectedIsToday ? dayEvents.filter(e=>timeToMin(e.start)<=nowMinutes && timeToMin(e.end)>nowMinutes).length : 0;
-  const todayFree = selectedIsToday ? visible.length-occupiedNow : visible.filter(p=>freeMinutesForDay(p.id,calendarState.date)>0).length;
-
-  $('#view-calendar').innerHTML=`
-    <div class="calendar-page-head">
-      <div>
-        <span class="eyebrow">PLANIFICADOR VISUAL DE RECURSOS</span>
-        <h1>Agenda y disponibilidad</h1>
-        <p>Explora la agenda como una línea de tiempo: amplía el zoom, arrastra horizontalmente para moverte, filtra por servicio y reserva directamente sobre los espacios libres.</p>
-      </div>
-      <div class="calendar-head-actions">
-        <button class="btn btn-secondary compact" data-calendar-nav="today">Hoy</button>
-        <div class="calendar-nav-group"><button class="icon-btn calendar-arrow" data-calendar-nav="prev" aria-label="Anterior">‹</button><button class="date-display" data-calendar-open-date>${formatLongDate(date)}</button><button class="icon-btn calendar-arrow" data-calendar-nav="next" aria-label="Siguiente">›</button></div>
-        <input class="calendar-native-date" id="calendarNativeDate" type="date" value="${calendarState.date}" aria-label="Seleccionar fecha">
-      </div>
-    </div>
-
-    <div class="calendar-kpis">
-      <div class="calendar-kpi"><span class="kpi-icon available">✓</span><div><small>${selectedIsToday?'Disponibles ahora':'Con disponibilidad'}</small><strong>${Math.max(0,todayFree)} de ${visible.length}</strong><span>${selectedIsToday?`${occupiedNow} con actividad en curso`:'Según la agenda del día'}</span></div></div>
-      <div class="calendar-kpi"><span class="kpi-icon hours">◷</span><div><small>Capacidad libre del día</small><strong>${freeHours.toFixed(1)} h</strong><span>Entre el equipo visible</span></div></div>
-      <div class="calendar-kpi"><span class="kpi-icon next">↗</span><div><small>Próximo espacio</small><strong>${suggestions[0]?`${formatTime(suggestions[0].start)} · ${suggestions[0].person.name.split(' ')[0]}`:'Sin espacio'}</strong><span>${suggestions[0]?suggestions[0].person.role:'Prueba otra fecha'}</span></div></div>
-      <div class="calendar-kpi"><span class="kpi-icon warning">!</span><div><small>Alta carga</small><strong>${visible.filter(p=>p.load>=85).length}</strong><span>Evitar sobreasignación</span></div></div>
-    </div>
-
-    <div class="scheduler-layout ${calendarState.focusMode?'focus-mode':''}">
-      <aside class="card scheduler-finder">
-        <div class="finder-title"><span class="finder-mark">⌕</span><div><h3>Buscar un espacio</h3><p>Filtra y encuentra la mejor combinación.</p></div></div>
-        <label>¿Qué necesitas?</label>
-        <select class="finder-control" id="calendarServiceFilter">
-          <option value="all">Cualquier servicio</option>
-          ${services.map(s=>`<option value="${s.id}" ${calendarState.service===s.id?'selected':''}>${s.title}</option>`).join('')}
-        </select>
-        <div class="finder-row"><div><label>Duración</label><select class="finder-control" id="calendarDuration"><option value="30" ${calendarState.duration===30?'selected':''}>30 min</option><option value="60" ${calendarState.duration===60?'selected':''}>1 hora</option><option value="90" ${calendarState.duration===90?'selected':''}>1 h 30</option><option value="120" ${calendarState.duration===120?'selected':''}>2 horas</option><option value="180" ${calendarState.duration===180?'selected':''}>3 horas</option></select></div><div><label>Equipo</label><select class="finder-control" id="calendarTeamFilter"><option value="all">Todos</option><option value="Comunicaciones" ${calendarState.team==='Comunicaciones'?'selected':''}>Comunicaciones</option><option value="TIC" ${calendarState.team==='TIC'?'selected':''}>TIC</option><option value="Datos" ${calendarState.team==='Datos'?'selected':''}>Datos / calidad</option></select></div></div>
-        <label class="finder-check"><input type="checkbox" id="calendarAvailableOnly" ${calendarState.availableOnly?'checked':''}> Mostrar únicamente personas con espacio disponible</label>
-        <div class="finder-divider"></div>
-        <div class="finder-subhead"><div><strong>Mejores opciones</strong><span>${formatShortDate(date)}</span></div><span class="pill green">${suggestions.length} opciones</span></div>
-        <div class="slot-suggestions">
-          ${suggestions.length?suggestions.map((x,i)=>slotSuggestion(x,i)).join(''):`<div class="finder-empty"><span>◌</span><strong>No hay bloques con esa duración</strong><p>Prueba otra fecha, reduce la duración o amplía el equipo.</p></div>`}
-        </div>
-        <button class="btn btn-primary finder-create" data-action="open-new-request">＋ Crear solicitud sin reservar</button>
-      </aside>
-
-      <section class="card scheduler-main density-${calendarState.density}">
-        <div class="scheduler-toolbar scheduler-toolbar-primary">
-          <div class="view-segment"><button class="${calendarState.view==='day'?'active':''}" data-calendar-view="day">Día</button><button class="${calendarState.view==='week'?'active':''}" data-calendar-view="week">Semana</button></div>
-          <div class="scheduler-context"><span class="status-dot-live"></span><strong>${formatLongDate(date)}</strong><span>Jornada 8:00–12:00 · 1:00–5:00</span></div>
-          <button class="scheduler-tool ${calendarState.focusMode?'active':''}" data-calendar-focus title="Oculta el buscador y amplía el cronograma">${calendarState.focusMode?'⊞':'⊟'} ${calendarState.focusMode?'Mostrar buscador':'Vista amplia'}</button>
-        </div>
-        <div class="scheduler-commandbar">
-          ${calendarState.view==='day'?`
-            <div class="zoom-cluster" aria-label="Controles de zoom">
-              <button class="zoom-btn" data-calendar-zoom="-15" title="Alejar">−</button>
-              <div class="zoom-readout"><span>ZOOM</span><strong>${Math.round(calendarState.zoom/1.6)}%</strong></div>
-              <input id="calendarZoom" class="zoom-range" type="range" min="70" max="230" step="5" value="${calendarState.zoom}" aria-label="Zoom del cronograma">
-              <button class="zoom-btn" data-calendar-zoom="15" title="Acercar">＋</button>
-            </div>
-            <button class="scheduler-tool" data-calendar-fit title="Encajar toda la jornada">↔ Encajar día</button>
-            <button class="scheduler-tool" data-calendar-now title="Centrar la hora actual">◎ Ahora</button>
-            <label class="scheduler-inline-select"><span>Cuadrícula</span><select id="calendarSnap"><option value="15" ${calendarState.snap===15?'selected':''}>15 min</option><option value="30" ${calendarState.snap===30?'selected':''}>30 min</option><option value="60" ${calendarState.snap===60?'selected':''}>60 min</option></select></label>
-            <label class="scheduler-inline-select"><span>Filas</span><select id="calendarDensity"><option value="spacious" ${calendarState.density==='spacious'?'selected':''}>Amplias</option><option value="compact" ${calendarState.density==='compact'?'selected':''}>Compactas</option></select></label>
-            <button class="scheduler-tool ${calendarState.showFree?'active':''}" data-calendar-free-toggle>${calendarState.showFree?'✓':'○'} Espacios libres</button>
-          `:''}
-          <div class="calendar-legend"><span><i class="legend-swatch free"></i>Libre</span><span><i class="legend-swatch busy"></i>Soporte / trabajo</span><span><i class="legend-swatch coverage"></i>Cubrimiento</span><span><i class="legend-swatch meeting"></i>Reunión</span></div>
-        </div>
-        ${calendarState.view==='day'?renderDayScheduler(visible,calendarState.date):renderWeekScheduler(visible,date)}
-        ${calendarState.view==='day'?`<div class="scheduler-help"><span>✋ Arrastra el fondo para moverte</span><span>⇧ + rueda: desplazamiento horizontal</span><span>Ctrl + rueda: zoom</span><span>+ / −: zoom · 0: encajar · N: ahora · F: ampliar</span><span>Haz clic en un bloque verde para reservar</span></div>`:''}
-      </section>
-    </div>`;
-  requestAnimationFrame(restoreCalendarViewport);
+function toast(message,type='info',timeout=3600){const el=document.createElement('div');el.className=`toast ${type}`;el.textContent=message;$('#toastStack').appendChild(el);setTimeout(()=>el.remove(),timeout)}
+function safeArray(v){return Array.isArray(v)?v:[]}
+function mergedTerritories(data=DATA){const geo=window.TERRITORY_MAP_DATA||[];return safeArray(data?.territories).map(t=>({...t,...(geo.find(g=>g.sector===t.sector)||{}),...t}));}
+function derived(t){const priority=number(t.noHab)+number(t.destroyed);return {...t,priority,rate:number(t.families)?priority/number(t.families)*100:0}}
+function parseCsv(text){
+  const rows=[];let row=[],field='',quoted=false;const input=String(text||'').replace(/^\uFEFF/,'');
+  for(let i=0;i<input.length;i++){const c=input[i],n=input[i+1];if(quoted){if(c==='"'&&n==='"'){field+='"';i++;}else if(c==='"'){quoted=false;}else field+=c;}else if(c==='"'){quoted=true;}else if(c===','){row.push(field);field='';}else if(c==='\n'){row.push(field);rows.push(row);row=[];field='';}else if(c!=='\r'){field+=c;}}
+  if(field.length||row.length){row.push(field);rows.push(row)}
+  const clean=rows.filter(r=>r.some(v=>String(v).trim()!==''));if(!clean.length)return [];const headers=clean.shift().map(x=>String(x).trim());
+  return clean.map(vals=>Object.fromEntries(headers.map((h,i)=>[h,String(vals[i]??'').trim()])));
 }
 
-function renderDayScheduler(people,date){
-  const timelineStart=8*60, timelineEnd=17*60, totalMinutes=timelineEnd-timelineStart;
-  const hourWidth=calendarState.zoom, timelineWidth=(totalMinutes/60)*hourWidth;
-  const ticks=[]; for(let h=8;h<=17;h++)ticks.push(h);
-  const minor=[];
-  for(let m=timelineStart;m<=timelineEnd;m+=calendarState.snap){
-    if(m%60!==0) minor.push(m);
-  }
-  const now=new Date();
-  const showNow=toISO(now)===date && now.getHours()*60+now.getMinutes()>=timelineStart && now.getHours()*60+now.getMinutes()<=timelineEnd;
-  const nowMinute=now.getHours()*60+now.getMinutes();
-  const px = minute => ((minute-timelineStart)/60)*hourWidth;
-  const visiblePeople=people.filter(p=>!calendarState.availableOnly || freeMinutesForDay(p.id,date)>=calendarState.duration);
-  const rows=visiblePeople.map(p=>{
-    const evs=scheduleEvents.filter(e=>e.person===p.id&&e.date===date);
-    const free=getFreeWindows(p.id,date,calendarState.duration);
-    return `<div class="resource-row" style="--timeline-width:${timelineWidth}px">
-      <div class="resource-person sticky-resource"><div class="avatar resource-avatar">${p.initials}</div><div class="resource-copy"><strong>${p.name}</strong><span>${p.role}</span><div class="resource-meta"><span class="resource-load ${p.load>=85?'danger':p.load>=70?'warn':'ok'}">${p.load}% ocupado</span><span>${free.length?`${free.length} espacios`:'Sin espacio'}</span></div></div></div>
-      <div class="resource-timeline" style="width:${timelineWidth}px">
-        <div class="lunch-band" style="left:${px(12*60)}px;width:${hourWidth}px"><span>12:00–1:00 · Almuerzo</span></div>
-        ${minor.map(m=>`<div class="minor-time-line" style="left:${px(m)}px"></div>`).join('')}
-        ${ticks.map(h=>`<div class="hour-line" style="left:${px(h*60)}px"></div>`).join('')}
-        ${showNow?`<div class="now-line" style="left:${px(nowMinute)}px"><span>Ahora</span></div>`:''}
-        ${calendarState.showFree?free.map(f=>{const left=px(timeToMin(f.start)),width=((timeToMin(f.end)-timeToMin(f.start))/60)*hourWidth;return `<button class="free-window" data-quick-slot="${p.id}|${date}|${f.start}|${f.end}" style="left:${left}px;width:${width}px" title="Libre ${formatTime(f.start)} – ${formatTime(f.end)}"><strong>LIBRE</strong><span>${width>120?`${formatTime(f.start)}–${formatTime(f.end)}`:'Reservar'}</span></button>`}).join(''):''}
-        ${evs.map(e=>{const left=px(timeToMin(e.start)),width=((timeToMin(e.end)-timeToMin(e.start))/60)*hourWidth;return `<button class="schedule-event ${e.type}" data-schedule-event="${e.id}" style="left:${Math.max(0,left)}px;width:${Math.max(48,width)}px" title="${safe(e.title)} · ${formatTime(e.start)}–${formatTime(e.end)}"><strong>${safe(e.title)}</strong><span>${formatTime(e.start)}–${formatTime(e.end)}</span></button>`}).join('')}
-      </div>
-      <div class="resource-next sticky-availability"><span>Próximo libre</span><strong>${free[0]?`${formatTime(free[0].start)}–${formatTime(free[0].end)}`:'—'}</strong><button ${free[0]?'':'disabled'} data-quick-slot="${free[0]?`${p.id}|${date}|${free[0].start}|${free[0].end}`:''}">Reservar</button></div>
-    </div>`;
-  }).join('');
-  const ruler=`<div class="timeline-ruler" style="width:${timelineWidth}px">${minor.map(m=>`<div class="ruler-minor" style="left:${px(m)}px"></div>`).join('')}${ticks.map(h=>`<div class="ruler-hour" style="left:${px(h*60)}px"><strong>${formatTime(`${String(h).padStart(2,'0')}:00`)}</strong>${h<17?'<span>hora</span>':''}</div>`).join('')}${showNow?`<div class="ruler-now" style="left:${px(nowMinute)}px"></div>`:''}</div>`;
-  return `<div class="scheduler-scroll" id="resourceScroll" data-calendar-pan>
-    <div class="resource-header" style="--timeline-width:${timelineWidth}px"><div class="resource-header-person sticky-resource">Funcionario / carga</div>${ruler}<div class="resource-header-next sticky-availability">Disponibilidad</div></div>
-    <div class="resource-board">${rows||'<div class="scheduler-empty">No hay funcionarios disponibles con los filtros actuales.</div>'}</div>
-  </div>`;
-}
+function route(){const raw=(location.hash||'#inicio').slice(1).split('?')[0]||'inicio',aliases={resumen:'inicio',documento:'informes',documentos:'informes',marco:'fuentes'},id=aliases[raw]||raw;const view=$(`[data-view="${CSS.escape(id)}"]`)||$('#view-inicio');$$('.view').forEach(v=>v.classList.toggle('active',v===view));$$('.nav-link').forEach(a=>a.classList.toggle('active',a.dataset.route===view.dataset.view));$$('[data-xmb]').forEach(a=>a.classList.toggle('active',a.dataset.xmb===view.dataset.view));if(view.dataset.view==='territorio')setTimeout(()=>map?.render(),80);window.dispatchEvent(new CustomEvent('rufe:route',{detail:{view:view.dataset.view}}));window.scrollTo({top:0,behavior:'instant'});}
+window.addEventListener('hashchange',route);
 
-
-function captureCalendarScroll(){ const el=$('#resourceScroll'); if(el) calendarState.scrollLeft=el.scrollLeft; }
-function setCalendarZoom(value){
-  const old=calendarState.zoom; captureCalendarScroll();
-  calendarState.zoom=Math.max(70,Math.min(230,Number(value)));
-  if(calendarState.scrollLeft!=null) calendarState.scrollLeft=calendarState.scrollLeft*(calendarState.zoom/old);
-  renderCalendar();
-}
-function fitCalendarDay(){
-  const el=$('#resourceScroll');
-  const available=(el?.clientWidth||1100)-280-185-8;
-  calendarState.scrollLeft=0;
-  calendarState.zoom=Math.max(70,Math.min(230,Math.floor(available/9)));
-  renderCalendar();
-}
-function centerCalendarMinute(minute){
-  const el=$('#resourceScroll'); if(!el)return;
-  const x=((minute-8*60)/60)*calendarState.zoom;
-  const stickyLeft=280, stickyRight=185;
-  const viewport=Math.max(300,el.clientWidth-stickyLeft-stickyRight);
-  el.scrollTo({left:Math.max(0,x-viewport/2),behavior:'smooth'});
-  calendarState.scrollLeft=Math.max(0,x-viewport/2);
-}
-function centerCalendarNow(){
-  const now=new Date();
-  const target=toISO(now)===calendarState.date ? now.getHours()*60+now.getMinutes() : 10*60;
-  centerCalendarMinute(Math.max(8*60,Math.min(17*60,target)));
-}
-function restoreCalendarViewport(){
-  const el=$('#resourceScroll'); if(!el)return;
-  initCalendarPan();
-  if(calendarState.scrollLeft!=null){ el.scrollLeft=calendarState.scrollLeft; return; }
-  const now=new Date();
-  if(toISO(now)===calendarState.date) centerCalendarNow();
-}
-function initCalendarPan(){
-  const el=$('#resourceScroll'); if(!el||el.dataset.panReady)return; el.dataset.panReady='1';
-  let dragging=false,startX=0,startScroll=0;
-  el.addEventListener('pointerdown',e=>{
-    if(e.button!==0 || e.target.closest('button,input,select,label')) return;
-    dragging=true; startX=e.clientX; startScroll=el.scrollLeft; el.classList.add('is-panning'); el.setPointerCapture?.(e.pointerId);
-  });
-  el.addEventListener('pointermove',e=>{ if(!dragging)return; el.scrollLeft=startScroll-(e.clientX-startX); calendarState.scrollLeft=el.scrollLeft; });
-  const end=e=>{ if(!dragging)return; dragging=false; el.classList.remove('is-panning'); el.releasePointerCapture?.(e.pointerId); };
-  el.addEventListener('pointerup',end); el.addEventListener('pointercancel',end);
-  el.addEventListener('scroll',()=>{calendarState.scrollLeft=el.scrollLeft},{passive:true});
-  el.addEventListener('wheel',e=>{
-    if(e.ctrlKey||e.metaKey){e.preventDefault(); setCalendarZoom(calendarState.zoom+(e.deltaY<0?10:-10));}
-    else if(e.shiftKey){e.preventDefault(); el.scrollLeft+=e.deltaY; calendarState.scrollLeft=el.scrollLeft;}
-  },{passive:false});
-}
-
-function renderWeekScheduler(people,anchor){
-  const monday=startOfWeek(anchor); const days=Array.from({length:5},(_,i)=>addDays(monday,i));
-  return `<div class="week-board"><div class="week-head"><div>Funcionario</div>${days.map(d=>`<button class="week-day-head ${toISO(d)===calendarState.date?'active':''}" data-calendar-date="${toISO(d)}"><span>${['LUN','MAR','MIÉ','JUE','VIE'][days.indexOf(d)]}</span><strong>${d.getDate()}</strong><small>${monthShort(d)}</small></button>`).join('')}</div>${people.map(p=>`<div class="week-row"><div class="week-person"><div class="avatar resource-avatar">${p.initials}</div><div><strong>${p.name}</strong><span>${p.role}</span></div></div>${days.map(d=>{const iso=toISO(d),free=freeMinutesForDay(p.id,iso),pct=Math.max(0,Math.round((1-free/(8*60))*100)),wins=getFreeWindows(p.id,iso,calendarState.duration);return `<button class="week-cell ${pct>=85?'heavy':pct>=65?'medium':'light'}" data-calendar-date="${iso}"><div class="week-cell-top"><strong>${pct}%</strong><span>${wins.length} espacios</span></div><div class="week-capacity"><i style="width:${pct}%"></i></div><small>${wins[0]?`Libre ${formatTime(wins[0].start)}`:'Agenda completa'}</small></button>`}).join('')}</div>`).join('')}</div>`;
-}
-
-function slotSuggestion(x,index){ return `<button class="slot-suggestion ${index===0?'best':''}" data-quick-slot="${x.person.id}|${x.date}|${x.start}|${x.end}"><div class="slot-timebox"><strong>${formatTime(x.start)}</strong><span>${minutesLabel(calendarState.duration)}</span></div><div class="slot-person"><div class="avatar">${x.person.initials}</div><div><strong>${x.person.name}</strong><span>${x.person.role} · ${x.person.load}% ocupado</span></div></div><span class="slot-arrow">›</span>${index===0?'<em>MEJOR OPCIÓN</em>':''}</button>`; }
-function calendarQualifiedTeam(){ const s=serviceById(calendarState.service); if(!s)return team; const matched=team.filter(p=>serviceCompatible(p,s)); return matched.length?matched:team; }
-function calendarTeamGroup(p){ if(p.role.startsWith('Comunicaciones'))return 'Comunicaciones'; if(p.role.startsWith('Datos'))return 'Datos'; return 'TIC'; }
-function timeToMin(v){ const [h,m]=v.split(':').map(Number); return h*60+m; }
-function minToTime(v){ const h=Math.floor(v/60),m=v%60; return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`; }
-function formatTime(v){ const [h,m]=v.split(':').map(Number); const ap=h>=12?'p. m.':'a. m.'; const hh=h%12||12; return `${hh}:${String(m).padStart(2,'0')} ${ap}`; }
-function minutesLabel(m){ return m<60?`${m} min`:m===60?'1 h':m%60?`${Math.floor(m/60)} h ${m%60} min`:`${m/60} h`; }
-function parseLocalDate(iso){ const [y,m,d]=iso.split('-').map(Number); return new Date(y,m-1,d); }
-function toISO(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
-function addDays(d,n){ const x=new Date(d);x.setDate(x.getDate()+n);return x; }
-function startOfWeek(d){ const x=new Date(d),day=x.getDay(),delta=day===0?-6:1-day;x.setDate(x.getDate()+delta);return x; }
-function monthShort(d){ return ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][d.getMonth()]; }
-function formatShortDate(d){ return `${d.getDate()} ${monthShort(d)} ${d.getFullYear()}`; }
-function formatLongDate(d){ return `${['domingo','lunes','martes','miércoles','jueves','viernes','sábado'][d.getDay()]}, ${d.getDate()} de ${['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'][d.getMonth()]}`; }
-function getFreeWindows(personId,date,minDuration=30){
-  const evs=scheduleEvents.filter(e=>e.person===personId&&e.date===date).map(e=>[timeToMin(e.start),timeToMin(e.end)]).sort((a,b)=>a[0]-b[0]);
-  const windows=[];
-  workWindows.forEach(([ws,we])=>{ let cursor=timeToMin(ws),end=timeToMin(we); evs.forEach(([s,e])=>{ if(e<=cursor||s>=end)return; if(s>cursor&&s-cursor>=minDuration)windows.push({start:minToTime(cursor),end:minToTime(Math.min(s,end))}); cursor=Math.max(cursor,e); }); if(end-cursor>=minDuration)windows.push({start:minToTime(cursor),end:minToTime(end)}); });
-  return windows;
-}
-function freeMinutesForDay(personId,date){ return getFreeWindows(personId,date,1).reduce((s,w)=>s+timeToMin(w.end)-timeToMin(w.start),0); }
-function findBestSlots(date,duration,serviceId,people){
-  const s=serviceById(serviceId); const base=(people?.length?people:team).filter(p=>!s||serviceCompatible(p,s));
-  const byPerson=base.map(p=>{ const slots=[]; getFreeWindows(p.id,date,duration).forEach(w=>{ for(let cursor=timeToMin(w.start);cursor+duration<=timeToMin(w.end)&&slots.length<3;cursor+=30){ slots.push({person:p,date,start:minToTime(cursor),end:minToTime(cursor+duration),score:(s?matchCount(p,s)*35:20)+(100-p.load)*.7-(cursor-8*60)*.015}); }}); return slots.sort((a,b)=>b.score-a.score||timeToMin(a.start)-timeToMin(b.start)); });
-  const first=byPerson.map(x=>x[0]).filter(Boolean).sort((a,b)=>b.score-a.score||timeToMin(a.start)-timeToMin(b.start));
-  const rest=byPerson.flatMap(x=>x.slice(1)).sort((a,b)=>b.score-a.score||timeToMin(a.start)-timeToMin(b.start));
-  return [...first,...rest];
-}
-function reserveQuickSlot(payload){
-  if(!payload)return; const [personId,date,start,end]=payload.split('|'),p=personById(personId),s=serviceById(calendarState.service);
-  wizard={step:s?2:1,service:s?.id||null,details:{requester:'Secretaría General',priority:'Media',scheduledDate:date,scheduledStart:start,scheduledEnd:end},assignee:personId};
-  $('#requestModalBackdrop').hidden=false;document.body.style.overflow='hidden';renderWizard();showToast('Espacio seleccionado',`${p.name} · ${formatTime(start)} a ${formatTime(end)}. Completa los detalles para crear la solicitud.`);
-}
-function calendarNavigate(dir){ const d=parseLocalDate(calendarState.date); if(dir==='today')calendarState.date='2026-08-19'; else calendarState.date=toISO(addDays(d,dir==='prev'?(calendarState.view==='week'?-7:-1):(calendarState.view==='week'?7:1))); calendarState.scrollLeft=null; renderCalendar(); }
-
-function renderOps(){
-  const columns=[['Nuevo',['Nuevo']],['En gestión',['En gestión']],['En espera / Programado',['En espera','Programado']],['Resuelto',['Resuelto']]];
-  $('#view-ops').innerHTML=`<div class="page-head"><div><span class="eyebrow">OPERACIÓN</span><h1>Centro de operaciones</h1><p>Bandeja unificada para triage, asignación, seguimiento de SLA y balanceo de carga entre TIC y Comunicaciones.</p></div><div><button class="btn btn-secondary">Filtros</button> <button class="btn btn-primary">Asignación inteligente</button></div></div><div class="ops-layout"><div class="queue-board">${columns.map(([name,statuses])=>{const list=tickets.filter(t=>statuses.includes(t.status));return `<div class="queue-col"><div class="queue-col-head"><strong>${name}</strong><span class="queue-count">${list.length}</span></div>${list.map(kanbanTicket).join('')||'<div class="empty-state"><p>Sin casos</p></div>'}</div>`}).join('')}</div><div class="card right-rail"><h3>Próximos espacios disponibles</h3>${team.slice().sort((a,b)=>a.load-b.load).slice(0,5).map(p=>`<div class="slot"><div class="capacity-person"><div class="avatar">${p.initials}</div><div><strong>${p.name}</strong><small>${p.role}</small></div></div><div style="text-align:right"><div class="slot-time">${p.slots[0].split(' ').slice(1).join(' ')}</div><small>${p.load}% ocupado</small></div></div>`).join('')}<button class="btn btn-soft" style="width:100%;margin-top:12px" data-view-link="calendar">Abrir agenda</button></div></div>`;
-}
-function kanbanTicket(t){ const s=serviceById(t.service),p=personById(t.assignee); return `<div class="kanban-ticket" data-ticket="${t.id}"><div class="kanban-top"><span class="kanban-code">${t.id}</span>${priorityPill(t.priority)}</div><h4>${safe(t.title)}</h4><div style="font-size:8px;color:var(--muted);margin-bottom:8px">${safe(s?.title||'Servicio')}</div><div class="kanban-foot"><div class="assignee">${p?`<div class="avatar">${p.initials}</div><span>${p.name.split(' ')[0]}</span>`:'Sin asignar'}</div><span class="sla-time ${String(t.sla).includes('min')?'danger':''}" style="font-size:8px">${safe(t.sla)}</span></div></div>`; }
-function renderTeam(){
-  $('#view-team').innerHTML=`<div class="page-head"><div><span class="eyebrow">CAPACIDAD Y HABILIDADES</span><h1>Equipo y disponibilidad</h1><p>La carga combina tickets activos, agenda reservada y capacidad diaria. Sirve como base para sugerir el responsable más adecuado y evitar sobreasignación.</p></div><button class="btn btn-secondary">Configurar capacidad</button></div><div class="grid grid-4" style="margin-bottom:16px"><div class="card metric-card"><div class="metric-label">Capacidad promedio</div><div class="metric-value">59%</div><div class="metric-foot">Carga consolidada del equipo</div></div><div class="card metric-card"><div class="metric-label">Disponibles ahora</div><div class="metric-value">4</div><div class="metric-foot">Con capacidad inferior al 70%</div></div><div class="card metric-card"><div class="metric-label">Alta carga</div><div class="metric-value">1</div><div class="metric-foot">Requiere redistribución</div></div><div class="card metric-card"><div class="metric-label">Habilidades cubiertas</div><div class="metric-value">17</div><div class="metric-foot">Competencias configuradas</div></div></div><div class="team-grid">${team.map(p=>`<div class="card team-card"><div class="person-head"><div class="avatar">${p.initials}</div><div><h3>${p.name}</h3><p>${p.role}</p></div><span class="pill ${p.load<70?'green':p.load<85?'amber':'red'} person-status">${p.status}</span></div><div class="skills">${p.skills.map(x=>`<span class="skill">${x}</span>`).join('')}</div><div class="capacity-bar"><div><small>Carga estimada · ${p.load}%</small><div class="progress" style="margin-top:5px"><span style="width:${p.load}%;background:${loadColor(p.load)}"></span></div></div><strong style="font-size:11px;color:${loadColor(p.load)}">${100-p.load}% libre</strong></div><div class="next-slots">${p.slots.map(s=>`<span class="next-slot">${s}</span>`).join('')}</div></div>`).join('')}</div>`;
-}
-function renderCatalog(category='Todos'){
-  const cats=['Todos',...new Set(services.map(s=>s.category))]; const shown=category==='Todos'?services:services.filter(s=>s.category===category);
-  $('#view-catalog').innerHTML=`<div class="page-head"><div><span class="eyebrow">PORTAL DE AUTOSERVICIO</span><h1>Catálogo de servicios</h1><p>Servicios estandarizados con formulario, responsable, prioridad, aprobación y nivel de servicio definidos por tipo de necesidad.</p></div></div><div class="catalog-wrap"><div class="card category-panel">${cats.map(c=>`<button class="category-item ${c===category?'active':''}" data-category="${c}">◇ ${c}</button>`).join('')}</div><div class="catalog-content"><div class="catalog-banner"><h2>${category==='Todos'?'Todos los servicios':category}</h2><p>${shown.length} servicios disponibles · formularios adaptados y trazabilidad centralizada.</p></div><div class="service-grid" style="grid-template-columns:repeat(3,1fr)">${shown.map(serviceCard).join('')}</div></div></div>`;
-}
-function renderReports(){
-  const vals=[14,19,17,26,22,31,24];
-  $('#view-reports').innerHTML=`<div class="page-head"><div><span class="eyebrow">ANALÍTICA DE SERVICIO</span><h1>Indicadores de la mesa</h1><p>Mide demanda, tiempos de respuesta, cumplimiento de SLA y distribución de la carga para tomar decisiones de capacidad.</p></div><button class="btn btn-secondary">Exportar informe</button></div><div class="grid grid-4"><div class="card metric-card"><div class="metric-label">SLA cumplido</div><div class="metric-value">94%</div><div class="metric-foot"><span class="trend-up">↑ 3%</span> mensual</div></div><div class="card metric-card"><div class="metric-label">Primera respuesta</div><div class="metric-value">18 min</div><div class="metric-foot">Promedio general</div></div><div class="card metric-card"><div class="metric-label">Resolución promedio</div><div class="metric-value">6.4 h</div><div class="metric-foot">Casos cerrados</div></div><div class="card metric-card"><div class="metric-label">Reaperturas</div><div class="metric-value">3.1%</div><div class="metric-foot">Calidad de resolución</div></div></div><div class="grid grid-2" style="margin-top:16px"><div class="card chart-card"><h3>Solicitudes recibidas</h3><p>Volumen diario de los últimos 7 días hábiles.</p><div class="bar-chart">${vals.map((v,i)=>`<div class="bar-col"><div class="bar" style="height:${v*4}px"></div><span>${['L','M','X','J','V','L','M'][i]}</span></div>`).join('')}</div></div><div class="card chart-card"><h3>Distribución por estado</h3><p>Composición actual de la cola de servicio.</p><div class="donut-wrap"><div class="donut"><div class="donut-center">${tickets.length}<br><small>casos</small></div></div><div class="legend"><div class="legend-item"><span class="legend-dot"></span><span>En gestión</span><strong>62%</strong></div><div class="legend-item"><span class="legend-dot"></span><span>Resueltos</span><strong>18%</strong></div><div class="legend-item"><span class="legend-dot"></span><span>En espera</span><strong>12%</strong></div><div class="legend-item"><span class="legend-dot"></span><span>Nuevos</span><strong>8%</strong></div></div></div></div></div><div class="card chart-card" style="margin-top:16px"><h3>Carga por funcionario</h3><p>Porcentaje estimado de ocupación operacional.</p><div style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px;padding-top:10px">${team.map(p=>`<div><div style="display:flex;justify-content:space-between;font-size:8px;margin-bottom:5px"><span>${p.name.split(' ')[0]}</span><strong>${p.load}%</strong></div><div class="progress" style="height:9px"><span style="width:${p.load}%;background:${loadColor(p.load)}"></span></div></div>`).join('')}</div></div>`;
-}
-function renderAdmin(){
-  $('#view-admin').innerHTML=`<div class="page-head"><div><span class="eyebrow">ADMINISTRACIÓN</span><h1>Configuración de la mesa</h1><p>En esta primera versión los datos son locales. La estructura queda preparada para conectar autenticación, base de datos, archivos y tiempo real con Supabase más adelante.</p></div></div><div class="settings-grid">${[
-    ['◇','Catálogo de servicios','Crear categorías, formularios, SLAs, aprobaciones y reglas por servicio.'],['◉','Equipo y habilidades','Definir funcionarios, roles, habilidades, capacidad diaria y horarios.'],['⌁','Reglas de enrutamiento','Asignar por servicio, habilidad, dependencia, disponibilidad y balanceo de carga.'],['▦','Calendarios y horarios','Configurar jornada laboral, festivos, bloqueos, ausencias y reservas.'],['✓','SLA y escalamiento','Tiempos de primera respuesta, resolución, alertas y escalamiento automático.'],['♢','Notificaciones','Plantillas para correo, avisos internos y recordatorios de vencimiento.'],['▥','Dependencias','Secretarías, oficinas, sedes, responsables y niveles de aprobación.'],['⚙','Integraciones futuras','Supabase, correo institucional, sitio web, almacenamiento y directorio de usuarios.']
-  ].map(([i,t,d])=>`<div class="card setting-card"><div class="setting-icon">${i}</div><div><h3>${t}</h3><p>${d}</p></div><button class="btn btn-secondary compact">Configurar</button></div>`).join('')}</div>`;
-}
-
-function openRequestModal(serviceId=null){
-  wizard={step:1,service:serviceId,details:{},assignee:'auto'}; if(serviceId) wizard.step=2;
-  $('#requestModalBackdrop').hidden=false; document.body.style.overflow='hidden'; renderWizard();
-}
-function closeRequestModal(){ $('#requestModalBackdrop').hidden=true; document.body.style.overflow=''; }
-function renderWizard(){
-  $$('.step').forEach(s=>{const n=Number(s.dataset.step);s.classList.toggle('active',n===wizard.step);s.classList.toggle('done',n<wizard.step)});
-  const body=$('#requestWizard'),foot=$('#requestWizardFooter');
-  if(wizard.step===1){ body.innerHTML=`<div style="margin-bottom:12px"><h3 style="font-size:13px;margin:0 0 4px">Selecciona el servicio</h3><p style="font-size:9px;color:var(--muted);margin:0">Esto determina el formulario, el SLA y el equipo responsable.</p></div><div class="wizard-service-grid">${services.map(s=>`<button class="wizard-service ${wizard.service===s.id?'selected':''}" data-wizard-service="${s.id}">${toneIcon(s)}<h4>${s.title}</h4><p>${s.desc}</p></button>`).join('')}</div>`; foot.innerHTML=`<button class="btn btn-secondary" data-action="close-request-modal">Cancelar</button><button class="btn btn-primary" data-wizard-next ${wizard.service?'':'disabled'}>Continuar →</button>`; }
-  if(wizard.step===2){ const s=serviceById(wizard.service); body.innerHTML=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">${toneIcon(s)}<div><h3 style="font-size:13px;margin:0 0 3px">${s.title}</h3><p style="font-size:9px;color:var(--muted);margin:0">Completa la información mínima para evitar devoluciones o reprocesos.</p></div></div>${wizard.details.scheduledDate?`<div class="wizard-slot-banner"><div><span>ESPACIO PRESELECCIONADO</span><strong>${personById(wizard.assignee)?.name||'Responsable'} · ${formatTime(wizard.details.scheduledStart)}–${formatTime(wizard.details.scheduledEnd)}</strong><small>${wizard.details.scheduledDate}</small></div><button type="button" data-view-link="calendar">Cambiar horario</button></div>`:''}<div class="form-grid"><div class="form-group full"><label>Asunto de la solicitud *</label><input class="form-control" name="title" value="${safe(wizard.details.title||'')}" placeholder="Describe en una frase lo que necesitas"></div><div class="form-group"><label>Dependencia solicitante *</label><select class="form-control" name="requester"><option>Secretaría General</option><option>Despacho del Alcalde</option><option>Planeación</option><option>Hacienda</option><option>Gestión del Riesgo</option><option>Control Interno</option><option>Desarrollo Social</option></select></div><div class="form-group"><label>Prioridad</label><select class="form-control" name="priority"><option>Media</option><option>Alta</option><option>Baja</option>${s.critical?'<option selected>Crítica</option>':''}</select></div>${s.fields.map(([label,type,opts],i)=>fieldHtml(label,type,opts,`f${i}`)).join('')}</div>`; foot.innerHTML=`<button class="btn btn-secondary" data-wizard-back>← Atrás</button><button class="btn btn-primary" data-wizard-next>Revisar asignación →</button>`; }
-  if(wizard.step===3){ captureDetails(); const s=serviceById(wizard.service), candidates=rankCandidates(s); const recommended=candidates[0]; if(wizard.assignee==='auto') wizard.assignee=recommended?.id||''; body.innerHTML=`<div class="assignment-summary"><div class="routing-card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div><h3>Responsable sugerido</h3><span style="font-size:8px;color:var(--muted)">Basado en habilidades + capacidad disponible.</span></div><span class="pill green">Asignación inteligente</span></div>${candidates.slice(0,4).map((p,i)=>`<label class="routing-person ${i===0?'recommended':''}"><input type="radio" name="assignee" value="${p.id}" ${wizard.assignee===p.id?'checked':''}><div class="avatar">${p.initials}</div><div class="routing-copy"><strong>${p.name} ${i===0?'<span class="pill blue" style="margin-left:4px">Recomendado</span>':''}</strong><small>${p.role} · coincide en ${matchCount(p,s)} competencias · próximo: ${p.slots[0]}</small></div><div class="routing-load"><small>${p.load}% ocupado</small><div class="progress"><span style="width:${p.load}%;background:${loadColor(p.load)}"></span></div></div></label>`).join('')}</div><div class="summary-box"><span class="eyebrow">RESUMEN</span><div class="summary-row"><span>Servicio</span><strong>${s.title}</strong></div><div class="summary-row"><span>Asunto</span><strong>${safe(wizard.details.title||'Sin asunto')}</strong></div><div class="summary-row"><span>Prioridad</span><strong>${safe(wizard.details.priority||'Media')}</strong></div><div class="summary-row"><span>SLA objetivo</span><strong>${s.sla}</strong></div><div class="summary-row"><span>Aprobación</span><strong>${s.approval?'Requerida según regla':'No requerida'}</strong></div><div class="summary-row"><span>Responsable</span><strong id="summaryAssignee">${personById(wizard.assignee)?.name||'Por definir'}</strong></div>${wizard.details.scheduledDate?`<div class="summary-row scheduled-summary"><span>Espacio reservado</span><strong>${wizard.details.scheduledDate} · ${formatTime(wizard.details.scheduledStart)}–${formatTime(wizard.details.scheduledEnd)}</strong></div>`:''}</div></div>`; foot.innerHTML=`<button class="btn btn-secondary" data-wizard-back>← Editar detalles</button><button class="btn btn-primary" data-wizard-submit>✓ Crear solicitud</button>`; }
-}
-function fieldHtml(label,type,opts,name){ const required=label.includes('Descripción')||label.includes('Problema')?'*':''; if(type==='textarea')return `<div class="form-group full"><label>${label} ${required}</label><textarea class="form-control" name="${name}" placeholder="Escribe la información necesaria"></textarea></div>`; if(type==='select')return `<div class="form-group"><label>${label}</label><select class="form-control" name="${name}">${opts.map(o=>`<option>${o}</option>`).join('')}</select></div>`; return `<div class="form-group"><label>${label}</label><input class="form-control" type="${type}" name="${name}"></div>`; }
-function captureDetails(){ $$('#requestWizard .form-control').forEach(el=>wizard.details[el.name]=el.value); }
-const serviceTeamRules={
-  publicaciones:['Comunicaciones'],cubrimientos:['Comunicaciones'],
-  desarrollo:['TIC','Datos'],revision:['Comunicaciones','TIC','Datos'],
-  correo:['TIC'],equipos:['TIC'],internet:['TIC'],accesos:['TIC'],
-  web:['Comunicaciones','TIC'],datos:['Datos','TIC'],seguridad:['TIC'],capacitacion:['TIC']
-};
-function matchCount(p,s){ return s.skills.filter(k=>p.skills.includes(k)).length; }
-function serviceCompatible(p,s){ if(!s)return true; const groups=serviceTeamRules[s.id]||[]; return (!groups.length||groups.includes(calendarTeamGroup(p))) && matchCount(p,s)>0; }
-function rankCandidates(s){ const valid=team.filter(p=>serviceCompatible(p,s)); const pool=valid.length?valid:team; return pool.map(p=>({...p,score:matchCount(p,s)*30+(100-p.load)*.7})).sort((a,b)=>b.score-a.score); }
-function submitRequest(){ const s=serviceById(wizard.service), p=personById(wizard.assignee); const nextNum = Math.max(148, ...tickets.map(t => Number(String(t.id).match(/(\d+)$/)?.[1] || 0))) + 1; const id=`MA-2026-${String(nextNum).padStart(4,'0')}`; const newT={id,service:s.id,title:wizard.details.title||s.title,requester:wizard.details.requester||'Secretaría General',assignee:p?.id||'',priority:wizard.details.priority||'Media',status:s.id==='cubrimientos'?'Programado':'Nuevo',created:'19 Ago · ahora',due:s.sla==='Inmediato'?'Inmediato':s.sla==='Agenda'?'Según agenda':'Según SLA',sla:s.sla,description:wizard.details.f2||wizard.details.f1||wizard.details.f0||'Solicitud registrada desde el portal.',timeline:[['Solicitud creada','19 Ago · ahora'],[p?`Asignada a ${p.name}`:'Pendiente de asignación','19 Ago · ahora']]}; tickets.unshift(newT);saveTickets();closeRequestModal();showToast('Solicitud creada',`${id} fue registrada y asignada a ${p?.name||'la cola correspondiente'}.`);setView('my-tickets'); }
-
-function openTicket(id){ const t=tickets.find(x=>x.id===id); if(!t)return; const s=serviceById(t.service),p=personById(t.assignee); $('#ticketDrawer').innerHTML=`<div class="drawer-head"><div class="drawer-head-top"><div><span class="eyebrow">${t.id}</span><h2>${safe(t.title)}</h2><p>${safe(s?.title||'Servicio')} · Solicitado por ${safe(t.requester)}</p></div><button class="close-btn" data-action="close-ticket-drawer">×</button></div><div style="display:flex;gap:7px;margin-top:12px">${statusPill(t.status)}${priorityPill(t.priority)}<span class="pill gray">SLA: ${safe(t.sla)}</span></div></div><div class="drawer-body"><div class="detail-grid"><div class="detail-box"><span>Responsable</span><strong>${p?.name||'Sin asignar'}</strong></div><div class="detail-box"><span>Vencimiento</span><strong>${safe(t.due)}</strong></div><div class="detail-box"><span>Creada</span><strong>${safe(t.created)}</strong></div><div class="detail-box"><span>Dependencia</span><strong>${safe(t.requester)}</strong></div></div><h3 style="font-size:11px">Descripción</h3><p style="font-size:9px;line-height:1.6;color:#617085">${safe(t.description)}</p><h3 style="font-size:11px;margin-top:20px">Actividad</h3><div class="timeline">${(t.timeline||[]).map(([a,d])=>`<div class="timeline-item"><strong>${safe(a)}</strong><p>${safe(d)}</p></div>`).join('')}</div><div class="comment-box"><textarea placeholder="Escribe un comentario o actualización..."></textarea><div class="comment-actions"><button class="btn btn-secondary compact">Adjuntar</button><button class="btn btn-primary compact">Comentar</button></div></div>${currentRole!=='requester'?`<div style="display:flex;gap:8px;margin-top:14px"><button class="btn btn-soft" data-ticket-status="En gestión" data-ticket-id="${t.id}">Tomar caso</button><button class="btn btn-secondary" data-ticket-status="En espera" data-ticket-id="${t.id}">Poner en espera</button><button class="btn btn-primary" data-ticket-status="Resuelto" data-ticket-id="${t.id}">Resolver</button></div>`:''}</div>`; $('#ticketDrawerBackdrop').hidden=false; document.body.style.overflow='hidden'; }
-function closeTicketDrawer(){ $('#ticketDrawerBackdrop').hidden=true;document.body.style.overflow=''; }
-function changeTicketStatus(id,status){ const t=tickets.find(x=>x.id===id); if(!t)return; t.status=status; t.timeline=t.timeline||[]; t.timeline.push([`Estado cambiado a ${status}`,'19 Ago · ahora']);saveTickets();showToast('Estado actualizado',`${id} ahora está ${status.toLowerCase()}.`);closeTicketDrawer();renderView($('.view.active').id.replace('view-','')); }
-function showToast(title,msg){ const el=document.createElement('div');el.className='toast success';el.innerHTML=`<div><strong>${title}</strong><span>${msg}</span></div>`;$('#toastStack').appendChild(el);setTimeout(()=>el.remove(),3600); }
-function setRole(role){ currentRole=role; $('#profileRole').textContent={requester:'Funcionario',agent:'Gestor de servicio',admin:'Administrador'}[role]; $$('.admin-nav').forEach(x=>x.style.display=role==='requester'?'none':''); $$('.admin-only').forEach(x=>x.style.display=role==='admin'?'':'none'); if(role==='requester' && ['ops','team','reports','admin'].includes($('.view.active')?.id.replace('view-',''))) setView('home'); showToast('Vista actualizada',`Ahora estás viendo la experiencia de ${$('#profileRole').textContent.toLowerCase()}.`); }
-
-function globalSearch(q){ q=q.trim().toLowerCase(); if(!q)return; const ticket=tickets.find(t=>[t.id,t.title,t.requester,serviceById(t.service)?.title].some(v=>String(v).toLowerCase().includes(q))); if(ticket){openTicket(ticket.id);return;} const service=services.find(s=>[s.title,s.desc,s.category].some(v=>v.toLowerCase().includes(q))); if(service){openRequestModal(service.id);return;} showToast('Sin coincidencias','No encontramos una solicitud o servicio con ese criterio.'); }
-
-document.addEventListener('click',e=>{
-  const nav=e.target.closest('[data-view]'); if(nav) setView(nav.dataset.view);
-  const viewLink=e.target.closest('[data-view-link]'); if(viewLink) setView(viewLink.dataset.viewLink);
-  const action=e.target.closest('[data-action]')?.dataset.action;
-  if(action==='open-new-request') openRequestModal(); if(action==='close-request-modal') closeRequestModal(); if(action==='close-ticket-drawer') closeTicketDrawer();
-  const service=e.target.closest('[data-service]'); if(service) openRequestModal(service.dataset.service);
-  const wservice=e.target.closest('[data-wizard-service]'); if(wservice){wizard.service=wservice.dataset.wizardService;renderWizard();}
-  if(e.target.closest('[data-wizard-next]')){ if(wizard.step===1&&!wizard.service)return; if(wizard.step===2)captureDetails(); wizard.step=Math.min(3,wizard.step+1);renderWizard(); }
-  if(e.target.closest('[data-wizard-back]')){wizard.step=Math.max(1,wizard.step-1);renderWizard();}
-  if(e.target.closest('[data-wizard-submit]')) submitRequest();
-  const ticket=e.target.closest('[data-ticket]'); if(ticket) openTicket(ticket.dataset.ticket);
-  const status=e.target.closest('[data-ticket-status]'); if(status) changeTicketStatus(status.dataset.ticketId,status.dataset.ticketStatus);
-  const cat=e.target.closest('[data-category]'); if(cat) renderCatalog(cat.dataset.category);
-  const calNav=e.target.closest('[data-calendar-nav]'); if(calNav) calendarNavigate(calNav.dataset.calendarNav);
-  const calView=e.target.closest('[data-calendar-view]'); if(calView){calendarState.view=calView.dataset.calendarView;calendarState.scrollLeft=null;renderCalendar();}
-  const calDate=e.target.closest('[data-calendar-date]'); if(calDate){calendarState.date=calDate.dataset.calendarDate;calendarState.view='day';calendarState.scrollLeft=null;renderCalendar();}
-  const openDate=e.target.closest('[data-calendar-open-date]'); if(openDate){const input=$('#calendarNativeDate'); if(input?.showPicker)input.showPicker(); else input?.click();}
-  const quickSlot=e.target.closest('[data-quick-slot]'); if(quickSlot) reserveQuickSlot(quickSlot.dataset.quickSlot);
-  const scheduleEvent=e.target.closest('[data-schedule-event]'); if(scheduleEvent){const ev=scheduleEvents.find(x=>x.id===scheduleEvent.dataset.scheduleEvent);if(ev?.ticket)openTicket(ev.ticket);else if(ev)showToast(ev.title,`${personById(ev.person)?.name||''} · ${formatTime(ev.start)} a ${formatTime(ev.end)}.`);}
-  const zoom=e.target.closest('[data-calendar-zoom]'); if(zoom) setCalendarZoom(calendarState.zoom+Number(zoom.dataset.calendarZoom));
-  if(e.target.closest('[data-calendar-fit]')) fitCalendarDay();
-  if(e.target.closest('[data-calendar-now]')) centerCalendarNow();
-  if(e.target.closest('[data-calendar-focus]')){captureCalendarScroll();calendarState.focusMode=!calendarState.focusMode;renderCalendar();}
-  if(e.target.closest('[data-calendar-free-toggle]')){captureCalendarScroll();calendarState.showFree=!calendarState.showFree;renderCalendar();}
-});
-document.addEventListener('change',e=>{
-  if(e.target.name==='assignee'){wizard.assignee=e.target.value;$('#summaryAssignee').textContent=personById(wizard.assignee)?.name||'Por definir';}
-  if(e.target.id==='roleSelect')setRole(e.target.value);
-  if(e.target.id==='calendarServiceFilter'){calendarState.service=e.target.value;renderCalendar();}
-  if(e.target.id==='calendarDuration'){calendarState.duration=Number(e.target.value);renderCalendar();}
-  if(e.target.id==='calendarTeamFilter'){calendarState.team=e.target.value;renderCalendar();}
-  if(e.target.id==='calendarAvailableOnly'){calendarState.availableOnly=e.target.checked;renderCalendar();}
-  if(e.target.id==='calendarNativeDate'){calendarState.date=e.target.value;calendarState.scrollLeft=null;renderCalendar();}
-  if(e.target.id==='calendarZoom')setCalendarZoom(e.target.value);
-  if(e.target.id==='calendarSnap'){captureCalendarScroll();calendarState.snap=Number(e.target.value);renderCalendar();}
-  if(e.target.id==='calendarDensity'){captureCalendarScroll();calendarState.density=e.target.value;renderCalendar();}
-});
-$('#menuToggle').addEventListener('click',()=>$('#sidebar').classList.toggle('open'));
-$('#requestModalBackdrop').addEventListener('click',e=>{if(e.target.id==='requestModalBackdrop')closeRequestModal()});
-$('#ticketDrawerBackdrop').addEventListener('click',e=>{if(e.target.id==='ticketDrawerBackdrop')closeTicketDrawer()});
-$('#globalSearch').addEventListener('keydown',e=>{if(e.key==='Enter')globalSearch(e.target.value)});
-document.addEventListener('keydown',e=>{
-  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();$('#globalSearch').focus();return;}
-  if(e.key==='Escape'){closeRequestModal();closeTicketDrawer();}
-  const field=e.target?.matches?.('input,textarea,select,[contenteditable=\"true\"]');
-  const calendarActive=$('#view-calendar')?.classList.contains('active');
-  if(field||!calendarActive||calendarState.view!=='day')return;
-  if(e.key==='+'||e.key==='='){e.preventDefault();setCalendarZoom(calendarState.zoom+15);}
-  if(e.key==='-'){e.preventDefault();setCalendarZoom(calendarState.zoom-15);}
-  if(e.key==='0'){e.preventDefault();fitCalendarDay();}
-  if(e.key.toLowerCase()==='n'){e.preventDefault();centerCalendarNow();}
-  if(e.key.toLowerCase()==='f'){e.preventDefault();captureCalendarScroll();calendarState.focusMode=!calendarState.focusMode;renderCalendar();}
-});
-
-/* =========================================================
-   Mesa de Ayuda TIC v0.4 · SERVICE DESK INSTITUCIONAL
-   Radicación guiada, Command Center, SLA, Operación PRO y ficha 360
-   ========================================================= */
-
-const guidedFamilies = [
-  {id:'comunicaciones',icon:'✦',title:'Comunicación institucional',desc:'Publicaciones, cubrimientos, sitio web y validaciones.',services:['publicaciones','cubrimientos','web','revision']},
-  {id:'soporte',icon:'⌁',title:'Soporte tecnológico',desc:'Correo, equipos, conectividad, accesos y seguridad.',services:['correo','equipos','internet','accesos','seguridad']},
-  {id:'soluciones',icon:'⌘',title:'Soluciones y automatización',desc:'Aplicaciones, automatizaciones, formularios, datos y tableros.',services:['desarrollo','datos']},
-  {id:'acompanamiento',icon:'◎',title:'Acompañamiento',desc:'Capacitaciones y asistencia para herramientas o procesos.',services:['capacitacion']}
-];
-const dependencyOptions = ['Secretaría General','Despacho del Alcalde','Planeación','Hacienda','Gobierno','Gestión del Riesgo','Control Interno','Desarrollo Social','Infraestructura','UMATA','Comisaría de Familia','Otra dependencia'];
-const selfHelpGuides = {
-  correo:[
-    ['Verifica tu conexión','Confirma que otras páginas o aplicaciones tengan acceso a internet.'],
-    ['Prueba en el navegador','Ingresa desde la versión web del correo para descartar un problema del dispositivo.'],
-    ['No compartas tu contraseña','La Mesa de Ayuda TIC nunca te pedirá escribir la contraseña dentro de la solicitud.']
-  ],
-  internet:[
-    ['Identifica el alcance','Confirma si falla solo tu equipo o también otros funcionarios de la misma zona.'],
-    ['Revisa la conexión física','Si usas cable de red, verifica que esté conectado. No desconectes equipos de red institucionales.'],
-    ['Registra la ubicación','Indicar piso, oficina o dependencia acelera el diagnóstico.']
-  ],
-  equipos:[
-    ['Reinicio seguro','Si es posible, guarda tu trabajo y reinicia el equipo una sola vez.'],
-    ['Anota el mensaje','Si aparece un error, copia el texto o toma una captura para adjuntarla después.'],
-    ['No desarmes el equipo','Evita manipular componentes o conexiones internas.']
-  ],
-  accesos:[
-    ['Confirma el usuario','Verifica que estés usando la cuenta institucional correcta.'],
-    ['Diferencia acceso y contraseña','Si puedes entrar al sistema pero no a una opción específica, probablemente sea un permiso.'],
-    ['Justificación mínima','Los permisos nuevos requieren indicar para qué función institucional se necesitan.']
-  ]
-};
-const approvalOwnerByService = {
-  publicaciones:'Coordinación de Comunicaciones',
-  desarrollo:'Líder TIC / Secretaría General',
-  accesos:'Líder TIC y responsable del recurso'
-};
-const scheduleServiceIds = new Set(['cubrimientos','capacitacion','publicaciones','revision']);
-const selectableAssigneeIds = new Set(['publicaciones','cubrimientos','revision','desarrollo','datos','capacitacion','web']);
-let opsState = {filter:'now'};
-let ticketDrawerState = {id:null,tab:'overview'};
-let draggedScheduleId = null;
-
-function freshWizard(serviceId=null,prefill={}){
-  const family=serviceId ? guidedFamilies.find(f=>f.services.includes(serviceId))?.id||null : null;
-  const {assignee='auto',...details}=prefill;
-  return {
-    stage: serviceId ? (selfHelpGuides[serviceId]?'selfhelp':'questions') : 'family',
-    family,
-    service:serviceId,
-    questionIndex:0,
-    details,
-    assignee,
-    error:'',
-    selfHelpDone:false
-  };
-}
-
-function statusPill(status){
-  const map={'Nuevo':'blue','En gestión':'blue','En espera':'amber','Programado':'purple','En aprobación':'amber','Bloqueado':'red','Resuelto':'green','Cerrado':'gray','Cancelado':'red'};
-  return `<span class="pill ${map[status]||'gray'}"><span class="dot"></span>${safe(status)}</span>`;
-}
-
-function familyForService(serviceId){ return guidedFamilies.find(f=>f.services.includes(serviceId)); }
-function canScheduleService(s){ return !!s && (s.sla==='Agenda'||scheduleServiceIds.has(s.id)); }
-function canChooseAssignee(s){ return !!s && selectableAssigneeIds.has(s.id); }
-function wizardMacroStep(){
-  if(['family','service'].includes(wizard.stage))return 1;
-  if(['selfhelp','questions'].includes(wizard.stage))return 2;
-  if(['schedule','assignment'].includes(wizard.stage))return 3;
-  return 4;
-}
-function updateWizardChrome(){
-  const macro=wizardMacroStep();
-  $$('.step').forEach(s=>{const n=Number(s.dataset.step);s.classList.toggle('active',n===macro);s.classList.toggle('done',n<macro)});
-  const service=serviceById(wizard.service);
-  $('#requestModalTitle').textContent=service?.title || (wizard.family?guidedFamilies.find(f=>f.id===wizard.family)?.title:'Radicar una solicitud');
-}
-function openRequestModal(serviceId=null){
-  wizard=freshWizard(serviceId);
-  $('#requestModalBackdrop').hidden=false;
-  document.body.style.overflow='hidden';
-  renderWizard();
-}
-function closeRequestModal(){ $('#requestModalBackdrop').hidden=true; document.body.style.overflow=''; }
-function setWizardStage(stage){ wizard.stage=stage; wizard.error=''; renderWizard(); }
-
-function questionHelper(label,service){
-  const l=label.toLowerCase();
-  if(l.includes('dependencia'))return 'Esto permite entregar trazabilidad por área y dirigir aprobaciones cuando correspondan.';
-  if(l.includes('asunto'))return 'Usa una frase corta y concreta; será el título visible de la solicitud.';
-  if(l.includes('prioridad'))return 'La prioridad debe representar impacto operativo, no preferencia personal.';
-  if(l.includes('fecha'))return 'La agenda utilizará esta fecha para sugerir espacios compatibles.';
-  if(l.includes('lugar')||l.includes('ubicación'))return 'Entre más precisa sea la ubicación, menos reprocesos tendrá el equipo.';
-  if(l.includes('descripción')||l.includes('problema')||l.includes('qué ocurrió'))return 'Cuéntanos qué necesitas, qué esperabas que ocurriera y qué sucede actualmente.';
-  if(service?.id==='seguridad')return 'No incluyas contraseñas, códigos de verificación ni información sensible innecesaria.';
-  return 'Esta información ayuda a asignar correctamente el caso desde el primer momento.';
-}
-function isQuestionRequired(q){
-  if(['requester','title','priority'].includes(q.key))return true;
-  return !/(Enlace|Activo|placa|Hora aproximada|si aplica)/i.test(q.label);
-}
-function buildWizardQuestions(s){
-  const priorityOptions=s.critical?['Crítica']:['Baja','Media','Alta','Crítica'];
-  const base=[
-    {key:'requester',label:'¿Desde qué dependencia estás radicando?',type:'select',options:dependencyOptions},
-    {key:'title',label:'Resume en una frase lo que necesitas',type:'text',placeholder:'Ej. Cubrimiento fotográfico para jornada institucional'},
-    {key:'priority',label:'¿Qué nivel de impacto tiene esta solicitud?',type:'select',options:priorityOptions}
+function renderKpis(){
+  const k=DATA.kpis||{};const items=[
+    ['01',k.families,'Familias con registro nominal','Base familiar consolidada','var(--blue)'],
+    ['02',k.nominalPeople,'Personas registradas','Registros nominales','var(--aqua)'],
+    ['03',k.uniquePeopleEstimated,'Personas únicas estimadas','Cifra técnica provisional','var(--green)'],
+    ['04',k.territories,'Territorios / sectores','Cobertura analizada','var(--violet)']
   ];
-  const custom=s.fields.map(([label,type,opts],i)=>({key:`f${i}`,label,type,options:opts||[],placeholder:type==='textarea'?'Describe la necesidad con el contexto suficiente':''}));
-  return [...base,...custom];
+  $('#homeKpis').innerHTML=items.map(([i,v,l,s,c])=>`<article class="kpi-card" style="--accent:${c}"><span class="kpi-index">${i}</span><strong>${fmt(v)}</strong><b>${l}</b><small>${s}</small></article>`).join('');
 }
-function priorityDescription(value){
-  return {Baja:'Puede programarse sin afectar la operación.',Media:'Necesidad normal dentro del servicio.',Alta:'Afecta una actividad importante o tiene fecha próxima.',Crítica:'Detiene operación, afecta seguridad o requiere atención inmediata.'}[value]||'';
+function renderCompletion(){
+  const rows=safeArray(DATA.completeness);$('#completionPanel').innerHTML=`<div class="panel-title"><div><span class="eyebrow">COMPLETITUD</span><h3>Campos críticos del registro</h3></div><small>Base verificable del corte</small></div><div class="completion-list">${rows.map(x=>`<div class="meter-row"><label>${esc(x.label)}</label><div class="meter-track"><span style="width:${Math.min(100,number(x.value))}%"></span></div><b>${pct(x.value)}</b></div>`).join('')}</div>`;
+  const priority=(safeArray(DATA.housing).find(x=>x.label==='No habitable')?.count||0)+(safeArray(DATA.housing).find(x=>x.label==='Destruida')?.count||0);const nohab=safeArray(DATA.housing).find(x=>x.label==='No habitable')?.count||0;const des=safeArray(DATA.housing).find(x=>x.label==='Destruida')?.count||0;
+  const nohabPct=priority?nohab/priority*100:0,desPct=priority?des/priority*100:0;$('#priorityPanel').innerHTML=`<div class="priority-deck-card"><div class="priority-card-copy"><span class="eyebrow">ATENCIÓN PRIORITARIA</span><h3>Primer universo de verificación</h3><p>Familias con marca censal “no habitable” o “destruida”. Esta lectura sirve para ordenar verificación en territorio, no para cerrar dictamen estructural.</p></div><div class="priority-total"><small>Familias totales</small><strong>${fmt(priority)}</strong></div><div class="priority-kpi-grid"><article><i>⌂</i><b>${fmt(nohab)}</b><span>No habitable</span><em><u style="width:${nohabPct}%"></u></em><small>${pct(nohabPct)}</small></article><article><i>⌁</i><b>${fmt(des)}</b><span>Destruida</span><em><u style="width:${desPct}%"></u></em><small>${pct(desPct)}</small></article></div><div class="priority-distribution"><b>Distribución del universo</b><i><u style="width:${nohabPct}%"></u><u style="width:${desPct}%"></u></i><span>No habitable ${pct(nohabPct)} (${fmt(nohab)}) · Destruida ${pct(desPct)} (${fmt(des)})</span></div><a class="btn small ghost priority-cta" href="#vivienda">Entender la clasificación →</a></div>`;
+  const top=mergedTerritories().map(derived).sort((a,b)=>b.families-a.families).slice(0,6),max=top[0]?.families||1;$('#topTerritoriesPanel').innerHTML=`<div class="panel-title"><div><span class="eyebrow">TERRITORIO</span><h3>Mayor concentración</h3></div></div><div class="top-bars">${top.map(t=>`<a class="top-bar" href="#territorio" data-sector-link="${esc(t.sector)}"><span>${esc(t.sector)}</span><i><b style="width:${t.families/max*100}%"></b></i><b>${fmt(t.families)}</b></a>`).join('')}</div>`;
+  $$('[data-sector-link]').forEach(a=>a.addEventListener('click',()=>territoryFilters.selected=a.dataset.sectorLink));
 }
-function questionControl(q,s){
-  const value=wizard.details[q.key]??(q.key==='requester'?'Secretaría General':q.key==='priority'?(s.critical?'Crítica':'Media'):'');
-  if(wizard.details[q.key]==null && value!=='') wizard.details[q.key]=value;
-  if(q.type==='select'){
-    return `<div class="guided-choice-grid ${q.key==='priority'?'priority-choices':''}">${q.options.map(o=>`<button type="button" class="guided-choice ${String(value)===String(o)?'selected':''}" data-guide-answer="${safe(o)}" data-guide-key="${q.key}"><span class="choice-radio"></span><div><strong>${safe(o)}</strong>${q.key==='priority'?`<small>${priorityDescription(o)}</small>`:''}</div></button>`).join('')}</div>`;
-  }
-  if(q.type==='textarea')return `<textarea class="guided-control guided-textarea" data-guide-field="${q.key}" placeholder="${safe(q.placeholder||'Escribe aquí...')}">${safe(value)}</textarea>`;
-  return `<input class="guided-control" data-guide-field="${q.key}" type="${q.type}" value="${safe(value)}" placeholder="${safe(q.placeholder||'')}">`;
+function renderStory(){const k=DATA.kpis||{};const priority=(safeArray(DATA.housing).find(x=>x.label==='No habitable')?.count||0)+(safeArray(DATA.housing).find(x=>x.label==='Destruida')?.count||0);const items=[[k.families,'familias','Registro nominal consolidado'],[priority,'prioridad','Casos iniciales de verificación'],[(k.minors||0)+(k.age60plus||0),'personas','Menores + 60 años o más'],[k.emptyPreEnumerated,'núcleos','Preenumerados vacíos a depurar']];$('#storySteps').innerHTML=items.map((x,i)=>`<article class="story-step"><span>0${i+1}</span><b>${fmt(x[0])}</b><small>${x[1]} · ${x[2]}</small></article>`).join('')}
+
+function filterTerritories(){
+  let rows=mergedTerritories().map(derived);const q=territoryFilters.search.trim().toLowerCase();if(q)rows=rows.filter(t=>String(t.sector).toLowerCase().includes(q)||String(t.reference||'').toLowerCase().includes(q));rows=rows.filter(t=>number(t.families)>=territoryFilters.minFamilies);if(territoryFilters.onlyPriority)rows=rows.filter(t=>t.priority>0);
+  const sort=territoryFilters.sort;rows.sort((a,b)=>sort==='name'?String(a.sector).localeCompare(String(b.sector),'es'):number(b[sort])-number(a[sort]));return rows;
 }
-function renderWizardFamily(body,foot){
-  body.innerHTML=`<div class="guided-intro"><span class="guided-kicker">RADICACIÓN ASISTIDA</span><h3>¿Qué necesitas gestionar?</h3><p>No necesitas conocer el nombre técnico del servicio. Elige la opción que más se parezca a tu necesidad y Mesa de Ayuda TIC te llevará por el camino correcto.</p></div><div class="guided-family-grid">${guidedFamilies.map(f=>`<button type="button" class="guided-family-card" data-guide-family="${f.id}"><span class="guided-family-icon">${f.icon}</span><div><h4>${f.title}</h4><p>${f.desc}</p><small>${f.services.length} servicios disponibles</small></div><span class="guided-arrow">›</span></button>`).join('')}</div><div class="guided-help-strip"><span>?</span><div><strong>¿No sabes cuál elegir?</strong><small>Usa el buscador superior o selecciona la categoría más cercana. Podrás volver atrás sin perder información.</small></div></div>`;
-  foot.innerHTML=`<button class="btn btn-secondary" data-action="close-request-modal">Cancelar</button><span class="guided-footer-note">La radicación aún no se ha creado</span>`;
+function initMap(){
+  if(map||!$('#rufeMap'))return;map=new window.RufeSlippyMap($('#rufeMap'),{center:{lat:3.985,lng:-76.22},zoom:12,onSelect:t=>selectTerritory(t.sector,false)});$('#mapZoomIn').addEventListener('click',()=>map.setZoom(map.zoom+1));$('#mapZoomOut').addEventListener('click',()=>map.setZoom(map.zoom-1));$('#mapReset').addEventListener('click',()=>{map.reset();territoryFilters.selected=null;renderTerritoryDetail()});
 }
-function renderWizardService(body,foot){
-  const family=guidedFamilies.find(f=>f.id===wizard.family);
-  const list=family.services.map(serviceById).filter(Boolean);
-  body.innerHTML=`<div class="guided-intro compact"><button class="guided-back-link" type="button" data-guide-back>← Cambiar categoría</button><span class="guided-kicker">${family.icon} ${family.title.toUpperCase()}</span><h3>¿Cuál de estas opciones describe mejor tu necesidad?</h3><p>Al elegirla, las siguientes preguntas se adaptarán automáticamente al servicio.</p></div><div class="guided-service-list">${list.map(s=>`<button type="button" class="guided-service-row" data-guide-service="${s.id}">${toneIcon(s)}<div><h4>${s.title}</h4><p>${s.desc}</p><span>${s.sla==='Agenda'?'Se programa en agenda':`SLA ${s.sla}`}${s.approval?' · requiere aprobación':''}</span></div><b>›</b></button>`).join('')}</div>`;
-  foot.innerHTML=`<button class="btn btn-secondary" data-guide-back>← Atrás</button><span class="guided-footer-note">Selecciona un servicio para continuar</span>`;
+function renderTerritory(){
+  initMap();const rows=filterTerritories();$('#territoryCount').textContent=rows.length;$('#territoryFilterSummary').textContent=`${rows.length} sectores visibles · ${fmt(rows.reduce((s,x)=>s+number(x.families),0))} familias`;
+  map?.setPoints(rows);const totalFamilies=rows.reduce((s,x)=>s+number(x.families),0),totalPeople=rows.reduce((s,x)=>s+number(x.people),0),totalPriority=rows.reduce((s,x)=>s+number(x.priority),0),highPriority=rows.filter(x=>x.priority>=10).length;if($('#territorySummaryStrip'))$('#territorySummaryStrip').innerHTML=[['⌖',rows.length,'Territorios visibles'],['⌂',totalFamilies,'Familias filtradas'],['◎',totalPeople,'Personas'],['⚑',totalPriority,'Casos prioridad'],['!',highPriority,'Sectores alta prioridad']].map(([icon,value,label])=>`<article><i>${icon}</i><b>${fmt(value)}</b><small>${label}</small></article>`).join('');
+  const max=Math.max(1,...rows.map(x=>number(x.families)));$('#territoryBars').innerHTML=rows.slice(0,15).map(t=>`<div class="rank-bar" data-sector="${esc(t.sector)}"><span>${esc(t.sector)}</span><i><b style="width:${number(t.families)/max*100}%"></b></i><b>${fmt(t.families)}</b></div>`).join('');
+  $$('.rank-bar').forEach(e=>e.addEventListener('click',()=>selectTerritory(e.dataset.sector)));
+  $('#territoryTableBody').innerHTML=rows.map(t=>{const level=t.priority>=10?'alta':t.priority>0?'media':'baja',label=t.priority>=10?'Alta':t.priority>0?'Media':'Baja';return `<tr data-sector="${esc(t.sector)}"><td><input type="checkbox" data-compare-sector="${esc(t.sector)}" ${territoryFilters.compare.has(t.sector)?'checked':''} aria-label="Comparar ${esc(t.sector)}"></td><td><span class="sector-cell"><i>▦</i><b>${esc(t.sector)}</b></span></td><td>${fmt(t.families)}</td><td>${fmt(t.people)}</td><td>${fmt(t.noHab)}</td><td>${fmt(t.destroyed)}</td><td>${fmt(t.noState)}</td><td>${fmt(t.empty)}</td><td><span class="priority-badge ${level}">${label}</span><span class="priority-score"><i><u style="width:${Math.min(100,t.priority/Math.max(1,rows[0]?.priority||1)*100)}%"></u></i><b>${fmt(t.priority)}</b></span></td><td><button class="row-open" type="button" aria-label="Abrir ficha ${esc(t.sector)}">›</button></td></tr>`}).join('');
+  $$('#territoryTableBody tr').forEach(tr=>tr.addEventListener('click',e=>{if(e.target.matches('input'))return;selectTerritory(tr.dataset.sector)}));$$('[data-compare-sector]').forEach(ch=>ch.addEventListener('change',()=>{if(ch.checked){if(territoryFilters.compare.size>=4){ch.checked=false;toast('Puedes comparar hasta 4 territorios.','error');return}territoryFilters.compare.add(ch.dataset.compareSector)}else territoryFilters.compare.delete(ch.dataset.compareSector)}));renderScatter(rows);renderTerritoryDetail();
 }
-function renderWizardSelfHelp(body,foot,s){
-  const guide=selfHelpGuides[s.id]||[];
-  body.innerHTML=`<div class="guided-intro"><span class="guided-kicker">COMPROBACIÓN RÁPIDA</span><h3>Antes de radicar, revisa estas ${guide.length} cosas</h3><p>Puede resolver casos sencillos inmediatamente y, si el problema continúa, conservarás el camino de radicación.</p></div><div class="selfhelp-list">${guide.map(([t,d],i)=>`<div class="selfhelp-item"><span>${i+1}</span><div><strong>${t}</strong><p>${d}</p></div></div>`).join('')}</div><div class="selfhelp-security">✓ Nunca escribas contraseñas, códigos MFA o información confidencial en la descripción.</div>`;
-  foot.innerHTML=`<button class="btn btn-secondary" data-guide-back>← Cambiar servicio</button><div class="footer-actions"><button class="btn btn-soft" data-guide-solved>Se solucionó</button><button class="btn btn-primary" data-guide-selfhelp-continue>Sigue fallando · Radicar →</button></div>`;
+function selectTerritory(sector,recenter=true){territoryFilters.selected=sector;const t=mergedTerritories().map(derived).find(x=>x.sector===sector);if(t)map?.select(sector,{recenter});renderTerritoryDetail()}
+function renderTerritoryDetail(){const t=mergedTerritories().map(derived).find(x=>x.sector===territoryFilters.selected);if(!t){$('#territoryDetail').innerHTML=`<div class="empty-state"><span>⌖</span><h3>Selecciona un territorio</h3><p>Haz clic en un marcador, una fila o una barra para ver su ficha completa.</p></div>`;return}
+  const nominalNoState=Math.max(0,number(t.noState)-number(t.empty));$('#territoryDetail').innerHTML=`<div class="territory-head"><small>FICHA TERRITORIAL</small><h2>${esc(t.sector)}</h2><span class="precision-badge"><i class="dot ${t.precision==='verified'?'verified':'approximate'}"></i>${t.precision==='verified'?'Referencia localizada':'Referencia aproximada'}</span></div><div class="territory-stat-grid"><div class="territory-stat"><b>${fmt(t.families)}</b><small>Familias</small></div><div class="territory-stat"><b>${fmt(t.people)}</b><small>Personas</small></div><div class="territory-stat"><b style="color:var(--red)">${fmt(t.priority)}</b><small>Prioridad</small></div><div class="territory-stat"><b>${pct(t.rate)}</b><small>Tasa exploratoria</small></div><div class="territory-stat"><b>${fmt(nominalNoState)}</b><small>Familias sin estado</small></div><div class="territory-stat"><b>${fmt(t.empty)}</b><small>Núcleos vacíos</small></div></div><div class="territory-ref"><b>${esc(t.reference||'Referencia cartográfica')}</b><p>${esc(t.source||'Pendiente de validación geográfica oficial')}</p><p>${Number.isFinite(Number(t.lat))?`${Number(t.lat).toFixed(5)}, ${Number(t.lng).toFixed(5)}`:'Sin coordenadas'}</p>${Number.isFinite(Number(t.lat))?`<a class="btn small ghost" target="_blank" rel="noopener" href="https://www.openstreetmap.org/?mlat=${Number(t.lat)}&mlon=${Number(t.lng)}#map=15/${Number(t.lat)}/${Number(t.lng)}">Abrir referencia OSM ↗</a>`:''}</div>`;
 }
-function renderWizardQuestion(body,foot,s){
-  const questions=buildWizardQuestions(s); wizard.questionIndex=Math.max(0,Math.min(wizard.questionIndex,questions.length-1));
-  const q=questions[wizard.questionIndex]; const pct=Math.round(((wizard.questionIndex+1)/questions.length)*100);
-  body.innerHTML=`<div class="question-shell"><div class="question-progress"><div><span>PREGUNTA ${wizard.questionIndex+1} DE ${questions.length}</span><strong>${pct}%</strong></div><div class="question-progress-track"><i style="width:${pct}%"></i></div></div><div class="guided-question"><span class="guided-kicker">${s.category.toUpperCase()}</span><h3>${safe(q.label)} ${isQuestionRequired(q)?'<em>*</em>':''}</h3><p>${questionHelper(q.label,s)}</p>${questionControl(q,s)}${wizard.error?`<div class="guided-error">${safe(wizard.error)}</div>`:''}</div></div>`;
-  foot.innerHTML=`<button class="btn btn-secondary" data-guide-back>← Atrás</button><div class="footer-actions"><span class="guided-footer-note">${wizard.questionIndex+1}/${questions.length}</span><button class="btn btn-primary" data-guide-question-next>${wizard.questionIndex===questions.length-1?'Continuar a programación →':'Continuar →'}</button></div>`;
-  requestAnimationFrame(()=>$('#requestWizard [data-guide-field]')?.focus());
-}
-function preferredDateForService(s){
-  const idx=s.fields.findIndex(([label,type])=>type==='date'||label.toLowerCase().includes('fecha'));
-  const value=idx>=0?wizard.details[`f${idx}`]:'';
-  return /^\d{4}-\d{2}-\d{2}$/.test(value||'')?value:calendarState.date;
-}
-function guidedDurationForService(s){
-  if(s.id==='cubrimientos'){
-    const start=wizard.details.f2,end=wizard.details.f3;
-    if(/^\d\d:\d\d$/.test(start||'')&&/^\d\d:\d\d$/.test(end||'')){
-      const d=timeToMin(end)-timeToMin(start); if(d>0&&d<=8*60)return d;
-    }
-  }
-  return s.id==='capacitacion'?90:s.id==='publicaciones'?60:60;
-}
-function renderWizardSchedule(body,foot,s){
-  const date=preferredDateForService(s),duration=guidedDurationForService(s);
-  const qualified=rankCandidates(s);
-  const suggestions=findBestSlots(date,duration,s.id,qualified).slice(0,6);
-  const selected=wizard.details.scheduledDate;
-  body.innerHTML=`<div class="guided-intro compact"><span class="guided-kicker">PROGRAMACIÓN INTELIGENTE</span><h3>${selected?'Espacio seleccionado':'Escoge un espacio disponible'}</h3><p>Mesa de Ayuda TIC cruza la competencia requerida con agenda y carga. ${s.id==='cubrimientos'?'Para cubrimientos, la fecha del evento tiene prioridad.':'Puedes reservar ahora o dejar que el equipo gestione el horario según el SLA.'}</p></div>${selected?`<div class="selected-slot-hero"><div class="avatar">${personById(wizard.assignee)?.initials||'✓'}</div><div><span>ESPACIO RESERVADO</span><strong>${personById(wizard.assignee)?.name||'Responsable'} · ${formatTime(wizard.details.scheduledStart)}–${formatTime(wizard.details.scheduledEnd)}</strong><small>${wizard.details.scheduledDate} · ${minutesLabel(timeToMin(wizard.details.scheduledEnd)-timeToMin(wizard.details.scheduledStart))}</small></div><button data-guide-clear-slot type="button">Cambiar</button></div>`:''}<div class="guided-slot-grid">${suggestions.map((x,i)=>`<button type="button" class="guided-slot-card ${i===0?'recommended':''}" data-guide-slot="${x.person.id}|${x.date}|${x.start}|${x.end}">${i===0?'<em>MEJOR OPCIÓN</em>':''}<div class="guided-slot-time"><strong>${formatTime(x.start)}</strong><span>${formatTime(x.end)}</span></div><div class="guided-slot-person"><div class="avatar">${x.person.initials}</div><div><strong>${x.person.name}</strong><small>${x.person.role} · ${x.person.load}% ocupado</small></div></div></button>`).join('')||'<div class="guided-no-slots">No encontramos un bloque continuo con esa duración en la fecha indicada. Puedes continuar sin reservar y el equipo propondrá un horario.</div>'}</div>`;
-  foot.innerHTML=`<button class="btn btn-secondary" data-guide-back>← Editar información</button><div class="footer-actions"><button class="btn btn-soft" data-guide-skip-schedule>Gestionar horario después</button>${selected?'<button class="btn btn-primary" data-guide-to-assignment>Continuar →</button>':''}</div>`;
-}
-function routingReason(p,s,index){
-  const skill=matchCount(p,s); const capacity=100-p.load;
-  if(index===0)return `Mejor equilibrio: ${skill} competencias coincidentes y ${capacity}% de capacidad libre.`;
-  return `${skill} competencias coincidentes · ${capacity}% de capacidad libre · próximo espacio ${p.slots[0]}.`;
-}
-function renderWizardAssignment(body,foot,s){
-  const candidates=rankCandidates(s).slice(0,4),recommended=candidates[0];
-  if(!wizard.assignee||wizard.assignee==='auto')wizard.assignee=recommended?.id||'';
-  const choose=canChooseAssignee(s);
-  body.innerHTML=`<div class="guided-intro compact"><span class="guided-kicker">ENRUTAMIENTO POR COMPETENCIA + CAPACIDAD</span><h3>${choose?'Responsable recomendado':'Mesa de Ayuda TIC asignará el responsable'}</h3><p>${choose?'Puedes conservar la recomendación o escoger otro funcionario compatible.':'Por seguridad y consistencia operativa, este servicio se enruta automáticamente al perfil competente.'}</p></div><div class="routing-explain"><span>AI</span><div><strong>¿Por qué esta recomendación?</strong><p>Se ponderan competencias del servicio, carga estimada y disponibilidad próxima. En la versión con Supabase se agregarán turnos, ausencias y reglas de escalamiento.</p></div></div><div class="guided-routing-list">${candidates.map((p,i)=>`<button type="button" class="guided-routing-card ${wizard.assignee===p.id?'selected':''} ${i===0?'recommended':''}" ${choose?`data-guide-assignee="${p.id}"`:i===0?'data-guide-assignee-auto="1"':'disabled'}><div class="avatar">${p.initials}</div><div class="guided-routing-main"><div><strong>${p.name}</strong>${i===0?'<em>RECOMENDADO</em>':''}</div><span>${p.role}</span><small>${routingReason(p,s,i)}</small></div><div class="guided-routing-cap"><b>${p.load}%</b><span>ocupado</span><i><u style="width:${p.load}%;background:${loadColor(p.load)}"></u></i></div></button>`).join('')}</div>`;
-  foot.innerHTML=`<button class="btn btn-secondary" data-guide-back>← Atrás</button><button class="btn btn-primary" data-guide-review>Revisar solicitud →</button>`;
-}
-function detailLabel(s,key){
-  if(key==='requester')return 'Dependencia'; if(key==='title')return 'Asunto'; if(key==='priority')return 'Prioridad';
-  const m=String(key).match(/^f(\d+)$/); return m?s.fields[Number(m[1])]?.[0]||key:key;
-}
-function renderWizardReview(body,foot,s){
-  const p=personById(wizard.assignee); const approval=s.approval?approvalOwnerByService[s.id]||'Responsable aprobador configurado':'No requiere aprobación';
-  const detailEntries=Object.entries(wizard.details).filter(([k,v])=>v!==''&&v!=null&&!['scheduledDate','scheduledStart','scheduledEnd'].includes(k));
-  body.innerHTML=`<div class="review-hero"><div class="review-check">✓</div><div><span>LISTA PARA RADICAR</span><h3>Revisa que todo esté correcto</h3><p>Después de crearla podrás consultar la trazabilidad completa desde “Mis solicitudes”.</p></div></div><div class="review-grid"><div class="review-panel"><h4>Información de la solicitud</h4>${detailEntries.map(([k,v])=>`<div class="review-line"><span>${safe(detailLabel(s,k))}</span><strong>${safe(v)}</strong></div>`).join('')}</div><div class="review-panel accent"><h4>Ruta de atención</h4><div class="review-route"><span>${toneIcon(s)}</span><div><small>SERVICIO</small><strong>${s.title}</strong></div></div><div class="review-route"><div class="avatar">${p?.initials||'—'}</div><div><small>RESPONSABLE</small><strong>${p?.name||'Cola del servicio'}</strong></div></div><div class="review-line"><span>SLA objetivo</span><strong>${s.sla}</strong></div><div class="review-line"><span>Aprobación</span><strong>${approval}</strong></div>${wizard.details.scheduledDate?`<div class="review-line"><span>Agenda</span><strong>${wizard.details.scheduledDate}<br>${formatTime(wizard.details.scheduledStart)}–${formatTime(wizard.details.scheduledEnd)}</strong></div>`:''}</div></div><div class="review-notice"><span>i</span><div><strong>Al radicar</strong><p>Se generará un número único, se registrará la ruta de asignación y comenzará el control de tiempos del servicio${s.approval?', una vez supere la aprobación correspondiente':''}.</p></div></div>`;
-  foot.innerHTML=`<button class="btn btn-secondary" data-guide-back>← Ajustar</button><button class="btn btn-primary guided-submit" data-guide-submit>✓ Radicar solicitud</button>`;
-}
-function renderWizard(){
-  updateWizardChrome();
-  const body=$('#requestWizard'),foot=$('#requestWizardFooter'); if(!body||!foot)return;
-  const s=serviceById(wizard.service);
-  if(wizard.stage==='family')return renderWizardFamily(body,foot);
-  if(wizard.stage==='service')return renderWizardService(body,foot);
-  if(wizard.stage==='selfhelp')return renderWizardSelfHelp(body,foot,s);
-  if(wizard.stage==='questions')return renderWizardQuestion(body,foot,s);
-  if(wizard.stage==='schedule')return renderWizardSchedule(body,foot,s);
-  if(wizard.stage==='assignment')return renderWizardAssignment(body,foot,s);
-  return renderWizardReview(body,foot,s);
-}
-function captureGuidedCurrent(){
-  const el=$('#requestWizard [data-guide-field]'); if(!el)return true;
-  wizard.details[el.dataset.guideField]=el.value.trim();
-  const s=serviceById(wizard.service),q=buildWizardQuestions(s)[wizard.questionIndex];
-  if(isQuestionRequired(q)&&!wizard.details[q.key]){wizard.error='Este dato es necesario para continuar sin devoluciones.';renderWizard();return false;}
-  wizard.error='';return true;
-}
-function guidedQuestionNext(){
-  if(!captureGuidedCurrent())return;
-  const s=serviceById(wizard.service),qs=buildWizardQuestions(s);
-  if(wizard.questionIndex<qs.length-1){wizard.questionIndex++;renderWizard();return;}
-  wizard.stage=canScheduleService(s)?'schedule':'assignment';renderWizard();
-}
-function guidedBack(){
-  const s=serviceById(wizard.service);
-  if(wizard.stage==='service'){wizard.stage='family';wizard.family=null;}
-  else if(wizard.stage==='selfhelp'){wizard.stage='service';}
-  else if(wizard.stage==='questions'){
-    if(wizard.questionIndex>0)wizard.questionIndex--; else wizard.stage=selfHelpGuides[s?.id]?'selfhelp':'service';
-  } else if(wizard.stage==='schedule'){wizard.stage='questions';wizard.questionIndex=Math.max(0,buildWizardQuestions(s).length-1);}
-  else if(wizard.stage==='assignment'){wizard.stage=canScheduleService(s)?'schedule':'questions'; if(wizard.stage==='questions')wizard.questionIndex=Math.max(0,buildWizardQuestions(s).length-1);}
-  else if(wizard.stage==='review'){wizard.stage='assignment';}
-  wizard.error='';renderWizard();
-}
-function reserveQuickSlot(payload){
-  if(!payload)return; const [personId,date,start,end]=payload.split('|'),p=personById(personId),s=serviceById(calendarState.service);
-  wizard=freshWizard(s?.id||null,{requester:'Secretaría General',priority:'Media',scheduledDate:date,scheduledStart:start,scheduledEnd:end,assignee:personId});
-  wizard.assignee=personId;
-  if(s){wizard.stage=selfHelpGuides[s.id]?'selfhelp':'questions';} else wizard.stage='family';
-  $('#requestModalBackdrop').hidden=false;document.body.style.overflow='hidden';renderWizard();
-  showToast('Espacio preseleccionado',`${p.name} · ${formatTime(start)} a ${formatTime(end)}. Mesa de Ayuda TIC conservará esta reserva mientras completas la solicitud.`);
-}
-function scheduleTypeForService(id){return id==='cubrimientos'?'coverage':['correo','equipos','internet','accesos','seguridad'].includes(id)?'support':id==='desarrollo'||id==='datos'?'development':id==='revision'?'review':'internal';}
-function submitRequest(){
-  const s=serviceById(wizard.service),p=personById(wizard.assignee); if(!s)return;
-  const nextNum=Math.max(148,...tickets.map(t=>Number(String(t.id).match(/(\d+)$/)?.[1]||0)))+1;
-  const id=`MA-2026-${String(nextNum).padStart(4,'0')}`;
-  const scheduled=!!wizard.details.scheduledDate;
-  const status=s.approval?'En aprobación':scheduled?'Programado':'Nuevo';
-  const timeline=[['Solicitud radicada mediante asistente guiado','19 Ago · ahora']];
-  if(s.approval)timeline.push([`Enviada a aprobación · ${approvalOwnerByService[s.id]||'Aprobador del servicio'}`,'19 Ago · ahora']);
-  timeline.push([p?`Enrutada a ${p.name} por competencia y capacidad`:'Enrutada a la cola correspondiente','19 Ago · ahora']);
-  if(scheduled)timeline.push([`Agenda reservada · ${wizard.details.scheduledDate} ${formatTime(wizard.details.scheduledStart)}–${formatTime(wizard.details.scheduledEnd)}`,'19 Ago · ahora']);
-  const newT={
-    id,service:s.id,title:wizard.details.title||s.title,requester:wizard.details.requester||'Secretaría General',assignee:p?.id||'',priority:wizard.details.priority||(s.critical?'Crítica':'Media'),status,created:'19 Ago · ahora',due:s.sla==='Inmediato'?'Inmediato':s.sla==='Agenda'?'Según agenda':'Según SLA',sla:s.sla,
-    description:(()=>{const i=s.fields.findIndex(([,type])=>type==='textarea');return (i>=0&&wizard.details[`f${i}`])||wizard.details.title||'Solicitud registrada desde el portal.';})(),details:{...wizard.details},approval:s.approval?{required:true,owner:approvalOwnerByService[s.id]||'Aprobador configurado',status:'Pendiente'}:{required:false,status:'No aplica'},timeline
-  };
-  tickets.unshift(newT);saveTickets();
-  if(scheduled&&p){scheduleEvents.push({id:`ev-${id}`,person:p.id,date:wizard.details.scheduledDate,start:wizard.details.scheduledStart,end:wizard.details.scheduledEnd,title:newT.title,type:scheduleTypeForService(s.id),service:s.id,ticket:id});}
-  closeRequestModal();showToast('Solicitud radicada',`${id} quedó registrada${s.approval?' y enviada a aprobación':''}.`);setView('my-tickets');
+function renderScatter(rows){const host=$('#territoryScatter');const W=500,H=330,p=40,maxF=Math.max(1,...rows.map(x=>x.families)),maxR=Math.max(1,...rows.map(x=>x.rate));let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Relación entre familias y tasa prioritaria"><line class="scatter-axis" x1="${p}" y1="${H-p}" x2="${W-p}" y2="${H-p}"/><line class="scatter-axis" x1="${p}" y1="${p}" x2="${p}" y2="${H-p}"/><text class="scatter-label" x="${W/2}" y="${H-8}">Familias registradas</text><text class="scatter-label" x="8" y="18">Tasa prioritaria</text>`;rows.forEach(t=>{const x=p+t.families/maxF*(W-p*2),y=H-p-t.rate/maxR*(H-p*2),r=Math.max(4,Math.min(11,Math.sqrt(number(t.people))/2)),color=t.priority>=10?'#d93c45':t.priority>0?'#f0a11e':'#0a5be8';svg+=`<circle class="scatter-dot" data-scatter="${esc(t.sector)}" cx="${x}" cy="${y}" r="${r}" fill="${color}" opacity=".78"><title>${esc(t.sector)} · ${t.families} familias · ${pct(t.rate)}</title></circle>`});svg+='</svg>';host.innerHTML=svg;$$('[data-scatter]',host).forEach(c=>c.addEventListener('click',()=>selectTerritory(c.dataset.scatter)))}
+function compareTerritories(){const rows=mergedTerritories().map(derived).filter(t=>territoryFilters.compare.has(t.sector));if(rows.length<2){toast('Selecciona al menos dos territorios para comparar.','error');return}$('#compareDialogBody').innerHTML=`<span class="eyebrow">COMPARADOR TERRITORIAL</span><h2>${rows.length} territorios seleccionados</h2><div class="compare-dialog-grid">${rows.map(t=>`<article class="compare-sector"><h3>${esc(t.sector)}</h3><b>${fmt(t.families)}</b><small>familias</small><b>${fmt(t.people)}</b><small>personas</small><b style="color:var(--red)">${fmt(t.priority)}</b><small>prioridad · ${pct(t.rate)}</small></article>`).join('')}</div>`;$('#compareDialog').showModal()}
+function exportTerritoryCsv(){const rows=filterTerritories();const cols=['sector','families','people','noHab','destroyed','noState','empty','priority','rate','lat','lng','precision','reference','source'];const csv=[cols.join(','),...rows.map(r=>cols.map(k=>`"${String(r[k]??'').replace(/"/g,'""')}"`).join(','))].join('\n');const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='rufe-san-pedro-territorios.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500)}
+
+function housingColor(label){return label==='Habitable'?palette.green:label==='Averiada'?palette.orange:label==='No habitable'?palette.red:label==='Destruida'?palette.darkred:label.includes('Evacuada')?palette.blue:palette.gray}
+function renderHousing(){const families=number(DATA.kpis?.families),rows=safeArray(DATA.housing),nohab=number(rows.find(x=>x.label==='No habitable')?.count),des=number(rows.find(x=>x.label==='Destruida')?.count),priority=nohab+des;$('#housingPriorityHero').textContent=fmt(priority);$('#housingUniverse').textContent=fmt(families);$('#housingPriorityBig').textContent=fmt(priority);$('#noHabBig').textContent=fmt(nohab);$('#destroyedBig').textContent=fmt(des);$('#housingNarrative').textContent=DATA.priorityHousingNarrative||'Los registros prioritarios deben verificarse en campo y articularse con medidas de seguridad, alojamiento y asistencia según necesidad.';renderHousingBars();const k=DATA.kpis||{};const alerts=[[k.familiesWithoutState,'Familias sin clasificación','No permite priorizar seguridad habitacional','var(--red)'],[k.multipleHousingMarks,'Marcas múltiples','Ambigüedad operacional','var(--teal)'],[2,'Evacuadas fuera de residencia','Completar acogida, composición y necesidades','var(--blue)']];$('#housingAlerts').innerHTML=alerts.map(a=>`<div class="mini-alert" style="--accent:${a[3]}"><b>${fmt(a[0])}</b><div><span>${a[1]}</span><small>${a[2]}</small></div></div>`).join('')}
+function renderHousingBars(){const families=number(DATA.kpis?.families),rows=safeArray(DATA.housing);$('#housingBars').innerHTML=rows.map(x=>{const val=housingMode==='pct'?number(x.count)/families*100:number(x.count);const width=number(x.count)/families*100;const col=housingColor(x.label);return `<div class="housing-row" style="--color:${col}"><label><b>${esc(x.label)}</b><small>${fmt(x.count)} registros</small></label><div class="housing-track"><span style="width:${Math.min(100,width)}%"></span></div><b>${housingMode==='pct'?pct(width):fmt(x.count)}</b></div>`}).join('')}
+
+function renderPopulation(){
+  const k=DATA.kpis||{},people=number(k.nominalPeople);
+  $('#peopleHero').textContent=fmt(people);
+  const sex=safeArray(DATA.sexDistribution);let cum=0,stops=[];
+  sex.forEach(x=>{const start=cum;cum+=number(x.pct);stops.push(`${palette[x.tone]||palette.blue} ${start}% ${cum}%`)});
+  $('#sexChart').innerHTML=`<div class="donut-layout donut-layout-xl"><div class="donut donut-xl" style="background:conic-gradient(${stops.join(',')})"><div class="donut-center"><b>${fmt(people)}</b><small>personas registradas</small></div></div><div class="legend-list legend-list-large">${sex.map(x=>`<div class="legend-item legend-item-large" style="--color:${palette[x.tone]||palette.blue}"><i></i><div><b>${esc(x.label)}</b><small>${fmt(x.count)} personas</small></div><span>${pct(x.pct)}</span></div>`).join('')}</div></div>`;
+  const life=safeArray(DATA.lifeCycle),max=Math.max(1,...life.map(x=>number(x.count)));
+  $('#lifeCycleChart').innerHTML=`<div class="age-chart-grid">${life.map((x,i)=>{const color=[palette.orange,palette.yellow,'#efae48',palette.aqua,palette.blue,palette.green,palette.gray][i%7];return `<article class="age-card" style="--color:${color};--height:${Math.max(22,number(x.count)/max*220)}px"><header><span>${esc(x.label)}</span><b>${fmt(x.count)}</b></header><div class="age-bar-wrap"><div class="age-bar"></div></div><footer>${pct(x.pct)}</footer></article>`}).join('')}</div>`;
+  const loc=safeArray(DATA.locationDeclared),maxLoc=Math.max(1,...loc.map(x=>number(x.count)));
+  $('#locationChart').innerHTML=`<div class="location-bars location-bars-pro">${loc.map((x,i)=>`<div class="location-row-pro"><div><b>${esc(x.label)}</b><small>${pct(number(x.count)/Math.max(1,loc.reduce((s,r)=>s+number(r.count),0))*100)}</small></div><div class="location-track-pro"><span style="width:${number(x.count)/maxLoc*100}%;--color:${[palette.green,palette.blue,palette.gray][i%3]}"></span></div><strong>${fmt(x.count)}</strong></div>`).join('')}</div>`;
+  $('#differentialKpis').innerHTML=`<div class="differential-grid differential-grid-large"><div class="differential-stat"><b>${fmt(k.minors)}</b><small>0–17 años</small></div><div class="differential-stat"><b>${fmt(k.age60plus)}</b><small>60 años y más</small></div></div>`;
 }
 
-function slaHealth(t){
-  if(['Resuelto','Cerrado'].includes(t.status))return {key:'met',label:'Cumplido',detail:'Objetivo atendido',pct:100};
-  if(t.status==='En espera')return {key:'paused',label:'Pausado',detail:'Esperando información',pct:48};
-  if(t.priority==='Crítica'||t.sla==='Inmediato')return {key:'critical',label:'Crítico',detail:'Atención inmediata',pct:92};
-  const mins=String(t.sla).match(/(\d+)\s*min/i); if(mins&&Number(mins[1])<=60)return {key:'critical',label:'Crítico',detail:`${mins[1]} min restantes`,pct:90};
-  if(t.priority==='Alta'||(mins&&Number(mins[1])<=120))return {key:'risk',label:'En riesgo',detail:'Requiere atención prioritaria',pct:74};
-  if(t.status==='En aprobación')return {key:'approval',label:'En aprobación',detail:'Reloj controlado por flujo',pct:32};
-  return {key:'ontime',label:'En tiempo',detail:'Dentro del objetivo',pct:42};
+function renderQuality(){const comp=safeArray(DATA.completeness);const avg=comp.length?comp.reduce((s,x)=>s+number(x.value),0)/comp.length:0;$('#qualityScore').textContent=pct(avg);$('#qualityCompletion').innerHTML=`<div class="completion-list">${comp.map(x=>`<div class="meter-row"><label>${esc(x.label)}</label><div class="meter-track"><span style="width:${Math.min(100,number(x.value))}%"></span></div><b>${pct(x.value)}</b></div>`).join('')}</div>`;$('#componentStatus').innerHTML=`<div class="status-list">${safeArray(DATA.componentStatus).map(x=>`<div class="status-item" style="--color:${palette[x.tone]||palette.blue}"><i></i><div><b>${esc(x.component)}</b><small>${esc(x.progress)} · ${esc(x.status)}</small></div></div>`).join('')}</div>`;$('#qualityIssues').innerHTML=safeArray(DATA.qualityIssues).map((x,i)=>`<article class="issue-card" style="--accent:${[palette.orange,palette.red,palette.red,palette.orange,palette.violet,palette.gray,palette.red,palette.teal,palette.violet][i%9]}"><strong>${fmt(x.count)}</strong><h3>${esc(x.label)}</h3><p><b>Riesgo:</b> ${esc(x.risk||'Requiere verificación')}</p><footer><b>Tratamiento:</b> ${esc(x.treatment||'Depurar y documentar.')}</footer></article>`).join('');$('#qualityRules').innerHTML=safeArray(DATA.qualityAssuranceRules).map((x,i)=>`<div class="rule-item"><span>${String(i+1).padStart(2,'0')}</span><p>${esc(x)}</p></div>`).join('')}
+
+function renderEvolution(){
+  releases=safeArray(DATA.releases);
+  if(!releases.length)releases=[{version:DATA.publication?.version||DATA.meta?.version||'3.0',cutoffDate:DATA.publication?.cutoffDate||'2026-08-18',kpis:DATA.kpis,housing:DATA.housing,territories:DATA.territories,changeNote:DATA.publication?.changeNote||'Primer corte público consolidado.'}];
+  const ordered=releases.slice();
+  $('#releaseChart').innerHTML=`<div class="release-track">${ordered.map((r,i)=>`<article class="release-milestone ${i===ordered.length-1?'latest':''}" data-release="${i}"><span>${shortDate(r.cutoffDate)}</span><h3>v${esc(r.version||'—')}</h3><div class="release-metrics"><b>${fmt(r.kpis?.families)}</b><small>familias</small></div><p>${esc(r.changeNote||'Publicación preservada en el histórico.')}</p></article>`).join('')}</div>`;
+  $$('[data-release]',$('#releaseChart')).forEach(g=>g.addEventListener('click',()=>renderReleaseSummary(ordered[Number(g.dataset.release)])));
+  renderReleaseSummary(ordered.at(-1));
+  const opts=ordered.map((r,i)=>`<option value="${i}">${esc(r.version||'Corte')} · ${shortDate(r.cutoffDate)}</option>`).join('');
+  $('#compareFrom').innerHTML=opts;$('#compareTo').innerHTML=opts;
+  $('#compareFrom').value=0;$('#compareTo').value=ordered.length-1;
+  renderCompareReleases();
 }
-function slaBadge(t){const h=slaHealth(t);return `<span class="sla-health ${h.key}"><i></i>${h.label}</span>`;}
-function opsFilterTickets(){
-  return tickets.filter(t=>{
-    const h=slaHealth(t);
-    if(opsState.filter==='now')return !['Resuelto','Cerrado','Cancelado'].includes(t.status);
-    if(opsState.filter==='risk')return ['risk','critical'].includes(h.key);
-    if(opsState.filter==='unassigned')return !t.assignee&&!['Resuelto','Cerrado'].includes(t.status);
-    if(opsState.filter==='scheduled')return t.status==='Programado';
-    if(opsState.filter==='approvals')return t.status==='En aprobación'||t.approval?.status==='Pendiente';
-    return true;
+function renderReleaseSummary(r){const reportHref=r.id?`report.html?release=${encodeURIComponent(r.id)}`:'report.html';$('#releaseSummary').innerHTML=`<div class="release-summary-card release-summary-card-pro"><span class="eyebrow">CORTE SELECCIONADO</span><strong>${esc(r.version||'—')}</strong><p>${niceDate(r.cutoffDate)}</p><div class="territory-stat-grid"><div class="territory-stat"><b>${fmt(r.kpis?.families)}</b><small>Familias</small></div><div class="territory-stat"><b>${fmt(r.kpis?.nominalPeople)}</b><small>Personas</small></div></div><p>${esc(r.changeNote||'Versión publicada y conservada en el histórico.')}</p><a class="btn small ghost" href="${reportHref}" target="_blank" rel="noopener">Abrir informe de este corte ↗</a></div>`}
+function renderCompareReleases(){const a=releases[Number($('#compareFrom')?.value||0)],b=releases[Number($('#compareTo')?.value||0)];if(!a||!b)return;const priority=r=>number(safeArray(r.housing).find(x=>x.label==='No habitable')?.count)+number(safeArray(r.housing).find(x=>x.label==='Destruida')?.count);const metrics=[['Familias',number(a.kpis?.families),number(b.kpis?.families),'Registros familiares'],['Personas',number(a.kpis?.nominalPeople),number(b.kpis?.nominalPeople),'Registros nominales'],['Prioridad',priority(a),priority(b),'No habitable + destruida'],['Territorios',number(a.kpis?.territories),number(b.kpis?.territories),'Cobertura territorial']];$('#compareResults').innerHTML=metrics.map(([l,x,y,desc])=>{const d=y-x;return `<article class="delta-card delta-card-pro"><small>${l}</small><b>${fmt(y)}</b><p>${desc}</p><div class="${d>0?'positive':d<0?'negative':''}">${d>0?'+':''}${fmt(d)} vs. corte base</div></article>`}).join('')}
+
+function bindShuffleDecks(){
+  $$('[data-shuffle-deck]').forEach(deck=>{if(deck.dataset.shuffleBound)return;deck.dataset.shuffleBound='1';let dragged=null;$$('.shuffle-card',deck).forEach(card=>{card.addEventListener('dragstart',()=>{dragged=card;card.classList.add('dragging')});card.addEventListener('dragend',()=>{card.classList.remove('dragging');dragged=null;$$('.shuffle-card',deck).forEach((x,i)=>x.style.setProperty('--i',i))});card.addEventListener('dragover',e=>{e.preventDefault();if(!dragged||dragged===card)return;const box=card.getBoundingClientRect();const before=e.clientY<box.top+box.height/2;deck.insertBefore(dragged,before?card:card.nextSibling)});});});
+}
+
+function renderMethodology(){const steps=safeArray(DATA.methodology);$('#methodFlow').innerHTML=steps.map((x,i)=>`<article class="method-step"><span>0${i+1}</span><h3>${esc(x.title||x.step||`Paso ${i+1}`)}</h3><p>${esc(x.description||x.detail||String(x))}</p></article>`).join('');const scopeTitles=['Lectura y homologación','Cálculo de resultados','Clasificación operativa','Depuración de inconsistencias','Orientación de seguimiento'];const scopeIcons=['▤','▥','⌂','✓','◎'];$('#objectiveScope').innerHTML=`<p class="scope-intro">${esc(DATA.objective||'')}</p><div class="shuffle-deck scope-shuffle" data-shuffle-deck>${safeArray(DATA.scope).map((x,i)=>`<article class="shuffle-card scope-card-pro" draggable="true" style="--i:${i}"><i>${scopeIcons[i%scopeIcons.length]}</i><div><h4>${esc(scopeTitles[i]||`Alcance ${i+1}`)}</h4><p>${esc(x)}</p></div><span aria-hidden="true">⋮⋮</span></article>`).join('')}</div><small class="drag-hint">↕ Arrastra las tarjetas para reorganizar la lectura</small>`;const limitTitles=['No reemplaza cierre formal','No equivale a dictamen estructural','No valida soportes por caso','No certifica cargue RUD','Duplicados requieren revisión'];const limitIcons=['▧','⌂','⌕','☁','◎'];$('#limitationsList').innerHTML=`<div class="shuffle-deck limitation-shuffle" data-shuffle-deck>${safeArray(DATA.limitations).map((x,i)=>`<article class="shuffle-card limitation-card-pro" draggable="true" style="--i:${i}"><i>${limitIcons[i%limitIcons.length]}</i><div><h4>${esc(limitTitles[i]||`Limitación ${i+1}`)}</h4><p>${esc(x)}</p></div><span aria-hidden="true">⋮⋮</span></article>`).join('')}</div><small class="drag-hint">↕ Arrastra las tarjetas para explorar los límites del corte</small>`;$('#appliedRules').innerHTML=safeArray(DATA.appliedRules).map((x,i)=>`<div class="number-item"><span>${String(i+1).padStart(2,'0')}</span><p>${esc(x)}</p></div>`).join('');bindShuffleDecks()}
+
+function currentReportSrc(){const reports=safeArray(DATA.media).filter(x=>(x.status==='published'||x.public===true||x.includeInPublication===true)&&(x.type==='report'||/\.pdf$/i.test(x.name||'')));return reports.at(-1)?.publicUrl||reports.at(-1)?.url||'assets/informe-consolidado-18-agosto-2026.pdf'}
+function publicDocuments(){const reportSrc=currentReportSrc();const base=[{id:'main-report',type:'report',title:reportSrc==='assets/informe-consolidado-18-agosto-2026.pdf'?'Informe técnico consolidado — Corte 18/08/2026':'Informe técnico consolidado — último corte publicado',src:reportSrc,description:'Documento fuente del corte técnico consolidado.',date:DATA.publication?.cutoffDate||'2026-08-18'}];safeArray(DATA.visualReports).forEach(v=>base.push({id:'visual-'+v.id,type:'visual',title:v.title,src:v.src,description:v.category,date:DATA.publication?.cutoffDate||'2026-08-18'}));base.push({id:'photo-1',type:'photo',title:'Registro fotográfico — edificación afectada',src:'assets/iglesia-afectada.jpg',description:'Fotografía aportada al portal.',date:'2026-08-18'},{id:'photo-2',type:'photo',title:'Alcaldía Municipal de San Pedro',src:'assets/alcaldia.jpg',description:'Referencia institucional.',date:'2026-08-18'});safeArray(DATA.media).filter(x=>x.status==='published'||x.public===true||x.includeInPublication===true).forEach(x=>base.push({id:x.id,type:x.type||'annex',title:x.title||x.name,src:x.publicUrl||x.url,description:x.description||'Archivo publicado',date:x.publishedAt||x.createdAt}));return base}
+function renderDocuments(){const q=String($('#documentSearch')?.value||'').toLowerCase();const docs=publicDocuments().filter(d=>(docFilter==='all'||d.type===docFilter)&&(!q||`${d.title} ${d.description}`.toLowerCase().includes(q)));$('#documentGrid').innerHTML=docs.map(d=>{const isImg=/\.(png|jpe?g|webp)$/i.test(d.src||'')||['visual','photo'].includes(d.type);return `<article class="doc-card"><div class="doc-preview">${isImg?`<img loading="lazy" src="${esc(d.src)}" alt="${esc(d.title)}">`:`<div class="file-icon">▤</div>`}</div><div class="doc-body"><span>${esc(d.type)}</span><h3>${esc(d.title)}</h3><p>${esc(d.description||'')}</p><footer><small>${shortDate(d.date)}</small><a href="${esc(d.src)}" target="_blank" rel="noopener">Abrir ↗</a></footer></div></article>`}).join('');const reportSrc=currentReportSrc();$('#pdfObject').setAttribute('data',reportSrc);const isOriginal=reportSrc==='assets/informe-consolidado-18-agosto-2026.pdf';$('#pdfPageIndex').innerHTML=isOriginal?safeArray(DATA.pageIndex).map(x=>`<div class="page-index-item" data-page="${x.page}"><span>${String(x.page).padStart(2,'0')}</span><b>${esc(x.title)}</b></div>`).join(''):`<div class="page-index-item"><span>PDF</span><b>Último informe publicado</b></div>`;if(isOriginal)$$('[data-page]').forEach(x=>x.addEventListener('click',()=>$('#pdfObject').setAttribute('data',`assets/informe-consolidado-18-agosto-2026.pdf#page=${x.dataset.page}`)))}
+function renderUpdates(){const ups=safeArray(DATA.updates);const items=(ups.length?ups:[{date:DATA.publication?.cutoffDate||DATA.meta?.cutoffDate||'2026-08-18',version:DATA.publication?.version||DATA.meta?.version||'3.0',title:'Consolidado técnico',note:'Corte público vigente.'}]).slice().reverse();$('#publicTimeline').innerHTML=items.map((x,i)=>`<article class="update-item update-item-pro"><time class="update-date"><b>${shortDate(x.date||x.cutoffDate)}</b><small>${i===0?'Última publicación':'Corte histórico'}</small></time><div class="update-copy"><span class="role-badge">v${esc(x.version||'—')}</span><h3>${esc(x.title||`Versión ${x.version||''}`)}</h3><p>${esc(x.note||x.changeNote||'Actualización publicada.')}</p><a href="#informes">Ver soporte →</a></div></article>`).join('')}
+function renderSources(){$('#eventContext').textContent=DATA.eventContext||'';$('#rufeRud').textContent=DATA.rufeRud||'';$('#regulatoryFramework').innerHTML=safeArray(DATA.regulatoryFramework).map(x=>`<article class="framework-card"><b>${esc(x.axis)}</b><p>${esc(x.application)}</p></article>`).join('');$('#conclusionsList').innerHTML=safeArray(DATA.conclusions).map((x,i)=>`<div class="number-item"><span>${String(i+1).padStart(2,'0')}</span><p>${esc(x)}</p></div>`).join('');const dc=DATA.documentControl||{};let rows=[];if(Array.isArray(dc.finalSignatures))rows=dc.finalSignatures;else rows=[['Transcribió',dc.transcribedBy],['Revisó',dc.reviewedBy],['Aprobó',dc.approvedBy]].filter(x=>x[1]).map(x=>({role:x[0],name:x[1]}));$('#documentControl').innerHTML=rows.map(x=>`<div class="document-person"><span>${esc(x.role||'')}</span><b>${esc(x.name||'')}</b><small>${esc(x.title||'')}</small></div>`).join('')}
+
+function renderMeta(){
+  const pub=DATA.publication||{},cut=pub.cutoffDate||DATA.meta?.cutoffDate||'2026-08-18',chip=$('#publicationChip');
+  $('#publicationCut').textContent=`Corte ${shortDate(cut)}`;$('#heroCut').textContent=shortDate(cut).toUpperCase();$('#lastUpdateText').textContent=`Última actualización: ${niceDate(pub.publishedAt||cut)}`;
+  chip.classList.toggle('contingency',SOURCE!=='firebase');const label=chip.querySelector('b');
+  if(SOURCE==='firebase'){label.textContent='Vigente';chip.title='Información pública sincronizada con Firebase';}
+  else{label.textContent='Copia local';chip.title='La consulta en vivo no está disponible; se muestra el último corte local incluido en el portal.';}
+}
+function renderAll(){if(!DATA)return;renderMeta();renderKpis();renderCompletion();renderStory();renderTerritory();renderHousing();renderPopulation();renderQuality();renderEvolution();renderMethodology();renderDocuments();renderUpdates();renderSources();buildSearchIndex();window.dispatchEvent(new CustomEvent('rufe:render',{detail:{source:SOURCE}}));}
+
+function buildSearchIndex(){
+  const items=[{icon:'⌂',title:'Resumen ejecutivo',desc:'Panorama general del corte',hash:'#inicio'},{icon:'⌖',title:'Mapa territorial',desc:'Explorar los 25 territorios',hash:'#territorio'},{icon:'⌂',title:'Vivienda',desc:'Clasificación y prioridad',hash:'#vivienda'},{icon:'◎',title:'Población',desc:'Caracterización y ciclo de vida',hash:'#poblacion'},{icon:'✓',title:'Calidad del dato',desc:'Brechas y depuración',hash:'#calidad'},{icon:'▤',title:'Informes y archivos',desc:'Centro documental',hash:'#informes'}];mergedTerritories().forEach(t=>items.push({icon:'⌖',title:t.sector,desc:`${fmt(t.families)} familias · ${fmt(t.people)} personas`,hash:'#territorio',sector:t.sector}));safeArray(DATA.qualityIssues).forEach(x=>items.push({icon:'!',title:x.label,desc:`${fmt(x.count)} · Calidad del dato`,hash:'#calidad'}));safeArray(DATA.regulatoryFramework).forEach(x=>items.push({icon:'§',title:x.axis,desc:'Marco normativo',hash:'#fuentes'}));window.__RUFE_SEARCH_INDEX=items;}
+function search(q){q=q.trim().toLowerCase();const box=$('#searchResults');if(!q){box.hidden=true;return}const rows=(window.__RUFE_SEARCH_INDEX||[]).filter(x=>`${x.title} ${x.desc}`.toLowerCase().includes(q)).slice(0,9);box.innerHTML=rows.length?rows.map((x,i)=>`<div class="search-result" data-search-i="${i}"><span>${x.icon}</span><div><b>${esc(x.title)}</b><small>${esc(x.desc)}</small></div><i>↗</i></div>`).join(''):`<div class="search-result"><span>⌕</span><div><b>Sin resultados</b><small>Prueba con otra palabra.</small></div></div>`;box.hidden=false;$$('[data-search-i]',box).forEach(el=>el.addEventListener('click',()=>{const x=rows[Number(el.dataset.searchI)];if(x.sector)territoryFilters.selected=x.sector;location.hash=x.hash;box.hidden=true;$('#globalSearch').value='';setTimeout(()=>x.sector&&selectTerritory(x.sector),100)}))}
+
+function bindPublicUi(){
+  route();$('#themeToggle').addEventListener('click',()=>{const next=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=next;try{localStorage.setItem('rufe-theme',next)}catch(_){}});let saved=null;try{saved=localStorage.getItem('rufe-theme')}catch(_){}if(saved)document.documentElement.dataset.theme=saved;
+  $('#globalSearch').addEventListener('input',e=>search(e.target.value));document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();$('#globalSearch').focus()}if(e.key==='Escape')$('#searchResults').hidden=true});document.addEventListener('click',e=>{if(!e.target.closest('#searchShell'))$('#searchResults').hidden=true});
+  $('#territorySearch').addEventListener('input',e=>{territoryFilters.search=e.target.value;renderTerritory()});$('#territorySort').addEventListener('change',e=>{territoryFilters.sort=e.target.value;renderTerritory()});$('#minFamilies').addEventListener('input',e=>{territoryFilters.minFamilies=Number(e.target.value);$('#minFamiliesValue').textContent=e.target.value;renderTerritory()});$('#onlyPriority').addEventListener('change',e=>{territoryFilters.onlyPriority=e.target.checked;renderTerritory()});$('#resetTerritoryFilters').addEventListener('click',()=>{territoryFilters={...territoryFilters,search:'',sort:'families',minFamilies:0,onlyPriority:false};$('#territorySearch').value='';$('#territorySort').value='families';$('#minFamilies').value=0;$('#minFamiliesValue').textContent='0';$('#onlyPriority').checked=false;renderTerritory()});$('#compareSelected').addEventListener('click',compareTerritories);$('#exportTerritoryCsv').addEventListener('click',exportTerritoryCsv);
+  $$('[data-housing-mode]').forEach(b=>b.addEventListener('click',()=>{$$('[data-housing-mode]').forEach(x=>x.classList.toggle('active',x===b));housingMode=b.dataset.housingMode;renderHousingBars()}));
+  $('#runCompare').addEventListener('click',renderCompareReleases);$('#compareFrom').addEventListener('change',renderCompareReleases);$('#compareTo').addEventListener('change',renderCompareReleases);
+  $('#documentSearch').addEventListener('input',renderDocuments);$$('[data-doc-filter]').forEach(b=>b.addEventListener('click',()=>{$$('[data-doc-filter]').forEach(x=>x.classList.toggle('active',x===b));docFilter=b.dataset.docFilter;renderDocuments()}));
+  $('#adminEntry').addEventListener('click',()=>{location.hash='#administracion'});
+  $('#mobileMore').addEventListener('click',()=>{const sheet=$('#mobileSheet');if(sheet)sheet.hidden=!sheet.hidden;});
+}
+
+// ---- Administración ----
+function roleLabel(r){return ({editor:'Editor',validator:'Validador',admin:'Administrador',super_admin:'Super Admin',guest:'Sin rol'})[window.RUFE_FIREBASE?.normalizeRole(r)]||r}
+function currentProfile(){return window.RUFE_FIREBASE?.profile||null}
+function renderAdminAuth(){const F=window.RUFE_FIREBASE,p=currentProfile(),u=F?.user;$('#adminNav').hidden=!(p?.active&&['editor','validator','admin','super_admin'].includes(F.normalizeRole(p.role)));if(u&&p){$('#adminUserCard').innerHTML=`<div class="signed-user"><b>${esc(p.displayName||u.displayName||p.email||u.email)}</b><small>${esc(p.email||u.email||'')}</small><span class="role-badge">${esc(roleLabel(p.role))}</span></div>`;$('#adminLoginState').innerHTML=`<div style="display:flex;justify-content:flex-end;margin:8px 0"><button class="btn small ghost" id="logoutBtn">Cerrar sesión</button></div>`;$('#logoutBtn').addEventListener('click',()=>F.logout());$('#adminWorkspace').hidden=!(p.active&&['editor','validator','admin','super_admin'].includes(F.normalizeRole(p.role)));if(!$('#adminWorkspace').hidden)startAdminListeners();}else{$('#adminUserCard').innerHTML='';$('#adminWorkspace').hidden=true;$('#adminLoginState').innerHTML=`<article class="login-card"><span class="eyebrow">ACCESO AUTORIZADO</span><h2>Ingresar al área interna</h2><p>Solo usuarios habilitados en Firebase pueden editar, validar o publicar información. La ciudadanía no necesita iniciar sesión para consultar el portal.</p><div class="login-grid"><div class="field"><label>Correo</label><input id="loginEmail" type="email" autocomplete="username" placeholder="usuario@dominio.gov.co"></div><div class="field"><label>Contraseña</label><input id="loginPassword" type="password" autocomplete="current-password" placeholder="••••••••"></div></div><div class="form-actions" style="justify-content:flex-start"><button class="btn primary" id="loginEmailBtn">Ingresar</button><button class="btn ghost" id="loginGoogleBtn">Ingresar con Google</button><button class="btn small ghost" id="resetPasswordBtn">Restablecer contraseña</button></div></article>`;$('#loginEmailBtn').addEventListener('click',async()=>{try{await F.loginEmail($('#loginEmail').value,$('#loginPassword').value)}catch(e){toast(e.message,'error')}});$('#loginGoogleBtn').addEventListener('click',async()=>{try{await F.loginGoogle()}catch(e){toast(e.message,'error')}});$('#resetPasswordBtn').addEventListener('click',async()=>{const email=$('#loginEmail').value;if(!email)return toast('Escribe tu correo primero.','error');try{await F.resetPassword(email);toast('Correo de restablecimiento enviado.','success')}catch(e){toast(e.message,'error')}})}}
+let adminListening=false;
+function startAdminListeners(){if(adminListening)return;adminListening=true;const F=window.RUFE_FIREBASE;try{F.listenDraft(d=>{admin.draft=d;renderAdminPanels()});F.listenTerritories(t=>{admin.territories=t;renderAdminPanels()});F.listenWorkflow(w=>{admin.workflow=w;renderAdminPanels()})}catch(e){toast(e.message,'error')}renderAdminPanels()}
+function bindAdminTabs(){$$('[data-admin-tab]').forEach(b=>b.addEventListener('click',()=>{$$('[data-admin-tab]').forEach(x=>x.classList.toggle('active',x===b));$$('[data-admin-panel]').forEach(p=>p.classList.toggle('active',p.dataset.adminPanel===b.dataset.adminTab));renderAdminPanels(b.dataset.adminTab)}))}
+function adminCan(...roles){return window.RUFE_FIREBASE?.hasRole(...roles)}
+function renderAdminPanels(tab){const p=currentProfile();if(!p)return;const r=window.RUFE_FIREBASE.normalizeRole(p.role);renderAdminOverview();renderAdminTerritories();renderAdminContent();renderAdminWorkflow();if(!tab||tab==='media')renderAdminMedia();if(!tab||tab==='users')renderAdminUsers();if(!tab||tab==='audit')renderAdminAudit();$$('[data-admin-tab="users"],[data-admin-tab="audit"]').forEach(b=>b.hidden=r!=='super_admin');$$('[data-admin-tab="media"]').forEach(b=>b.hidden=r!=='super_admin')}
+function renderAdminOverview(){const t=admin.territories.length?admin.territories:mergedTerritories(),families=t.reduce((s,x)=>s+number(x.families),0),people=t.reduce((s,x)=>s+number(x.people),0),priority=t.reduce((s,x)=>s+number(x.noHab)+number(x.destroyed),0),w=admin.workflow||{};$('#adminOverview').innerHTML=`<div class="admin-grid"><article class="admin-card"><span>Familias del borrador</span><strong>${fmt(families)}</strong><p>Recalculadas desde territorios</p></article><article class="admin-card"><span>Personas</span><strong>${fmt(people)}</strong><p>Registros nominales territoriales</p></article><article class="admin-card"><span>Prioridad</span><strong style="color:var(--red)">${fmt(priority)}</strong><p>No habitable + destruida</p></article><article class="admin-card"><span>Revisión</span><strong>${fmt(w.revision||0)}</strong><p>Estado: ${esc(w.reviewStatus||'sin inicializar')}</p></article></div><article class="admin-section"><div class="admin-section-head"><div><span class="eyebrow">ARQUITECTURA DEL FLUJO</span><h3>Una sola fuente de datos</h3><p>El mapa y las gráficas públicas se alimentan del corte publicado. Los editores trabajan en borrador.</p></div>${adminCan('super_admin')?'<button class="btn primary small" id="seedBtn">Inicializar / sincronizar base</button>':''}</div><div class="workflow-steps"><div class="workflow-step active"><b>1 · Editar</b><small>Territorios y contenido</small></div><div class="workflow-step"><b>2 · Revisar</b><small>Control de calidad</small></div><div class="workflow-step"><b>3 · Aprobar</b><small>Validador / administración</small></div><div class="workflow-step"><b>4 · Publicar</b><small>Snapshot público trazable</small></div></div></article>`;$('#seedBtn')?.addEventListener('click',async()=>{if(!confirm('Inicializará/actualizará el borrador con la base precargada. ¿Continuar?'))return;try{await window.RUFE_FIREBASE.seedInitialData();toast('Base inicial sincronizada.','success')}catch(e){toast(e.message,'error')}})}
+function renderAdminTerritories(){const can=adminCan('editor','admin','super_admin'),rows=admin.territories.length?admin.territories:mergedTerritories();$('#adminTerritories').innerHTML=`<article class="admin-section"><div class="admin-section-head"><div><span class="eyebrow">EDICIÓN TERRITORIAL</span><h3>Actualizar desde el mapa y la base</h3><p>Al guardar un territorio se incrementa la revisión y se invalida cualquier aprobación anterior.</p></div>${can?'<button class="btn small ghost" id="downloadTemplate">Plantilla CSV</button>':''}</div>${can?`<div class="form-grid"><div class="field span-2"><label>Territorio</label><select id="adminTerritorySelect">${rows.map(x=>`<option value="${esc(x.sector)}">${esc(x.sector)}</option>`).join('')}</select></div><div class="field"><label>Familias</label><input id="atFamilies" type="number" min="0"></div><div class="field"><label>Personas</label><input id="atPeople" type="number" min="0"></div><div class="field"><label>No habitable</label><input id="atNoHab" type="number" min="0"></div><div class="field"><label>Destruida</label><input id="atDestroyed" type="number" min="0"></div><div class="field"><label>Sin estado*</label><input id="atNoState" type="number" min="0"></div><div class="field"><label>Núcleos vacíos</label><input id="atEmpty" type="number" min="0"></div><div class="field"><label>Latitud</label><input id="atLat" type="number" step="0.000001"></div><div class="field"><label>Longitud</label><input id="atLng" type="number" step="0.000001"></div><div class="field"><label>Precisión</label><select id="atPrecision"><option value="verified">Referencia localizada</option><option value="reference">Referencia aproximada</option></select></div><div class="field span-3"><label>Referencia</label><input id="atReference"></div><div class="field span-4"><label>Fuente cartográfica</label><input id="atSource"></div></div><div class="form-actions"><button class="btn primary" id="saveTerritoryBtn">Guardar territorio</button></div><details style="margin-top:18px"><summary style="cursor:pointer;font-size:10px;font-weight:800">Importación masiva CSV</summary><div class="field" style="margin-top:10px"><label>CSV</label><input id="territoryCsv" type="file" accept=".csv,text/csv"></div><button class="btn small ghost" id="importTerritoryCsv" style="margin-top:8px">Importar CSV</button></details>`:`<div class="access-denied">Tu rol puede consultar el borrador territorial, pero no editarlo.</div>`}</article>`;if(!can)return;const select=$('#adminTerritorySelect');const fill=()=>{const t=rows.find(x=>x.sector===select.value)||{};$('#atFamilies').value=t.families??0;$('#atPeople').value=t.people??0;$('#atNoHab').value=t.noHab??0;$('#atDestroyed').value=t.destroyed??0;$('#atNoState').value=t.noState??0;$('#atEmpty').value=t.empty??0;$('#atLat').value=t.lat??'';$('#atLng').value=t.lng??'';$('#atPrecision').value=t.precision==='verified'?'verified':'reference';$('#atReference').value=t.reference||'';$('#atSource').value=t.source||''};select.addEventListener('change',fill);fill();$('#saveTerritoryBtn').addEventListener('click',async()=>{try{await window.RUFE_FIREBASE.saveTerritory({sector:select.value,families:$('#atFamilies').value,people:$('#atPeople').value,noHab:$('#atNoHab').value,destroyed:$('#atDestroyed').value,noState:$('#atNoState').value,empty:$('#atEmpty').value,lat:$('#atLat').value,lng:$('#atLng').value,precision:$('#atPrecision').value,reference:$('#atReference').value,source:$('#atSource').value});toast('Territorio guardado. La revisión anterior quedó invalidada.','success')}catch(e){toast(e.message,'error')}});$('#downloadTemplate').addEventListener('click',()=>{const csv='sector,families,people,noHab,destroyed,noState,empty,lat,lng,precision,reference,source\n';const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='plantilla-rufe-territorios.csv';a.click()});$('#importTerritoryCsv').addEventListener('click',async()=>{const f=$('#territoryCsv').files[0];if(!f)return toast('Selecciona un CSV.','error');const text=await f.text(),parsed=parseCsv(text);const required=['sector','families','people','noHab','destroyed','noState','empty'];if(!parsed.length)return toast('El CSV no contiene filas válidas.','error');const missing=required.filter(k=>!(k in parsed[0]));if(missing.length)return toast(`Faltan columnas: ${missing.join(', ')}`,'error');try{const r=await window.RUFE_FIREBASE.saveTerritoriesBulk(parsed);toast(`${r.count} territorios importados.`,'success')}catch(e){toast(e.message,'error')}})}
+function renderAdminContent(){
+  const can=adminCan('editor','admin','super_admin'),d=admin.draft||DATA;
+  if(!can){$('#adminContent').innerHTML='<div class="access-denied">Tu rol puede revisar el contenido, pero no modificarlo.</div>';return}
+  const life=safeArray(d.lifeCycle||DATA.lifeCycle),loc=safeArray(d.locationDeclared||DATA.locationDeclared),housing=structuredClone(d.housing||DATA.housing);
+  const listText=v=>safeArray(v).map(x=>typeof x==='string'?x:(x.title||x.label||JSON.stringify(x))).join('\n');
+  const methodText=safeArray(d.methodology||DATA.methodology).map(x=>`${x.title||x.step||''} | ${x.detail||x.description||''}`).join('\n');
+  const frameworkText=safeArray(d.regulatoryFramework||DATA.regulatoryFramework).map(x=>`${x.axis||''} | ${x.application||''}`).join('\n');
+  const matrixText=safeArray(d.prioritizationMatrix||DATA.prioritizationMatrix).map(x=>`${x.level||x.nivel||''} | ${x.criteria||x.criterios||''} | ${x.action||x.accion||''}`).join('\n');
+  const dc=d.documentControl||DATA.documentControl||{};
+  $('#adminContent').innerHTML=`<article class="admin-section">
+    <div class="admin-section-head"><div><span class="eyebrow">DATOS DEL CORTE</span><h3>Caracterización, narrativa y contenido técnico</h3><p>El editor modifica una sola fuente. Al publicar, el backend recalcula los indicadores derivados del territorio.</p></div></div>
+    <div class="form-grid">
+      <div class="field"><label>Versión</label><input id="draftVersion" value="${esc(d.draftVersion||DATA.publication?.version||'3.0')}"></div>
+      <div class="field"><label>Fecha de corte</label><input id="draftCutoff" type="date" value="${esc(d.draftCutoff||DATA.publication?.cutoffDate||'2026-08-18')}"></div>
+      <div class="field"><label>Mujeres</label><input id="draftWomen" type="number" min="0" value="${number(d.kpis?.women)}"></div>
+      <div class="field"><label>Hombres</label><input id="draftMen" type="number" min="0" value="${number(d.kpis?.men)}"></div>
+      <div class="field"><label>Sexo sin dato</label><input id="draftSexMissing" type="number" min="0" value="${number(d.kpis?.sexMissing)}"></div>
+      <div class="field"><label>Dirección completa</label><input id="draftAddress" type="number" min="0" value="${number(d.kpis?.familiesWithAddress)}"></div>
+      <div class="field"><label>Teléfono</label><input id="draftPhone" type="number" min="0" value="${number(d.kpis?.familiesWithPhone)}"></div>
+      <div class="field"><label>Personas únicas estimadas</label><input id="draftUnique" type="number" min="0" value="${number(d.kpis?.uniquePeopleEstimated)}"></div>
+      <div class="field"><label>Docs. repetidos — grupos</label><input id="draftRepeated" type="number" min="0" value="${number(d.kpis?.repeatedDocGroups)}"></div>
+      <div class="field"><label>Jefaturas repetidas</label><input id="draftRepeatedHeads" type="number" min="0" value="${number(d.kpis?.repeatedHeads)}"></div>
+      <div class="field"><label>Sin documento válido</label><input id="draftNoDoc" type="number" min="0" value="${number(d.kpis?.peopleWithoutValidDocument)}"></div>
+      <div class="field"><label>Fechas inválidas</label><input id="draftInvalidBirth" type="number" min="0" value="${number(d.kpis?.invalidBirthDates)}"></div>
+      <div class="field"><label>Marcas múltiples</label><input id="draftMultiple" type="number" min="0" value="${number(d.kpis?.multipleHousingMarks)}"></div>
+      <div class="field"><label>Zona no homologable</label><input id="draftNoZone" type="number" min="0" value="${number(d.kpis?.noZoneHomologable)}"></div>
+      <div class="field"><label>Habitable</label><input id="draftHabitable" type="number" min="0" value="${number(housing.find(x=>x.label==='Habitable')?.count)}"></div>
+      <div class="field"><label>Averiada</label><input id="draftDamaged" type="number" min="0" value="${number(housing.find(x=>x.label==='Averiada')?.count)}"></div>
+      <div class="field"><label>Evacuada fuera residencia</label><input id="draftEvacuated" type="number" min="0" value="${number(housing.find(x=>x.label==='Evacuada fuera de residencia')?.count)}"></div>
+      <div class="field span-4"><label>Resumen ejecutivo — un párrafo por línea</label><textarea id="draftSummary">${esc(safeArray(d.executiveSummary).join('\n'))}</textarea></div>
+      <div class="field span-4"><label>Objeto</label><textarea id="draftObjective">${esc(d.objective||'')}</textarea></div>
+      <div class="field span-4"><label>Lectura territorial</label><textarea id="draftTerritorialReading">${esc(d.territorialReading||'')}</textarea></div>
+      <div class="field span-4"><label>Prioridad de vivienda</label><textarea id="draftPriorityNarrative">${esc(d.priorityHousingNarrative||'')}</textarea></div>
+    </div>
+
+    <details style="margin-top:16px"><summary style="cursor:pointer;font-size:10px;font-weight:900">Ciclo de vida y ubicación declarada</summary><div class="form-grid" style="margin-top:12px">${life.map((x,i)=>`<div class="field"><label>${esc(x.label)}</label><input type="number" min="0" data-life-index="${i}" value="${number(x.count)}"></div>`).join('')}${loc.map((x,i)=>`<div class="field"><label>${esc(x.label)}</label><input type="number" min="0" data-loc-index="${i}" value="${number(x.count)}"></div>`).join('')}</div></details>
+
+    <details style="margin-top:12px"><summary style="cursor:pointer;font-size:10px;font-weight:900">Contenido técnico completo del informe</summary>
+      <div class="form-grid" style="margin-top:12px">
+        <div class="field span-4"><label>Alcance — un ítem por línea</label><textarea id="draftScope">${esc(listText(d.scope||DATA.scope))}</textarea></div>
+        <div class="field span-4"><label>Limitaciones — un ítem por línea</label><textarea id="draftLimitations">${esc(listText(d.limitations||DATA.limitations))}</textarea></div>
+        <div class="field span-4"><label>Contexto del evento</label><textarea id="draftEventContext">${esc(d.eventContext||DATA.eventContext||'')}</textarea></div>
+        <div class="field span-4"><label>RUFE / RUD</label><textarea id="draftRufeRud">${esc(d.rufeRud||DATA.rufeRud||'')}</textarea></div>
+        <div class="field span-4"><label>Interpretación de vivienda — un ítem por línea</label><textarea id="draftHousingInterpretation">${esc(listText(d.housingInterpretation||DATA.housingInterpretation))}</textarea></div>
+        <div class="field span-4"><label>Reglas de aseguramiento — un ítem por línea</label><textarea id="draftQualityRules">${esc(listText(d.qualityAssuranceRules||DATA.qualityAssuranceRules))}</textarea></div>
+        <div class="field span-4"><label>Reglas aplicadas — un ítem por línea</label><textarea id="draftAppliedRules">${esc(listText(d.appliedRules||DATA.appliedRules))}</textarea></div>
+        <div class="field span-4"><label>Prioridades — un ítem por línea</label><textarea id="draftPriorities">${esc(listText(d.priorities||DATA.priorities))}</textarea></div>
+        <div class="field span-4"><label>Conclusiones — un ítem por línea</label><textarea id="draftConclusions">${esc(listText(d.conclusions||DATA.conclusions))}</textarea></div>
+        <div class="field span-4"><label>Metodología — formato: Título | Detalle</label><textarea id="draftMethodology">${esc(methodText)}</textarea></div>
+        <div class="field span-4"><label>Marco normativo — formato: Eje | Aplicación</label><textarea id="draftFramework">${esc(frameworkText)}</textarea></div>
+        <div class="field span-4"><label>Matriz de priorización — formato: Nivel | Criterios | Acción</label><textarea id="draftPriorityMatrix">${esc(matrixText)}</textarea></div>
+      </div>
+    </details>
+
+    <details style="margin-top:12px"><summary style="cursor:pointer;font-size:10px;font-weight:900">Control documental</summary>
+      <div class="form-grid" style="margin-top:12px">
+        <div class="field span-4"><label>Transcribió</label><input id="draftTranscribed" value="${esc(dc.transcribedBy||'')}"></div>
+        <div class="field span-4"><label>Revisó</label><input id="draftReviewed" value="${esc(dc.reviewedBy||'')}"></div>
+        <div class="field span-4"><label>Aprobó</label><input id="draftApproved" value="${esc(dc.approvedBy||'')}"></div>
+      </div>
+    </details>
+
+    <div class="form-actions"><button class="btn primary" id="saveDraftBtn">Guardar contenido del corte</button></div>
+  </article>`;
+
+  $('#saveDraftBtn').addEventListener('click',async()=>{
+    try{
+      const toLines=id=>$(id).value.split('\n').map(x=>x.trim()).filter(Boolean);
+      const k={...(d.kpis||DATA.kpis),women:number($('#draftWomen').value),men:number($('#draftMen').value),sexMissing:number($('#draftSexMissing').value),familiesWithAddress:number($('#draftAddress').value),familiesWithPhone:number($('#draftPhone').value),uniquePeopleEstimated:number($('#draftUnique').value),repeatedDocGroups:number($('#draftRepeated').value),repeatedHeads:number($('#draftRepeatedHeads').value),peopleWithoutValidDocument:number($('#draftNoDoc').value),invalidBirthDates:number($('#draftInvalidBirth').value),multipleHousingMarks:number($('#draftMultiple').value),noZoneHomologable:number($('#draftNoZone').value)};
+      const housingNew=structuredClone(housing);for(const [label,id] of [['Habitable','#draftHabitable'],['Averiada','#draftDamaged'],['Evacuada fuera de residencia','#draftEvacuated']]){const item=housingNew.find(x=>x.label===label);if(item)item.count=number($(id).value)}
+      const lifeNew=life.map((x,i)=>({...x,count:number($(`[data-life-index="${i}"]`).value)})),locNew=loc.map((x,i)=>({...x,count:number($(`[data-loc-index="${i}"]`).value)}));
+      const methodology=toLines('#draftMethodology').map((line,i)=>{const [title,...rest]=line.split('|');return {step:i+1,title:title.trim(),detail:rest.join('|').trim()}});
+      const regulatoryFramework=toLines('#draftFramework').map(line=>{const [axis,...rest]=line.split('|');return {axis:axis.trim(),application:rest.join('|').trim()}});
+      const prioritizationMatrix=toLines('#draftPriorityMatrix').map(line=>{const [level,criteria,...rest]=line.split('|');return {level:(level||'').trim(),criteria:(criteria||'').trim(),action:rest.join('|').trim()}});
+      await window.RUFE_FIREBASE.saveDraft({draftVersion:$('#draftVersion').value,draftCutoff:$('#draftCutoff').value,kpis:k,housing:housingNew,lifeCycle:lifeNew,locationDeclared:locNew,executiveSummary:toLines('#draftSummary'),objective:$('#draftObjective').value,territorialReading:$('#draftTerritorialReading').value,priorityHousingNarrative:$('#draftPriorityNarrative').value,scope:toLines('#draftScope'),limitations:toLines('#draftLimitations'),eventContext:$('#draftEventContext').value,rufeRud:$('#draftRufeRud').value,housingInterpretation:toLines('#draftHousingInterpretation'),qualityAssuranceRules:toLines('#draftQualityRules'),appliedRules:toLines('#draftAppliedRules'),priorities:toLines('#draftPriorities'),conclusions:toLines('#draftConclusions'),methodology,regulatoryFramework,prioritizationMatrix,documentControl:{...dc,transcribedBy:$('#draftTranscribed').value,reviewedBy:$('#draftReviewed').value,approvedBy:$('#draftApproved').value}});
+      toast('Contenido completo guardado. La revisión anterior quedó invalidada.','success');
+    }catch(e){toast(e.message,'error')}
   });
 }
-function opsTicketRow(t){
-  const s=serviceById(t.service),p=personById(t.assignee),h=slaHealth(t);
-  return `<button class="ops-ticket-row" data-ticket="${t.id}"><div class="ops-ticket-main"><div class="ops-ticket-titleline"><span class="ops-code">${t.id}</span>${priorityPill(t.priority)}${slaBadge(t)}</div><strong>${safe(t.title)}</strong><small>${safe(t.requester)} · ${safe(s?.title||'Servicio')}</small></div><div class="ops-ticket-assignee">${p?`<div class="avatar">${p.initials}</div><div><strong>${p.name}</strong><small>${p.load}% ocupado</small></div>`:'<div><strong>Sin asignar</strong><small>Requiere triage</small></div>'}</div><div class="ops-sla-cell"><div class="ops-sla-top"><span>${h.detail}</span><b>${safe(t.sla)}</b></div><div class="ops-sla-progress"><i class="${h.key}" style="width:${h.pct}%"></i></div><small>${safe(t.due)}</small></div><span class="ops-row-arrow">›</span></button>`;
-}
-function renderOps(){
-  const list=opsFilterTickets(),open=tickets.filter(t=>!['Resuelto','Cerrado','Cancelado'].includes(t.status)),risk=open.filter(t=>['risk','critical'].includes(slaHealth(t).key)),approvals=open.filter(t=>t.status==='En aprobación'),unassigned=open.filter(t=>!t.assignee);
-  const filters=[['now','Ahora',open.length],['risk','En riesgo',risk.length],['approvals','Aprobaciones',approvals.length],['scheduled','Programados',open.filter(t=>t.status==='Programado').length],['unassigned','Sin asignar',unassigned.length],['all','Todos',tickets.length]];
-  $('#view-ops').innerHTML=`<div class="ops-page-head"><div><span class="eyebrow">COMMAND CENTER · OPERACIÓN</span><h1>Centro de Operaciones</h1><p>Prioriza por riesgo, SLA, aprobación y capacidad. Cada caso conserva su contexto completo sin abandonar la consola.</p></div><div class="ops-head-actions"><button class="btn btn-secondary" data-command-open>⌕ Buscar</button><button class="btn btn-primary" data-action="open-new-request">＋ Radicar solicitud</button></div></div><div class="ops-kpis"><div><span>COLA ACTIVA</span><strong>${open.length}</strong><small>${open.filter(t=>t.status==='Nuevo').length} nuevos</small></div><div class="risk"><span>RIESGO SLA</span><strong>${risk.length}</strong><small>requieren foco</small></div><div class="approval"><span>APROBACIONES</span><strong>${approvals.length}</strong><small>pendientes</small></div><div><span>CAPACIDAD EQUIPO</span><strong>${Math.round(team.reduce((a,p)=>a+(100-p.load),0)/team.length)}%</strong><small>libre promedio</small></div></div><div class="ops-workspace"><section class="ops-queue"><div class="ops-filterbar">${filters.map(([id,label,count])=>`<button class="${opsState.filter===id?'active':''}" data-ops-filter="${id}">${label}<span>${count}</span></button>`).join('')}</div><div class="ops-queue-head"><div><strong>${filters.find(x=>x[0]===opsState.filter)?.[1]||'Solicitudes'}</strong><span>${list.length} resultados ordenados por prioridad operativa</span></div><button class="link-btn" data-view-link="calendar">Abrir planificador →</button></div><div class="ops-ticket-list">${list.map(opsTicketRow).join('')||'<div class="empty-state"><div class="empty-icon">✓</div><h3>No hay casos en esta bandeja</h3><p>La cola está al día con este criterio.</p></div>'}</div></section><aside class="ops-side"><div class="ops-side-head"><div><span>CAPACIDAD EN VIVO</span><strong>Equipo</strong></div><button data-view-link="team">Ver todo</button></div>${team.slice().sort((a,b)=>a.load-b.load).map(p=>`<div class="ops-person"><div class="avatar">${p.initials}</div><div class="ops-person-main"><strong>${p.name}</strong><span>${p.role}</span><i><u style="width:${p.load}%;background:${loadColor(p.load)}"></u></i></div><div class="ops-person-load"><b>${p.load}%</b><span>${p.slots[0]}</span></div></div>`).join('')}<div class="ops-side-rule"><span>⚡</span><div><strong>Asignación inteligente</strong><p>La recomendación evita perfiles incompatibles y penaliza la sobrecarga.</p></div></div></aside></div>`;
-}
+function renderAdminWorkflow(){const w=admin.workflow||{},r=window.RUFE_FIREBASE.normalizeRole(currentProfile()?.role),revision=number(w.revision),approved=number(w.approvedRevision),status=w.reviewStatus||'draft';const step= status==='published'?4:status==='approved'?3:status==='in_review'?2:1;$('#adminWorkflow').innerHTML=`<article class="admin-section"><div class="admin-section-head"><div><span class="eyebrow">FLUJO DE CONTROL</span><h3>Revisión ${revision} · ${esc(status)}</h3><p>Una edición posterior a la aprobación obliga a revisar de nuevo antes de publicar.</p></div></div><div class="workflow-steps">${['Editar','Revisar','Aprobar','Publicar'].map((x,i)=>`<div class="workflow-step ${i+1<step?'done':i+1===step?'active':''}"><b>${i+1} · ${x}</b><small>${i===0?'Construcción del borrador':i===1?'Control de consistencia':i===2?'Aprobación de revisión':'Snapshot ciudadano'}</small></div>`).join('')}</div><div class="form-grid" style="margin-top:18px"><div class="field span-4"><label>Nota de trámite / cambio</label><textarea id="workflowNote" placeholder="Describe brevemente qué cambió o qué se verificó."></textarea></div></div><div class="form-actions" style="justify-content:flex-start"><button class="btn ghost" id="validateDraftBtn">Comprobar consistencia</button>${adminCan('editor','admin','super_admin')?'<button class="btn ghost" id="submitReviewBtn">Enviar a revisión</button>':''}${adminCan('validator','admin','super_admin')?'<button class="btn success" id="approveReviewBtn">Aprobar revisión</button><button class="btn danger" id="rejectReviewBtn">Solicitar ajustes</button>':''}${adminCan('super_admin')?'<button class="btn primary" id="publishBtn">Publicar corte</button>':''}</div><p style="font-size:8px;color:var(--muted)">Revisión aprobada: ${approved||'—'} · Revisión actual: ${revision}</p></article>`;$('#validateDraftBtn')?.addEventListener('click',async()=>{try{const r=await window.RUFE_FIREBASE.validateDraft();toast(`Consistencia aprobada · ${fmt(r.families)} familias · ${fmt(r.people)} personas · revisión ${r.revision}`,'success',5200)}catch(e){toast(e.message,'error',6000)}});$('#submitReviewBtn')?.addEventListener('click',async()=>{try{await window.RUFE_FIREBASE.submitForReview($('#workflowNote').value);toast('Borrador enviado a revisión.','success')}catch(e){toast(e.message,'error')}});$('#approveReviewBtn')?.addEventListener('click',async()=>{try{await window.RUFE_FIREBASE.reviewDraft('approve',$('#workflowNote').value);toast('Revisión aprobada.','success')}catch(e){toast(e.message,'error')}});$('#rejectReviewBtn')?.addEventListener('click',async()=>{try{await window.RUFE_FIREBASE.reviewDraft('reject',$('#workflowNote').value);toast('Ajustes solicitados.','success')}catch(e){toast(e.message,'error')}});$('#publishBtn')?.addEventListener('click',async()=>{const d=admin.draft||{};if(!confirm(`Publicar la revisión ${revision} como corte ${d.draftCutoff||'actual'}?`))return;try{await window.RUFE_FIREBASE.publish({version:d.draftVersion||'3.0',cutoffDate:d.draftCutoff||'2026-08-18',changeNote:$('#workflowNote').value});toast('Corte publicado correctamente.','success')}catch(e){toast(e.message,'error')}})}
+async function renderAdminMedia(){const host=$('#adminMedia');if(!host)return;if(!adminCan('super_admin')){host.innerHTML='<div class="access-denied">Solo Super Admin administra archivos y evidencias.</div>';return}host.innerHTML=`<article class="admin-section"><div class="admin-section-head"><div><span class="eyebrow">BIBLIOTECA DE ARCHIVOS</span><h3>Subir evidencias, informes y anexos</h3><p>Los archivos internos permanecen en borrador hasta que se marquen para publicación.</p></div></div><div class="media-drop" id="mediaDrop"><input id="mediaFile" type="file"><p>PDF, imágenes, CSV, hojas de cálculo, presentaciones o ZIP · máximo 40 MB.</p><div class="form-grid" style="margin-top:10px"><div class="field span-2"><label>Título público</label><input id="mediaTitle"></div><div class="field"><label>Tipo</label><select id="mediaType"><option value="report">Informe</option><option value="photo">Fotografía</option><option value="annex">Anexo</option><option value="dataset">Dataset</option></select></div><label class="switch"><input id="mediaPublish" type="checkbox"><span></span><b>Incluir en publicación</b></label></div><div class="progress" style="margin-top:10px"><span id="uploadProgress" style="width:0%"></span></div><button class="btn primary small" id="uploadMediaBtn" style="margin-top:10px">Subir archivo</button></div><div id="mediaList" style="margin-top:16px"></div></article>`;$('#uploadMediaBtn').addEventListener('click',async()=>{const f=$('#mediaFile').files[0];if(!f)return toast('Selecciona un archivo.','error');try{await window.RUFE_FIREBASE.uploadMedia(f,{title:$('#mediaTitle').value,type:$('#mediaType').value,includeInPublication:$('#mediaPublish').checked,onProgress:p=>$('#uploadProgress').style.width=p+'%'});toast('Archivo cargado.','success');renderAdminMedia()}catch(e){toast(e.message,'error')}});try{const rows=await window.RUFE_FIREBASE.listMedia();$('#mediaList').innerHTML=rows.length?`<table class="admin-table"><thead><tr><th>Archivo</th><th>Tipo</th><th>Estado</th><th>Publicar</th><th></th></tr></thead><tbody>${rows.map(x=>`<tr><td><b>${esc(x.title||x.name)}</b><br><small>${Math.round(number(x.size)/1024)} KB</small></td><td>${esc(x.type||'anexo')}</td><td>${esc(x.status||'draft')}</td><td>${x.includeInPublication?'Sí':'No'}</td><td><a class="btn small ghost" href="${esc(x.url||'#')}" target="_blank" rel="noopener">Abrir</a> <button class="btn small ghost" data-media-toggle="${x.id}" data-current="${x.includeInPublication?'1':'0'}">${x.includeInPublication?'Retirar':'Incluir'}</button> <button class="btn small danger" data-media-delete="${x.id}">Eliminar</button></td></tr>`).join('')}</tbody></table>`:'<div class="access-denied">Aún no hay archivos cargados.</div>';$$('[data-media-toggle]').forEach(b=>b.addEventListener('click',async()=>{try{await window.RUFE_FIREBASE.manageMedia({mediaId:b.dataset.mediaToggle,action:'publication',includeInPublication:b.dataset.current!=='1'});toast('Archivo actualizado.','success');renderAdminMedia()}catch(e){toast(e.message,'error')}}));$$('[data-media-delete]').forEach(b=>b.addEventListener('click',async()=>{if(!confirm('¿Eliminar este archivo del borrador? Las copias de cortes ya publicados se conservarán.'))return;try{await window.RUFE_FIREBASE.manageMedia({mediaId:b.dataset.mediaDelete,action:'delete'});toast('Archivo eliminado del borrador.','success');renderAdminMedia()}catch(e){toast(e.message,'error')}}))}catch(e){$('#mediaList').innerHTML=`<div class="access-denied">${esc(e.message)}</div>`}}
+async function renderAdminUsers(){const host=$('#adminUsers');if(!host)return;if(!adminCan('super_admin')){host.innerHTML='<div class="access-denied">Solo Super Admin gestiona usuarios.</div>';return}host.innerHTML=`<article class="admin-section"><div class="admin-section-head"><div><span class="eyebrow">USUARIOS Y ROLES</span><h3>Accesos del Portal RUFE</h3><p>Los permisos se validan en Firebase y en las reglas del servidor.</p></div></div><div class="form-grid"><div class="field span-2"><label>Nombre</label><input id="newUserName"></div><div class="field span-2"><label>Correo</label><input id="newUserEmail" type="email"></div><div class="field span-2"><label>Contraseña temporal</label><input id="newUserPassword" type="password" minlength="8"></div><div class="field span-2"><label>Rol</label><select id="newUserRole"><option value="editor">Editor</option><option value="validator">Validador</option><option value="admin">Administrador</option><option value="super_admin">Super Admin</option></select></div></div><div class="form-actions"><button class="btn primary" id="createUserBtn">Crear usuario</button></div><div id="usersTable" style="margin-top:18px"></div></article>`;$('#createUserBtn').addEventListener('click',async()=>{try{await window.RUFE_FIREBASE.createUser({email:$('#newUserEmail').value,password:$('#newUserPassword').value,displayName:$('#newUserName').value,role:$('#newUserRole').value});toast('Usuario creado.','success');renderAdminUsers()}catch(e){toast(e.message,'error')}});try{const rows=await window.RUFE_FIREBASE.listUsers();$('#usersTable').innerHTML=`<table class="admin-table"><thead><tr><th>Usuario</th><th>Rol</th><th>Activo</th><th>Acciones</th></tr></thead><tbody>${rows.map(x=>`<tr><td><b>${esc(x.displayName||'Sin nombre')}</b><br><small>${esc(x.email||x.docId)}</small></td><td><select data-user-role="${esc(x.uid||x.docId)}">${['editor','validator','admin','super_admin'].map(r=>`<option value="${r}" ${window.RUFE_FIREBASE.normalizeRole(x.role)===r?'selected':''}>${roleLabel(r)}</option>`).join('')}</select></td><td>${x.active===true?'Sí':'No'}</td><td><button class="btn small ghost" data-save-user="${esc(x.uid||x.docId)}">Guardar</button> <button class="btn small ghost" data-reset-user="${esc(x.email||'')}">Restablecer clave</button> <button class="btn small ${x.active===true?'danger':'success'}" data-toggle-user="${esc(x.uid||x.docId)}" data-active="${x.active===true?'1':'0'}">${x.active===true?'Desactivar':'Activar'}</button> ${x.uid&&x.uid!==window.RUFE_FIREBASE.user?.uid?`<button class="btn small danger" data-delete-user="${esc(x.uid)}" data-delete-email="${esc(x.email||'')}">Eliminar</button>`:''}</td></tr>`).join('')}</tbody></table>`;$$('[data-save-user]').forEach(b=>b.addEventListener('click',async()=>{const uid=b.dataset.saveUser,role=$(`[data-user-role="${CSS.escape(uid)}"]`).value;try{await window.RUFE_FIREBASE.manageUser({uid,action:'role',role});toast('Rol actualizado.','success');renderAdminUsers()}catch(e){toast(e.message,'error')}}));$$('[data-reset-user]').forEach(b=>b.addEventListener('click',async()=>{const email=b.dataset.resetUser;if(!email)return toast('Este usuario no tiene correo disponible.','error');try{await window.RUFE_FIREBASE.resetPassword(email);toast(`Correo de restablecimiento enviado a ${email}.`,'success')}catch(e){toast(e.message,'error')}}));$$('[data-toggle-user]').forEach(b=>b.addEventListener('click',async()=>{try{await window.RUFE_FIREBASE.manageUser({uid:b.dataset.toggleUser,action:'active',active:b.dataset.active!=='1'});toast('Estado actualizado.','success');renderAdminUsers()}catch(e){toast(e.message,'error')}}));$$('[data-delete-user]').forEach(b=>b.addEventListener('click',async()=>{const email=b.dataset.deleteEmail||b.dataset.deleteUser;if(!confirm(`Eliminar definitivamente la cuenta ${email}? Esta acción elimina el acceso de Firebase Authentication y su perfil RUFE.`))return;try{await window.RUFE_FIREBASE.manageUser({uid:b.dataset.deleteUser,action:'delete'});toast('Usuario eliminado.','success');renderAdminUsers()}catch(e){toast(e.message,'error')}}))}catch(e){$('#usersTable').innerHTML=`<div class="access-denied">${esc(e.message)}</div>`}}
+async function renderAdminAudit(){const host=$('#adminAudit');if(!host)return;if(!adminCan('super_admin')){host.innerHTML='<div class="access-denied">Solo Super Admin consulta la auditoría.</div>';return}host.innerHTML='<article class="admin-section"><div class="admin-section-head"><div><span class="eyebrow">AUDITORÍA</span><h3>Últimos movimientos</h3></div></div><div id="auditRows" class="audit-list">Cargando…</div></article>';try{const rows=await window.RUFE_FIREBASE.listAudit();$('#auditRows').innerHTML=rows.length?rows.map(x=>`<div class="audit-item"><time>${niceDate(x.createdAt)}</time><div><b>${esc(x.action)}</b><small>${esc(x.detail||'')}</small></div><small>${esc(x.actorEmail||x.actorUid||'')}</small></div>`).join(''):'<div class="access-denied">Sin registros.</div>'}catch(e){$('#auditRows').innerHTML=`<div class="access-denied">${esc(e.message)}</div>`}}
 
-function renderTicketDrawer(){
-  const t=tickets.find(x=>x.id===ticketDrawerState.id); if(!t)return;
-  const s=serviceById(t.service),p=personById(t.assignee),h=slaHealth(t);
-  const tabs=[['overview','Resumen'],['activity','Actividad'],['sla','SLA'],['approval','Aprobación']];
-  let content='';
-  if(ticketDrawerState.tab==='overview'){
-    const detailEntries=Object.entries(t.details||{}).filter(([k,v])=>v!==''&&v!=null&&!['title','requester','priority','scheduledDate','scheduledStart','scheduledEnd'].includes(k));
-    content=`<div class="ticket-360-hero"><div><span>ESTADO DEL SERVICIO</span><strong>${h.label}</strong><p>${h.detail}</p></div><div class="ticket-360-progress"><i class="${h.key}" style="width:${h.pct}%"></i></div></div><div class="detail-grid ticket-detail-grid"><div class="detail-box"><span>Responsable</span><strong>${p?.name||'Sin asignar'}</strong><small>${p?.role||'Pendiente de triage'}</small></div><div class="detail-box"><span>Vencimiento</span><strong>${safe(t.due)}</strong><small>SLA ${safe(t.sla)}</small></div><div class="detail-box"><span>Dependencia</span><strong>${safe(t.requester)}</strong></div><div class="detail-box"><span>Servicio</span><strong>${safe(s?.title||t.service)}</strong></div></div><div class="ticket-section"><h3>Descripción</h3><p>${safe(t.description)}</p></div>${detailEntries.length?`<div class="ticket-section"><h3>Información radicada</h3><div class="ticket-field-list">${detailEntries.map(([k,v])=>`<div><span>${safe(detailLabel(s,k))}</span><strong>${safe(v)}</strong></div>`).join('')}</div></div>`:''}<div class="ticket-route-card"><div><span>ENRUTAMIENTO</span><strong>${p?`${p.name} · ${matchCount(p,s)} competencias coincidentes`:'Cola del servicio'}</strong><small>Asignación basada en competencia, capacidad y reglas del servicio.</small></div>${t.details?.scheduledDate?`<div><span>AGENDA</span><strong>${t.details.scheduledDate} · ${formatTime(t.details.scheduledStart)}–${formatTime(t.details.scheduledEnd)}</strong><small>Reserva asociada a la solicitud.</small></div>`:''}</div>`;
-  } else if(ticketDrawerState.tab==='activity'){
-    content=`<div class="activity-head"><div><h3>Historial y conversación</h3><p>La trazabilidad diferencia mensajes al funcionario y notas internas.</p></div></div><div class="timeline ticket-timeline">${(t.timeline||[]).map(([a,d])=>`<div class="timeline-item"><strong>${safe(a)}</strong><p>${safe(d)}</p></div>`).join('')}</div><div class="comment-box pro-comment"><div class="comment-mode"><label><input type="radio" name="commentMode" value="public" checked> Respuesta al funcionario</label>${currentRole!=='requester'?'<label><input type="radio" name="commentMode" value="internal"> Nota interna</label>':''}</div><textarea id="ticketCommentText" placeholder="Escribe una actualización clara..."></textarea><div class="comment-actions"><span>Las notas internas solo las ve el equipo gestor.</span><button class="btn btn-primary compact" data-ticket-comment="${t.id}">Publicar actualización</button></div></div>`;
-  } else if(ticketDrawerState.tab==='sla'){
-    content=`<div class="sla-detail-card ${h.key}"><span>SEMÁFORO SLA</span><strong>${h.label}</strong><p>${h.detail}. Objetivo configurado para <b>${safe(s?.title||'este servicio')}</b>: ${safe(s?.sla||t.sla)}.</p><div class="sla-detail-track"><i style="width:${h.pct}%"></i></div><div class="sla-detail-meta"><div><span>Inicio</span><strong>${safe(t.created)}</strong></div><div><span>Objetivo</span><strong>${safe(t.due)}</strong></div><div><span>Prioridad</span><strong>${safe(t.priority)}</strong></div></div></div><div class="ticket-section"><h3>Reglas de escalamiento simuladas</h3><div class="rule-list"><div><span>70%</span><div><strong>Advertencia preventiva</strong><p>Notifica al responsable y resalta el caso en Operaciones.</p></div></div><div><span>90%</span><div><strong>Escalamiento</strong><p>Eleva el caso al líder del servicio y recomienda redistribución.</p></div></div><div><span>100%</span><div><strong>Incumplimiento</strong><p>Registra el evento y exige causa/cierre de mejora.</p></div></div></div></div>`;
-  } else {
-    const ap=t.approval||(s?.approval?{required:true,owner:approvalOwnerByService[s.id]||'Aprobador configurado',status:t.status==='En aprobación'?'Pendiente':'Aprobada'}:{required:false,status:'No aplica'});
-    content=ap.required?`<div class="approval-flow"><div class="approval-icon">✓</div><span>FLUJO DE APROBACIÓN</span><h3>${safe(ap.status)}</h3><p>Responsable: <strong>${safe(ap.owner)}</strong></p><div class="approval-steps"><div class="done"><i>1</i><div><strong>Radicación</strong><small>Solicitud completa</small></div></div><div class="${ap.status==='Pendiente'?'active':'done'}"><i>2</i><div><strong>Validación / aprobación</strong><small>${safe(ap.owner)}</small></div></div><div><i>3</i><div><strong>Ejecución</strong><small>Se activa al aprobar</small></div></div></div>${currentRole!=='requester'&&ap.status==='Pendiente'?`<div class="approval-actions"><button class="btn btn-secondary" data-ticket-status="En espera" data-ticket-id="${t.id}">Solicitar ajuste</button><button class="btn btn-primary" data-approve-ticket="${t.id}">Aprobar</button></div>`:''}</div>`:`<div class="empty-state"><div class="empty-icon">✓</div><h3>Este servicio no requiere aprobación</h3><p>La solicitud puede pasar directamente a asignación y ejecución.</p></div>`;
-  }
-  $('#ticketDrawer').innerHTML=`<div class="drawer-head ticket-360-head"><div class="drawer-head-top"><div><span class="eyebrow">${t.id}</span><h2>${safe(t.title)}</h2><p>${safe(s?.title||'Servicio')} · ${safe(t.requester)}</p></div><button class="close-btn" data-action="close-ticket-drawer">×</button></div><div class="ticket-360-chips">${statusPill(t.status)}${priorityPill(t.priority)}${slaBadge(t)}</div><div class="ticket-tabs">${tabs.map(([id,label])=>`<button class="${ticketDrawerState.tab===id?'active':''}" data-ticket-tab="${id}">${label}</button>`).join('')}</div></div><div class="drawer-body ticket-360-body">${content}${currentRole!=='requester'&&ticketDrawerState.tab==='overview'?`<div class="ticket-actionbar"><button class="btn btn-soft" data-ticket-status="En gestión" data-ticket-id="${t.id}">Tomar caso</button><button class="btn btn-secondary" data-ticket-status="En espera" data-ticket-id="${t.id}">Poner en espera</button><button class="btn btn-primary" data-ticket-status="Resuelto" data-ticket-id="${t.id}">Resolver</button></div>`:''}</div>`;
-}
-function openTicket(id,tab='overview'){ if(!tickets.find(x=>x.id===id))return;ticketDrawerState={id,tab};renderTicketDrawer();$('#ticketDrawerBackdrop').hidden=false;document.body.style.overflow='hidden'; }
-function closeTicketDrawer(){ $('#ticketDrawerBackdrop').hidden=true;document.body.style.overflow='';ticketDrawerState.id=null; }
-function changeTicketStatus(id,status){
-  const t=tickets.find(x=>x.id===id);if(!t)return;t.status=status;t.timeline=t.timeline||[];t.timeline.push([`Estado cambiado a ${status}`,'19 Ago · ahora']);saveTickets();showToast('Estado actualizado',`${id} ahora está ${status.toLowerCase()}.`);if(ticketDrawerState.id===id)renderTicketDrawer();const active=$('.view.active')?.id.replace('view-','');if(active)renderView(active);
-}
-function approveTicket(id){const t=tickets.find(x=>x.id===id);if(!t)return;t.status=t.details?.scheduledDate?'Programado':'Nuevo';t.approval={...(t.approval||{}),required:true,status:'Aprobada',owner:t.approval?.owner||approvalOwnerByService[t.service]};t.timeline=t.timeline||[];t.timeline.push(['Solicitud aprobada','19 Ago · ahora']);saveTickets();showToast('Solicitud aprobada',`${id} ya puede continuar a ejecución.`);renderTicketDrawer();}
-function addTicketComment(id){
-  const t=tickets.find(x=>x.id===id),text=$('#ticketCommentText')?.value.trim();if(!t||!text)return;
-  const mode=$('input[name="commentMode"]:checked')?.value||'public';t.timeline=t.timeline||[];t.timeline.push([`${mode==='internal'?'Nota interna':'Respuesta al funcionario'} · ${text}`,'19 Ago · ahora']);saveTickets();renderTicketDrawer();showToast(mode==='internal'?'Nota interna registrada':'Actualización publicada','La trazabilidad del caso fue actualizada.');
-}
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(()=>{}));}
 
-function commandEntries(query=''){
-  const q=query.trim().toLowerCase();
-  const base=[
-    {kind:'action',icon:'＋',title:'Radicar nueva solicitud',sub:'Asistente guiado paso a paso',action:'new'},
-    {kind:'view',icon:'▦',title:'Abrir agenda y disponibilidad',sub:'Planificador visual de recursos',view:'calendar'},
-    ...(currentRole!=='requester'?[{kind:'view',icon:'◫',title:'Abrir Centro de Operaciones',sub:'SLA, prioridades y capacidad',view:'ops'}]:[]),
-    {kind:'view',icon:'◇',title:'Explorar catálogo de servicios',sub:'Todos los servicios institucionales',view:'catalog'}
-  ];
-  const sv=services.map(s=>({kind:'service',icon:s.icon,title:s.title,sub:`${s.category} · ${s.sla}`,service:s.id}));
-  const tk=tickets.slice(0,20).map(t=>({kind:'ticket',icon:'▤',title:t.title,sub:`${t.id} · ${t.requester}`,ticket:t.id}));
-  const all=[...base,...sv,...tk]; if(!q)return all.slice(0,10);
-  return all.filter(x=>`${x.title} ${x.sub}`.toLowerCase().includes(q)).slice(0,12);
-}
-function renderCommandPalette(q=''){
-  const items=commandEntries(q);$('#commandResults').innerHTML=items.length?items.map(x=>`<button class="command-item" ${x.kind==='action'?`data-command-action="${x.action}"`:x.kind==='view'?`data-command-view="${x.view}"`:x.kind==='service'?`data-command-service="${x.service}"`:`data-command-ticket="${x.ticket}"`}><span class="command-item-icon">${x.icon}</span><div><strong>${safe(x.title)}</strong><small>${safe(x.sub)}</small></div><kbd>↵</kbd></button>`).join(''):`<div class="command-empty"><span>⌕</span><strong>Sin coincidencias</strong><p>Prueba con “correo”, “cubrimiento”, una dependencia o el número MA-2026.</p></div>`;
-}
-function openCommandPalette(initial=''){closeRequestModal();$('#commandBackdrop').hidden=false;document.body.style.overflow='hidden';$('#commandInput').value=initial;renderCommandPalette(initial);requestAnimationFrame(()=>$('#commandInput').focus());}
-function closeCommandPalette(){if(!$('#commandBackdrop'))return;$('#commandBackdrop').hidden=true;document.body.style.overflow='';}
-function globalSearch(q){openCommandPalette(q||'');}
-
-// Scheduler PRO 2.0: los agentes pueden mover bloques entre personas y horas.
-function renderDayScheduler(people,date){
-  const timelineStart=8*60,timelineEnd=17*60,totalMinutes=timelineEnd-timelineStart;
-  const hourWidth=calendarState.zoom,timelineWidth=(totalMinutes/60)*hourWidth;
-  const ticks=[];for(let h=8;h<=17;h++)ticks.push(h);
-  const minor=[];for(let m=timelineStart;m<=timelineEnd;m+=calendarState.snap){if(m%60!==0)minor.push(m);}
-  const now=new Date(),showNow=toISO(now)===date&&now.getHours()*60+now.getMinutes()>=timelineStart&&now.getHours()*60+now.getMinutes()<=timelineEnd,nowMinute=now.getHours()*60+now.getMinutes();
-  const px=minute=>((minute-timelineStart)/60)*hourWidth;
-  const visiblePeople=people.filter(p=>!calendarState.availableOnly||freeMinutesForDay(p.id,date)>=calendarState.duration);
-  const rows=visiblePeople.map(p=>{
-    const evs=scheduleEvents.filter(e=>e.person===p.id&&e.date===date),free=getFreeWindows(p.id,date,calendarState.duration);
-    return `<div class="resource-row" style="--timeline-width:${timelineWidth}px"><div class="resource-person sticky-resource"><div class="avatar resource-avatar">${p.initials}</div><div class="resource-copy"><strong>${p.name}</strong><span>${p.role}</span><div class="resource-meta"><span class="resource-load ${p.load>=85?'danger':p.load>=70?'warn':'ok'}">${p.load}% ocupado</span><span>${free.length?`${free.length} espacios`:'Sin espacio'}</span></div></div></div><div class="resource-timeline ${currentRole!=='requester'?'editable-timeline':''}" data-calendar-drop-person="${p.id}" data-calendar-drop-date="${date}" style="width:${timelineWidth}px"><div class="lunch-band" style="left:${px(12*60)}px;width:${hourWidth}px"><span>12:00–1:00 · Almuerzo</span></div>${minor.map(m=>`<div class="minor-time-line" style="left:${px(m)}px"></div>`).join('')}${ticks.map(h=>`<div class="hour-line" style="left:${px(h*60)}px"></div>`).join('')}${showNow?`<div class="now-line" style="left:${px(nowMinute)}px"><span>Ahora</span></div>`:''}${calendarState.showFree?free.map(f=>{const left=px(timeToMin(f.start)),width=((timeToMin(f.end)-timeToMin(f.start))/60)*hourWidth;return `<button class="free-window" data-quick-slot="${p.id}|${date}|${f.start}|${f.end}" style="left:${left}px;width:${width}px" title="Libre ${formatTime(f.start)} – ${formatTime(f.end)}"><strong>LIBRE</strong><span>${width>120?`${formatTime(f.start)}–${formatTime(f.end)}`:'Reservar'}</span></button>`}).join(''):''}${evs.map(e=>{const left=px(timeToMin(e.start)),width=((timeToMin(e.end)-timeToMin(e.start))/60)*hourWidth;return `<button class="schedule-event ${e.type}" data-schedule-event="${e.id}" draggable="${currentRole!=='requester'?'true':'false'}" style="left:${Math.max(0,left)}px;width:${Math.max(48,width)}px" title="${safe(e.title)} · ${formatTime(e.start)}–${formatTime(e.end)}${currentRole!=='requester'?' · Arrastra para reprogramar':''}"><strong>${safe(e.title)}</strong><span>${formatTime(e.start)}–${formatTime(e.end)}</span>${currentRole!=='requester'?'<i class="event-drag-grip">⋮⋮</i>':''}</button>`}).join('')}</div><div class="resource-next sticky-availability"><span>Próximo libre</span><strong>${free[0]?`${formatTime(free[0].start)}–${formatTime(free[0].end)}`:'—'}</strong><button ${free[0]?'':'disabled'} data-quick-slot="${free[0]?`${p.id}|${date}|${free[0].start}|${free[0].end}`:''}">Reservar</button></div></div>`;
-  }).join('');
-  const ruler=`<div class="timeline-ruler" style="width:${timelineWidth}px">${minor.map(m=>`<div class="ruler-minor" style="left:${px(m)}px"></div>`).join('')}${ticks.map(h=>`<div class="ruler-hour" style="left:${px(h*60)}px"><strong>${formatTime(`${String(h).padStart(2,'0')}:00`)}</strong>${h<17?'<span>hora</span>':''}</div>`).join('')}${showNow?`<div class="ruler-now" style="left:${px(nowMinute)}px"></div>`:''}</div>`;
-  return `<div class="scheduler-scroll" id="resourceScroll" data-calendar-pan><div class="resource-header" style="--timeline-width:${timelineWidth}px"><div class="resource-header-person sticky-resource">Funcionario / carga</div>${ruler}<div class="resource-header-next sticky-availability">Disponibilidad</div></div><div class="resource-board">${rows||'<div class="scheduler-empty">No hay funcionarios disponibles con los filtros actuales.</div>'}</div></div>`;
-}
-function workWindowContains(start,end){return workWindows.some(([a,b])=>timeToMin(a)<=start&&timeToMin(b)>=end);}
-function scheduleConflict(eventId,person,date,start,end){return scheduleEvents.some(e=>e.id!==eventId&&e.person===person&&e.date===date&&timeToMin(e.start)<end&&timeToMin(e.end)>start);}
-function moveScheduleEvent(eventId,person,date,startMinute){
-  const ev=scheduleEvents.find(e=>e.id===eventId);if(!ev)return;
-  const duration=timeToMin(ev.end)-timeToMin(ev.start),snap=calendarState.snap||30;
-  let start=Math.round(startMinute/snap)*snap,end=start+duration;start=Math.max(8*60,Math.min(17*60-duration,start));end=start+duration;
-  if(!workWindowContains(start,end)){showToast('Horario no disponible','El bloque debe quedar completamente dentro de la jornada laboral y no atravesar el almuerzo.');return;}
-  if(scheduleConflict(ev.id,person,date,start,end)){showToast('Conflicto de agenda','Ya existe otra actividad que se cruza con ese horario.');return;}
-  ev.person=person;ev.date=date;ev.start=minToTime(start);ev.end=minToTime(end);
-  const t=ev.ticket?tickets.find(x=>x.id===ev.ticket):null;if(t){t.assignee=person;t.details=t.details||{};t.details.scheduledDate=date;t.details.scheduledStart=ev.start;t.details.scheduledEnd=ev.end;t.timeline=t.timeline||[];t.timeline.push([`Agenda reprogramada a ${personById(person)?.name} · ${formatTime(ev.start)}–${formatTime(ev.end)}`,'19 Ago · ahora']);saveTickets();}
-  showToast('Agenda actualizada',`${ev.title} · ${personById(person)?.name} · ${formatTime(ev.start)}–${formatTime(ev.end)}.`);renderCalendar();
-}
-
-// Interacciones v0.4, separadas de los manejadores de compatibilidad de versiones anteriores.
-document.addEventListener('click',e=>{
-  const family=e.target.closest('[data-guide-family]');if(family){wizard.family=family.dataset.guideFamily;wizard.stage='service';renderWizard();return;}
-  const service=e.target.closest('[data-guide-service]');if(service){wizard.service=service.dataset.guideService;wizard.family=familyForService(wizard.service)?.id;wizard.stage=selfHelpGuides[wizard.service]?'selfhelp':'questions';wizard.questionIndex=0;renderWizard();return;}
-  const answer=e.target.closest('[data-guide-answer]');if(answer){wizard.details[answer.dataset.guideKey]=answer.dataset.guideAnswer;wizard.error='';renderWizard();return;}
-  if(e.target.closest('[data-guide-back]')){guidedBack();return;}
-  if(e.target.closest('[data-guide-selfhelp-continue]')){wizard.selfHelpDone=true;wizard.stage='questions';wizard.questionIndex=0;renderWizard();return;}
-  if(e.target.closest('[data-guide-solved]')){closeRequestModal();showToast('Listo','No fue necesario radicar una solicitud. Si vuelve a ocurrir, Mesa de Ayuda TIC conserva el servicio para una nueva radicación.');return;}
-  if(e.target.closest('[data-guide-question-next]')){guidedQuestionNext();return;}
-  const slot=e.target.closest('[data-guide-slot]');if(slot){const [person,date,start,end]=slot.dataset.guideSlot.split('|');wizard.assignee=person;Object.assign(wizard.details,{scheduledDate:date,scheduledStart:start,scheduledEnd:end});wizard.stage='assignment';renderWizard();return;}
-  if(e.target.closest('[data-guide-clear-slot]')){delete wizard.details.scheduledDate;delete wizard.details.scheduledStart;delete wizard.details.scheduledEnd;wizard.assignee='auto';renderWizard();return;}
-  if(e.target.closest('[data-guide-skip-schedule]')){delete wizard.details.scheduledDate;delete wizard.details.scheduledStart;delete wizard.details.scheduledEnd;wizard.stage='assignment';renderWizard();return;}
-  if(e.target.closest('[data-guide-to-assignment]')){wizard.stage='assignment';renderWizard();return;}
-  const assignee=e.target.closest('[data-guide-assignee]');if(assignee){wizard.assignee=assignee.dataset.guideAssignee;renderWizard();return;}
-  if(e.target.closest('[data-guide-review]')){wizard.stage='review';renderWizard();return;}
-  if(e.target.closest('[data-guide-submit]')){submitRequest();return;}
-  const ops=e.target.closest('[data-ops-filter]');if(ops){opsState.filter=ops.dataset.opsFilter;renderOps();return;}
-  const tab=e.target.closest('[data-ticket-tab]');if(tab&&ticketDrawerState.id){ticketDrawerState.tab=tab.dataset.ticketTab;renderTicketDrawer();return;}
-  const comment=e.target.closest('[data-ticket-comment]');if(comment){addTicketComment(comment.dataset.ticketComment);return;}
-  const approve=e.target.closest('[data-approve-ticket]');if(approve){approveTicket(approve.dataset.approveTicket);return;}
-  if(e.target.closest('[data-command-open]')){openCommandPalette();return;}
-  const ca=e.target.closest('[data-command-action]');if(ca){closeCommandPalette();if(ca.dataset.commandAction==='new')openRequestModal();return;}
-  const cv=e.target.closest('[data-command-view]');if(cv){closeCommandPalette();setView(cv.dataset.commandView);return;}
-  const cs=e.target.closest('[data-command-service]');if(cs){closeCommandPalette();openRequestModal(cs.dataset.commandService);return;}
-  const ct=e.target.closest('[data-command-ticket]');if(ct){closeCommandPalette();openTicket(ct.dataset.commandTicket);return;}
-});
-document.addEventListener('input',e=>{
-  if(e.target.matches('[data-guide-field]')){wizard.details[e.target.dataset.guideField]=e.target.value;wizard.error='';}
-  if(e.target.id==='commandInput')renderCommandPalette(e.target.value);
-});
-document.addEventListener('keydown',e=>{
-  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openCommandPalette();}
-  if(e.key==='Escape'&&!$('#commandBackdrop')?.hidden){closeCommandPalette();}
-  if(e.key==='Enter'&&e.target?.id==='commandInput'){const first=$('#commandResults .command-item');first?.click();}
-  if(e.key==='Enter'&&e.target?.matches?.('[data-guide-field]')&&e.target.tagName!=='TEXTAREA'){e.preventDefault();guidedQuestionNext();}
-},true);
-$('#commandBackdrop')?.addEventListener('click',e=>{if(e.target.id==='commandBackdrop')closeCommandPalette();});
-$('#globalSearch')?.addEventListener('click',()=>openCommandPalette($('#globalSearch').value||''));
-
-document.addEventListener('dragstart',e=>{
-  const ev=e.target.closest?.('.schedule-event[data-schedule-event]');if(!ev||currentRole==='requester')return;
-  draggedScheduleId=ev.dataset.scheduleEvent;ev.classList.add('dragging-event');e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',draggedScheduleId);
-});
-document.addEventListener('dragend',e=>{e.target.closest?.('.schedule-event')?.classList.remove('dragging-event');draggedScheduleId=null;$$('.editable-timeline').forEach(x=>x.classList.remove('drag-over'));});
-document.addEventListener('dragover',e=>{const tl=e.target.closest?.('[data-calendar-drop-person]');if(!tl||currentRole==='requester')return;e.preventDefault();e.dataTransfer.dropEffect='move';$$('.editable-timeline').forEach(x=>x.classList.toggle('drag-over',x===tl));});
-document.addEventListener('drop',e=>{
-  const tl=e.target.closest?.('[data-calendar-drop-person]');if(!tl||currentRole==='requester')return;e.preventDefault();
-  const id=draggedScheduleId||e.dataTransfer.getData('text/plain'),rect=tl.getBoundingClientRect(),minute=8*60+((e.clientX-rect.left)/calendarState.zoom)*60;
-  $$('.editable-timeline').forEach(x=>x.classList.remove('drag-over'));moveScheduleEvent(id,tl.dataset.calendarDropPerson,tl.dataset.calendarDropDate,minute);draggedScheduleId=null;
-});
-
-
-setRole('requester');
-renderHome();
-updateBadges();
+bindPublicUi();bindAdminTabs();
+window.addEventListener('rufe:auth',()=>{window.RUFE_FIREBASE?.stopInternalListeners?.();adminListening=false;if(!window.RUFE_FIREBASE?.user)admin={draft:null,territories:[],workflow:null};renderAdminAuth()});
+const F=window.RUFE_FIREBASE;if(F){F.listenPublic((data,meta)=>{DATA=data;SOURCE=meta.source;renderAll();});renderAdminAuth()}else{DATA=window.REPORT_DATA;renderAll()}
