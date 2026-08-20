@@ -6,6 +6,7 @@
   <title>Mesa 360 · Alcaldía</title>
   <meta name="description" content="Prototipo de mesa de ayuda modular para una alcaldía" />
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="v05.css" />
 </head>
 <body>
   <div class="app-shell">
@@ -31,13 +32,19 @@
         <button class="nav-item active" data-view="home"><span class="nav-icon">⌂</span><span>Inicio</span></button>
         <button class="nav-item" data-view="new-request"><span class="nav-icon">＋</span><span>Nueva solicitud</span></button>
         <button class="nav-item" data-view="my-tickets"><span class="nav-icon">▤</span><span>Mis solicitudes</span><span class="nav-badge" id="myTicketsBadge">4</span></button>
+        <button class="nav-item" data-view="notifications"><span class="nav-icon">◌</span><span>Actualizaciones</span><span class="nav-badge" id="notificationBadge">3</span></button>
+        <button class="nav-item" data-view="knowledge"><span class="nav-icon">◈</span><span>Centro de conocimiento</span></button>
+        <button class="nav-item" data-view="status"><span class="nav-icon">◍</span><span>Estado de servicios</span></button>
         <button class="nav-item" data-view="calendar"><span class="nav-icon">▦</span><span>Agenda y disponibilidad</span></button>
 
         <div class="nav-section admin-nav">OPERACIÓN</div>
         <button class="nav-item admin-nav" data-view="ops"><span class="nav-icon">◫</span><span>Centro de operaciones</span></button>
+        <button class="nav-item admin-nav" data-view="continuity"><span class="nav-icon">△</span><span>Incidentes, problemas y cambios</span></button>
         <button class="nav-item admin-nav" data-view="team"><span class="nav-icon">◉</span><span>Equipo y capacidad</span></button>
+        <button class="nav-item admin-nav" data-view="assets"><span class="nav-icon">▧</span><span>Activos y CMDB</span></button>
         <button class="nav-item admin-nav" data-view="catalog"><span class="nav-icon">◇</span><span>Catálogo de servicios</span></button>
         <button class="nav-item admin-nav" data-view="reports"><span class="nav-icon">⌁</span><span>Indicadores</span></button>
+        <button class="nav-item admin-only" data-view="workflows"><span class="nav-icon">⌘</span><span>Flujos y automatización</span></button>
         <button class="nav-item admin-only" data-view="admin"><span class="nav-icon">⚙</span><span>Configuración</span></button>
       </nav>
 
@@ -63,7 +70,8 @@
             <input id="globalSearch" type="search" placeholder="Buscar solicitud, servicio o funcionario..." />
             <kbd>Ctrl K</kbd>
           </div>
-          <button class="icon-btn notification-btn" title="Notificaciones">♢<span class="notification-dot"></span></button>
+          <div class="a11y-tools" aria-label="Herramientas de accesibilidad"><button class="icon-btn" data-a11y="down" title="Disminuir tamaño de texto">A−</button><button class="icon-btn" data-a11y="up" title="Aumentar tamaño de texto">A+</button><button class="icon-btn" data-a11y="contrast" title="Alto contraste">◐</button></div>
+          <button class="icon-btn notification-btn" title="Actualizaciones" data-view="notifications">♢<span class="notification-dot"></span></button>
           <button class="btn btn-primary compact" data-action="open-new-request">＋ Crear solicitud</button>
         </div>
       </header>
@@ -71,11 +79,17 @@
       <section class="view active" id="view-home"></section>
       <section class="view" id="view-new-request"></section>
       <section class="view" id="view-my-tickets"></section>
+      <section class="view" id="view-notifications"></section>
+      <section class="view" id="view-knowledge"></section>
+      <section class="view" id="view-status"></section>
       <section class="view" id="view-calendar"></section>
       <section class="view" id="view-ops"></section>
+      <section class="view" id="view-continuity"></section>
       <section class="view" id="view-team"></section>
+      <section class="view" id="view-assets"></section>
       <section class="view" id="view-catalog"></section>
       <section class="view" id="view-reports"></section>
+      <section class="view" id="view-workflows"></section>
       <section class="view" id="view-admin"></section>
     </main>
   </div>
@@ -118,5 +132,6 @@
   </div>
 
   <script src="app.js"></script>
+  <script src="v05.js"></script>
 </body>
 </html>
